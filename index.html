@@ -1,0 +1,11 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>캐릭터 좌표</title>
+<pre id="log">대기중...</pre>
+<script>
+  setInterval(async () => {
+    const pos = await (await fetch('/positions')).json();
+    document.getElementById('log').textContent =
+      Object.entries(pos).map(([id, p]) => `${id}  x=${p.x.toFixed(2)}  y=${p.y.toFixed(2)}  z=${p.z.toFixed(2)}`).join('\n') || '접속한 캐릭터 없음';
+  }, 100);
+</script>
