@@ -13,7 +13,7 @@ public class LoginUI : MonoBehaviour
     [SerializeField] private InputField usernameInput;
     [SerializeField] private InputField passwordInput;
     [SerializeField] private Button confirmButton;
-    [SerializeField] private Text usernameLabel;
+    [SerializeField] private PlayerNameLabel playerNameLabel; // 내 캐릭터 머리 위 이름
 
     // 확인 전까지 꺼둘 스크립트 (입력창 클릭이 캐릭터 이동/건물 설치로 이어지지 않도록)
     [SerializeField] private Behaviour[] disableUntilLogin;
@@ -26,8 +26,8 @@ public class LoginUI : MonoBehaviour
             b.enabled = false;
 
         loginPanel.SetActive(true);
-        usernameLabel.gameObject.SetActive(false);
 
+        usernameInput.characterLimit = NetMessage.MaxNameLength;
         usernameInput.text = RandomUsername();
         passwordInput.text = "";
 
@@ -41,8 +41,7 @@ public class LoginUI : MonoBehaviour
         Password = passwordInput.text;
 
         loginPanel.SetActive(false);
-        usernameLabel.text = "username: " + Username;
-        usernameLabel.gameObject.SetActive(true);
+        playerNameLabel.SetName(Username);
 
         foreach (Behaviour b in disableUntilLogin)
             b.enabled = true;
