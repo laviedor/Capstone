@@ -25,8 +25,21 @@ public class MousePathfinding : MonoBehaviour
 
     private Dictionary<Vector3Int, GridNode> nodes = new Dictionary<Vector3Int, GridNode>();
 
+    [Header("UI")]
+    [SerializeField]
+    private DemolitionConfirmUI demolitionConfirmUI;
+
     void Update()
     {
+        // 철거 확인창이 열려 있으면
+        // 이동 입력 금지
+        if (demolitionConfirmUI != null &&
+            demolitionConfirmUI.IsOpen)
+        {
+            return;
+        }
+
+
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
             SetDestination();
