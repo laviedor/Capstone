@@ -27,7 +27,7 @@ public class MousePathfinding : MonoBehaviour
 
     void Update()
     {
-        if (Mouse.current.leftButton.wasPressedThisFrame)
+        if (Mouse.current.leftButton.wasPressedThisFrame && !UIInput.IsPointerOverUI())
         {
             SetDestination();
         }

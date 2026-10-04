@@ -48,7 +48,7 @@ public class BuildingPlacement : MonoBehaviour
         UpdateGridPreviewColor();
 
 
-        if (Mouse.current.rightButton.wasPressedThisFrame)
+        if (Mouse.current.rightButton.wasPressedThisFrame && !UIInput.IsPointerOverUI())
         {
             PlaceBuilding();
         }

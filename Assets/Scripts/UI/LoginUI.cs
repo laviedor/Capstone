@@ -9,6 +9,8 @@ public class LoginUI : MonoBehaviour
     public static string Username { get; private set; }
     public static string Password { get; private set; }
 
+    public static event System.Action LoggedIn; // 확인 버튼으로 로그인했을 때
+
     [SerializeField] private GameObject loginPanel;
     [SerializeField] private InputField usernameInput;
     [SerializeField] private InputField passwordInput;
@@ -45,6 +47,8 @@ public class LoginUI : MonoBehaviour
 
         foreach (Behaviour b in disableUntilLogin)
             b.enabled = true;
+
+        LoggedIn?.Invoke();
     }
 
     // 영문 소문자와 숫자가 섞인 6자리
