@@ -1,11 +1,13 @@
-const { PORT, PRUNE_INTERVAL_MS } = require('./src/config');
+const { PORT, CHAT_PORT, PRUNE_INTERVAL_MS } = require('./src/config');
 const Players = require('./src/players');
 const startUdpServer = require('./src/udpServer');
 const startWebServer = require('./src/webServer');
+const startChatServer = require('./src/chatServer');
 
 const players = new Players();
 startUdpServer(PORT, players);
 startWebServer(PORT, players);
+startChatServer(CHAT_PORT);
 
 // 일정 시간 소식 없는 플레이어 정리
 setInterval(() => {
