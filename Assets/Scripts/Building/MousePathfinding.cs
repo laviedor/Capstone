@@ -40,7 +40,7 @@ public class MousePathfinding : MonoBehaviour
         }
 
 
-        if (Mouse.current.leftButton.wasPressedThisFrame)
+        if (Mouse.current.leftButton.wasPressedThisFrame && !UIInput.IsPointerOverUI())
         {
             SetDestination();
         }

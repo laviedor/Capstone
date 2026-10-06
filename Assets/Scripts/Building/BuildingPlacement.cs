@@ -106,7 +106,7 @@ public class BuildingPlacement : MonoBehaviour
 
 
         // 우클릭 = 건물 설치
-        if (Mouse.current.rightButton.wasPressedThisFrame)
+        if (Mouse.current.rightButton.wasPressedThisFrame && !UIInput.IsPointerOverUI())
         {
             PlaceBuilding();
         }
