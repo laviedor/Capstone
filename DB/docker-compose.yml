@@ -3,24 +3,28 @@ services:
     image: mysql:8.0
     container_name: village-mysql
     restart: unless-stopped
+    # 비밀번호는 이 폴더의 .env 에 적는다 (.env_example 을 복사, .env 는 git 에 올라가지 않음)
+    # 게임 서버도 같은 파일의 MYSQL_PASSWORD 로 DB 에 접속한다
+    # 처음 컨테이너를 만들 때만 적용되므로, 나중에 바꾸려면 docker compose down -v 후 다시 up
     environment:
-      MYSQL_ROOT_PASSWORD: [REDACTED]
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?DB/.env 에 MYSQL_ROOT_PASSWORD 를 설정하세요}
       MYSQL_DATABASE: village
       MYSQL_USER: village
-      MYSQL_PASSWORD: [REDACTED]
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?DB/.env 에 MYSQL_PASSWORD 를 설정하세요}
       TZ: UTC
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
       - --default-time-zone=+00:00
     ports:
-      - "3307:3306"
+      # 이 PC 에서만 접속 가능 (다른 PC 에서 직접 접속해야 하면 앞의 127.0.0.1: 을 지움)
+      - "127.0.0.1:3307:3306"
     volumes:
       - mysql-data:/var/lib/mysql
       # 컨테이너를 처음 만들 때 이 폴더의 .sql 파일이 이름순으로 자동 실행됨
       - ./db:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p[REDACTED]"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 5s
       timeout: 5s
       retries: 20

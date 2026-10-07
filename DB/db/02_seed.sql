@@ -9,13 +9,14 @@ SET NAMES utf8mb4;
 INSERT INTO users (id, device_id, nickname, gold) VALUES
   (1, 'dev-device-mean',   '민성', 1200),
   (2, 'dev-device-hyobin', '효빈',  800),
-  (3, 'dev-device-dongseon','동선', 1500);
+  (3, 'dev-device-dongseon','동선', 1500),
   (4, 'dev-device-hyeongyu','현규', 1700);
 
 INSERT INTO villages (owner_id, width, height, like_count) VALUES
   (1, 40, 8, 3),
   (2, 40, 8, 7),
-  (3, 40, 8, 1);
+  (3, 40, 8, 1),
+  (4, 40, 8, 0);
 
 INSERT INTO buildings (owner_id, building_id, x, y) VALUES
   (1, 'cottage',    3, 0),
