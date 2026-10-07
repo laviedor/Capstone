@@ -15,10 +15,10 @@ async function findSteamUser(steamId) {
   return rows[0] ?? null;
 }
 
-// Steam 계정으로 유저와 마을을 새로 만든다
-//   personaName: Steam 프로필 이름 (없으면 null)
-async function createSteamUser(steamId, personaName) {
-  const nickname = toNickname(personaName, steamId);
+// 회원가입: Steam 계정으로 유저와 마을을 새로 만든다
+//   name: 닉네임으로 쓸 이름 (Steam 프로필 이름 등, toNickname 으로 정리해서 저장)
+async function createSteamUser(steamId, name) {
+  const nickname = toNickname(name, steamId);
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
@@ -39,6 +39,11 @@ async function createSteamUser(steamId, personaName) {
   } finally {
     conn.release();
   }
+}
+
+// 회원 탈퇴: 유저를 지우면 마을, 건물, 인벤토리, 탐사, 좋아요, 방명록, 로그인 연결, 세션이 같이 지워진다 (ON DELETE CASCADE)
+async function deleteUser(userId) {
+  await pool.query('DELETE FROM users WHERE id = ?', [userId]);
 }
 
 // DB 닉네임 칸에 맞게 정리, 쓸 수 있는 글자가 없으면 기본 닉네임
@@ -72,4 +77,4 @@ async function findSessionUser(token) {
   return rows[0] ?? null;
 }
 
-module.exports = { findSteamUser, createSteamUser, createSession, findSessionUser };
+module.exports = { findSteamUser, createSteamUser, deleteUser, toNickname, createSession, findSessionUser };
