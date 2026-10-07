@@ -1,0 +1,29 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: village-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: [REDACTED]
+      MYSQL_DATABASE: village
+      MYSQL_USER: village
+      MYSQL_PASSWORD: [REDACTED]
+      TZ: UTC
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=+00:00
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      # 컨테이너를 처음 만들 때 이 폴더의 .sql 파일이 이름순으로 자동 실행됨
+      - ./db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p[REDACTED]"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  mysql-data:
