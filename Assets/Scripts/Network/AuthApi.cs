@@ -74,6 +74,10 @@ public static class AuthApi
     public static async Task<int> DeleteAccount(string token) =>
         (await SendRaw(HttpMethod.Delete, "/auth/me", null, token)).status;
 
+    // 로그아웃, 서버에서 이 토큰을 무효화 (HTTP 상태 코드 반환, 서버 연결 실패면 0)
+    public static async Task<int> Logout(string token) =>
+        (await SendRaw(HttpMethod.Post, "/auth/logout", null, token)).status;
+
     private static string KeyBody(string loginKey) => JsonUtility.ToJson(new LoginKeyBody { loginKey = loginKey });
 
     private static async Task<Result<T>> Send<T>(HttpMethod method, string path, string json = null, string token = null)
