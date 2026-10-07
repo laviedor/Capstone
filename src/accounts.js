@@ -67,6 +67,11 @@ async function createSession(userId) {
   return token;
 }
 
+// 로그아웃: 이 세션 토큰만 무효화 (다른 기기의 로그인은 유지)
+async function deleteSession(token) {
+  await pool.query('DELETE FROM sessions WHERE token_hash = ?', [hash(token)]);
+}
+
 // 세션 토큰의 유저, 없거나 만료됐으면 null
 async function findSessionUser(token) {
   const [rows] = await pool.query(
@@ -77,4 +82,4 @@ async function findSessionUser(token) {
   return rows[0] ?? null;
 }
 
-module.exports = { findSteamUser, createSteamUser, deleteUser, toNickname, createSession, findSessionUser };
+module.exports = { findSteamUser, createSteamUser, deleteUser, toNickname, createSession, deleteSession, findSessionUser };

@@ -18,6 +18,7 @@ const { PUBLIC_URL, LOGIN_TTL_MS, MAX_PENDING_LOGINS } = require('./config');
 //            -> { status: 'ok', token, user: { id, nickname } } / 404 { status: 'expired' }
 //   GET    /auth/me     Authorization: Bearer 토큰 -> { id, nickname } / 401
 //   DELETE /auth/me     Authorization: Bearer 토큰 -> { ok: true } / 401   회원 탈퇴
+//   POST   /auth/logout Authorization: Bearer 토큰 -> { ok: true }         로그아웃 (이 토큰만 무효화)
 //
 // token 은 클라이언트에 저장해 두고, 다음 실행 때 /auth/me 가 성공하면 Steam 로그인을 건너뛴다
 
@@ -42,10 +43,16 @@ function findLogin(loginKey) {
   return { state, login };
 }
 
-// Authorization: Bearer 토큰의 유저, 없으면 null
-async function sessionUser(req) {
+// Authorization: Bearer 토큰, 없으면 null
+function bearer(req) {
   const m = /^Bearer (\S+)$/.exec(req.get('authorization') || '');
-  return m ? accounts.findSessionUser(m[1]) : null;
+  return m ? m[1] : null;
+}
+
+// 토큰의 유저, 없으면 null
+async function sessionUser(req) {
+  const token = bearer(req);
+  return token ? accounts.findSessionUser(token) : null;
 }
 
 // Express 4 는 async 핸들러의 오류를 잡지 못하므로 넘겨준다
@@ -131,6 +138,12 @@ router.delete('/auth/me', wrap(async (req, res) => {
   if (!user) return res.status(401).json({ error: 'UNAUTHORIZED' });
   await accounts.deleteUser(user.id);
   console.log(`[회원 탈퇴] ${user.nickname} (#${user.id})`);
+  res.json({ ok: true });
+}));
+
+router.post('/auth/logout', wrap(async (req, res) => {
+  const token = bearer(req);
+  if (token) await accounts.deleteSession(token);
   res.json({ ok: true });
 }));
 
