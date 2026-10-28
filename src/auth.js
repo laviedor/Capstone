@@ -24,13 +24,21 @@ const { PUBLIC_URL, LOGIN_TTL_MS, MAX_PENDING_LOGINS } = require('./config');
 
 const CALLBACK_PATH = '/auth/steam/callback';
 
-// 진행 중인 로그인: state -> { status, expiresAt, user, steamId, nickname }
+// 진행 중인 로그인: state -> { status, expiresAt, returnTo, user, steamId, nickname }
 //   status: 'waiting' | 'verifying' | 'done' | 'unregistered' | 'failed'
 //   state = sha256(loginKey). 브라우저 주소에는 state 만 드러나므로
 //   주소가 새어 나가도 loginKey 를 가진 클라이언트만 결과(토큰)를 받을 수 있다
 const logins = new Map();
 const stateOf = loginKey => crypto.createHash('sha256').update(loginKey).digest('hex');
-const returnToOf = state => `${PUBLIC_URL}${CALLBACK_PATH}?state=${state}`;
+
+// Steam 로그인 후 브라우저가 돌아올 이 서버 주소
+//   PUBLIC_URL 이 없으면 게임이 접속해 온 주소(Host 헤더, 예: 168.110.121.214:7777)를 그대로 씀
+const HOST = /^(?:[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*|\[[0-9A-Fa-f:.]+\])(?::\d{1,5})?$/;
+function baseUrlOf(req) {
+  if (PUBLIC_URL) return PUBLIC_URL;
+  const host = req.get('host') || '';
+  return HOST.test(host) ? `${req.protocol}://${host}` : null;
+}
 
 // loginKey 로 진행 중인 로그인을 찾음, 없거나 시간이 지났으면 login 은 undefined
 function findLogin(loginKey) {
@@ -65,14 +73,18 @@ router.post('/auth/steam/start', (req, res) => {
   for (const [state, login] of logins) if (login.expiresAt < now) logins.delete(state);
   if (logins.size >= MAX_PENDING_LOGINS) return res.status(503).json({ error: 'TOO_MANY_LOGINS' });
 
+  const base = baseUrlOf(req);
+  if (!base) return res.status(400).json({ error: 'BAD_HOST' });
+
   const loginKey = crypto.randomBytes(32).toString('base64url');
   const state = stateOf(loginKey);
-  logins.set(state, { status: 'waiting', expiresAt: now + LOGIN_TTL_MS });
-  res.json({ loginKey, url: steam.loginUrl(returnToOf(state), PUBLIC_URL + '/') });
+  const returnTo = `${base}${CALLBACK_PATH}?state=${state}`;
+  logins.set(state, { status: 'waiting', expiresAt: now + LOGIN_TTL_MS, returnTo });
+  res.json({ loginKey, url: steam.loginUrl(returnTo, base + '/') });
 });
 
 router.get(CALLBACK_PATH, async (req, res) => {
-  const query = new URL(req.originalUrl, PUBLIC_URL).searchParams;
+  const query = new URL(req.originalUrl, 'http://localhost').searchParams; // 쿼리만 읽음
   const state = query.get('state') || '';
   const login = logins.get(state);
   if (!login || login.expiresAt < Date.now() || login.status !== 'waiting') {
@@ -81,7 +93,7 @@ router.get(CALLBACK_PATH, async (req, res) => {
 
   login.status = 'verifying';
   try {
-    const steamId = await steam.verify(query, returnToOf(state));
+    const steamId = await steam.verify(query, login.returnTo);
     if (!steamId) {
       login.status = 'failed';
       return page(res, 403, 'Steam 인증에 실패했습니다. 게임에서 다시 시도해 주세요.');

@@ -25,7 +25,7 @@ module.exports = {
   MAX_LINE_LENGTH: 4096,   // 채팅(TCP) 한 줄 최대 길이, 넘으면 연결을 끊음
 
   // 로그인
-  PUBLIC_URL: (process.env.PUBLIC_URL || `http://localhost:${PORT}`).replace(/\/+$/, ''), // 클라이언트 브라우저가 접속할 수 있는 이 서버 주소, Steam 로그인 후 여기로 돌아옴
+  PUBLIC_URL: (process.env.PUBLIC_URL || '').replace(/\/+$/, ''), // Steam 로그인 후 브라우저가 돌아올 이 서버 주소, 비우면 게임이 접속해 온 주소를 그대로 사용
   STEAM_API_KEY: process.env.STEAM_API_KEY || '', // 있으면 가입할 때 Steam 프로필 이름을 닉네임으로 사용
   LOGIN_TTL_MS: 10 * 60 * 1000, // Steam 로그인을 끝내야 하는 시간
   MAX_PENDING_LOGINS: 1000,     // 동시에 진행 중일 수 있는 로그인 수
