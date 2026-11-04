@@ -31,4 +31,9 @@ public class BuildingData : ScriptableObject
 
     [Header("Interaction")]
     public bool canInteract;
+
+    [Header("Production")]
+    public ResourceProduction[] productions;
+
+    public float productionInterval = 10f;
 }

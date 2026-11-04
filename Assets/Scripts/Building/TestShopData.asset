@@ -14,12 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   buildingID: shop_001
   buildingName: Test Shop
-  buildingType: 1
-  width: 2
-  height: 2
+  buildingType: 0
+  width: 4
+  height: 4
   constructionCosts:
   - resourceType: 0
     amount: 100
   - resourceType: 1
     amount: 50
   canInteract: 1
+  productions: []
+  productionInterval: 10

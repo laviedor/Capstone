@@ -15,6 +15,11 @@ public class BuildingDemolition : MonoBehaviour
     [SerializeField]
     private BuildingPlacement buildingPlacement;
 
+    //플레이어 자원 환급용
+    [Header("Player Resources")]
+    [SerializeField]
+    private PlayerResources playerResources;
+
     // 현재 철거 대상으로 선택된 건물
     private Building selectedBuilding;
 
@@ -146,6 +151,50 @@ public class BuildingDemolition : MonoBehaviour
         }
     }
 
+    // 건물 철거 시 자원 환급 ( 현재 비율 : 90% 환급 )
+    void RefundBuildingCost(Building building)
+    {
+        if (building == null)
+            return;
+
+        if (building.Data == null)
+            return;
+
+        if (playerResources == null)
+        {
+            Debug.LogError( "PlayerResources가 연결되어 있지 않습니다." );
+
+            return;
+        }
+
+        foreach (ResourceAmount cost
+                 in building.Data.constructionCosts)
+        {
+            int refundAmount = Mathf.FloorToInt(cost.amount * 0.9f); //자원 90% 환급
+
+            if (refundAmount <= 0)
+                continue;
+
+            playerResources.AddResource(
+                cost.resourceType,
+                refundAmount
+            );
+
+            Debug.Log(
+                cost.resourceType +
+                " 철거 환급 : " +
+                refundAmount
+            );
+        }
+    }
+
+
+
+
+
+
+
+
 
     public void ClearSelection()
     {
@@ -173,7 +222,8 @@ public class BuildingDemolition : MonoBehaviour
         selectedBuilding = null;
     }
 
-    // cell 제거 및 건물 제거
+
+    // cell 제거 및 건물 제거 및 자원 환급
     public void ConfirmDemolition()
     {
         if (selectedBuilding == null)
@@ -182,7 +232,12 @@ public class BuildingDemolition : MonoBehaviour
         Building buildingToDestroy =
             selectedBuilding;
 
-        // 먼저 점유 Cell 해제
+
+        // 건설 비용 90% 환급
+        RefundBuildingCost(buildingToDestroy);
+
+
+        // Grid 점유 해제
         if (buildingPlacement != null)
         {
             buildingPlacement.ReleaseBuildingCells(
@@ -190,15 +245,12 @@ public class BuildingDemolition : MonoBehaviour
             );
         }
 
-        Debug.Log(
-            "건물 철거 완료 : " +
-            buildingToDestroy.Data.buildingName
-        );
 
-        // 선택 참조 제거
+        Debug.Log( "건물 철거 완료 : " + buildingToDestroy.Data.buildingName );
+
+
         selectedBuilding = null;
 
-        // 실제 건물 제거
         Destroy(buildingToDestroy.gameObject);
     }
 

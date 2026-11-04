@@ -8,6 +8,11 @@ public class Building : MonoBehaviour
     // 설치된 기준 Cell
     private Vector3Int originCell;
 
+
+    private bool isPlaced = false;
+
+    public bool IsPlaced => isPlaced;
+
     public BuildingData Data
     {
         get { return data; }
@@ -54,5 +59,6 @@ public class Building : MonoBehaviour
     public void Initialize(Vector3Int cell)
     {
         originCell = cell;
+        isPlaced = true;
     }
 }
