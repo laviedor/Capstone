@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -42,9 +43,28 @@ public static class AuthApi
         public string loginKey;
     }
 
-    private const string TokenKey = "auth.token";
+    // Multiplayer Play Mode로 한 PC에서 플레이어 창을 여러 개 띄우면 PlayerPrefs를 같이 쓰므로,
+    // 가상 플레이어(-vpId=mppm... 로 실행됨)는 각자 다른 키에 토큰을 저장해 서로 다른 계정으로 로그인
+    private static readonly string TokenKey = "auth.token" + InstanceSuffix();
+
+    private static string InstanceSuffix()
+    {
+        string[] args = Environment.GetCommandLineArgs();
+        for (int i = 0; i < args.Length; i++)
+        {
+            if (args[i].StartsWith("-vpId=")) return "." + args[i].Substring("-vpId=".Length);
+            if (args[i] == "-vpId" && i + 1 < args.Length) return "." + args[i + 1];
+        }
+        return "";
+    }
 
     private static readonly HttpClient Http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+    // // 임시: HTTP 요청을 127.0.0.1:8888 프록시로 보냄 (원래대로 하려면 new HttpClient(...) 괄호 안의 handler 를 지움)
+    // private static readonly HttpClient Http = new HttpClient(new HttpClientHandler
+    // {
+    //     Proxy = new WebProxy("http://127.0.0.1:8888"),
+    //     UseProxy = true,
+    // }) { Timeout = TimeSpan.FromSeconds(10) };
 
     // 저장해 둔 세션 토큰 (다음 실행 때 Steam 로그인 없이 바로 로그인)
     public static string SavedToken
