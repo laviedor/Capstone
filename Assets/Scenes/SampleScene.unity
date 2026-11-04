@@ -2624,6 +2624,7 @@ GameObject:
   - component: {fileID: 902881545}
   - component: {fileID: 902881544}
   - component: {fileID: 902881547}
+  - component: {fileID: 902881548}
   m_Layer: 0
   m_Name: Network
   m_TagString: Untagged
@@ -2688,6 +2689,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   chatPort: 7778
   reconnectDelay: 3
+--- !u!114 &902881548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 902881543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 806194b0027049c45be56a56b7108a1d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  chatClient: {fileID: 902881547}
+  buildingPlacement: {fileID: 2124353327}
+  grid: {fileID: 1826577878}
+  buildingPrefabs:
+  - {fileID: 3353938753039805949, guid: f54525554c32dfa4f80201e8237c757d, type: 3}
 --- !u!1 &912246860
 GameObject:
   m_ObjectHideFlags: 0

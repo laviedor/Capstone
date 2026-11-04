@@ -269,6 +269,12 @@ public class BuildingPlacement : MonoBehaviour
 
         OccupyBuildingCells();
 
+        // 다른 플레이어 화면에도 보이도록 서버로 알림
+        if (BuildingSync.Instance != null && placedBuilding != null)
+        {
+            BuildingSync.Instance.OnLocalBuilt(placedBuilding);
+        }
+
         Debug.Log(
             "건물 설치 완료 : " +
             currentCellPosition
@@ -345,6 +351,21 @@ public class BuildingPlacement : MonoBehaviour
             if (renderer != null)
             {
                 renderer.color = color;
+            }
+        }
+    }
+
+    // 다른 플레이어가 지은 건물의 칸도 점유 처리 (BuildingSync 에서 호출)
+    public void OccupyBuildingCells(Building building)
+    {
+        if (building == null)
+            return;
+
+        for (int x = 0; x < building.Width; x++)
+        {
+            for (int y = 0; y < building.Height; y++)
+            {
+                occupiedCells.Add(building.OriginCell + new Vector3Int(x, y, 0));
             }
         }
     }

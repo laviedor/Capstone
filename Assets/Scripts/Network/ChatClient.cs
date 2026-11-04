@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-// 채팅 서버와의 TCP 통신: 로그인하면 접속하고, 끊기면 다시 접속
+// 채팅 서버와의 TCP 통신 (채팅, 건물 변경): 로그인하면 접속하고, 끊기면 다시 접속
 // (await 뒤의 코드는 Unity 메인 스레드에서 이어서 실행됨)
 public class ChatClient : MonoBehaviour
 {
@@ -13,6 +13,7 @@ public class ChatClient : MonoBehaviour
     [SerializeField] private float reconnectDelay = 3f;
 
     public event Action<ChatMessage> MessageReceived;
+    public event Action<BuildingMessage> BuildingReceived; // 건물 변경 (BuildingSync 가 처리)
     public event Action<string> Notice; // 연결 상태 안내
 
     private static readonly UTF8Encoding Utf8 = new UTF8Encoding(false);
@@ -40,12 +41,16 @@ public class ChatClient : MonoBehaviour
     }
 
     // 연결되어 있으면 보내고 true
-    public bool Send(string text)
+    public bool Send(string text) => TryWrite(new ChatMessage { t = ChatMessage.Chat, text = text });
+
+    public bool SendBuilding(BuildingMessage msg) => TryWrite(msg);
+
+    bool TryWrite(object msg)
     {
         if (stream == null) return false;
         try
         {
-            Write(new ChatMessage { t = ChatMessage.Chat, text = text });
+            Write(msg);
             return true;
         }
         catch (Exception e) when (e is IOException || e is ObjectDisposedException)
@@ -123,9 +128,13 @@ public class ChatClient : MonoBehaviour
             kicked = true;
             Notice?.Invoke("같은 사용자명으로 다른 곳에서 접속하여 채팅 연결이 끊겼습니다.");
         }
+        else if (BuildingMessage.IsBuildingMessage(msg.t))
+        {
+            BuildingReceived?.Invoke(JsonUtility.FromJson<BuildingMessage>(line));
+        }
     }
 
-    void Write(ChatMessage msg)
+    void Write(object msg)
     {
         byte[] data = Utf8.GetBytes(JsonUtility.ToJson(msg) + "\n");
         stream.Write(data, 0, data.Length);

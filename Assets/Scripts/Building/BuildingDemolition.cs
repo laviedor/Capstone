@@ -195,6 +195,12 @@ public class BuildingDemolition : MonoBehaviour
             buildingToDestroy.Data.buildingName
         );
 
+        // 다른 플레이어 화면에서도 지워지도록 서버로 알림
+        if (BuildingSync.Instance != null)
+        {
+            BuildingSync.Instance.OnLocalDemolished(buildingToDestroy);
+        }
+
         // 선택 참조 제거
         selectedBuilding = null;
 
