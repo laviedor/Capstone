@@ -56,6 +56,27 @@ public class BuildingPlacement : MonoBehaviour
 
     // 이미 건물이 설치된 Grid 칸들
     private HashSet<Vector3Int> occupiedCells = new HashSet<Vector3Int>();
+    // 건물 종류별 마지막으로 사용한 번호
+    private Dictionary<string, int> buildingNumberCounters =
+        new Dictionary<string, int>();
+
+    private int GetNextBuildingNumber(string buildingID)
+    {
+        if (string.IsNullOrEmpty(buildingID))
+        {
+            Debug.LogError("BuildingID가 비어 있습니다.");
+            return 0;
+        }
+
+        if (!buildingNumberCounters.ContainsKey(buildingID))
+        {
+            buildingNumberCounters[buildingID] = 0;
+        }
+
+        buildingNumberCounters[buildingID]++;
+
+        return buildingNumberCounters[buildingID];
+    }
 
     //Grid Preview Cell을 저장할 변수
     private List<GameObject> gridPreviewCells = new List<GameObject>();
@@ -325,13 +346,34 @@ public class BuildingPlacement : MonoBehaviour
             return;
         }
 
+        if (buildingPrefab == null ||
+            currentBuildingData == null ||
+            previewObject == null)
+        {
+            Debug.LogError("건물 설치에 필요한 정보가 없습니다.");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(currentBuildingData.buildingID))
+        {
+            Debug.LogError("BuildingID가 설정되지 않았습니다.");
+            return;
+        }
+
+        Building prefabBuilding =
+            buildingPrefab.GetComponent<Building>();
+
+        if (prefabBuilding == null || prefabBuilding.Data == null)
+        {
+            Debug.LogError("건물 Prefab 설정이 올바르지 않습니다.");
+            return;
+        }
+
         if (!CanAffordBuilding())
         {
             Debug.Log("건물을 설치하기 위한 자원이 부족합니다.");
             return;
         }
-
-        PayBuildingCost();
 
         GameObject placedObject = Instantiate(
             buildingPrefab,
@@ -342,16 +384,40 @@ public class BuildingPlacement : MonoBehaviour
         Building placedBuilding =
             placedObject.GetComponent<Building>();
 
-        if (placedBuilding != null)
+        if (placedBuilding == null)
         {
-            placedBuilding.Initialize(currentCellPosition);
+            Debug.LogError("생성된 건물에 Building 컴포넌트가 없습니다.");
+            Destroy(placedObject);
+            return;
         }
 
+        // 건물 번호 부여
+        int newNumber = GetNextBuildingNumber(
+            placedBuilding.BuildingID
+        );
+
+        if (newNumber <= 0)
+        {
+            Destroy(placedObject);
+            return;
+        }
+
+        placedBuilding.SetBuildingNumber(newNumber);
+
+        // 실제 설치 완료 처리
+        placedBuilding.Initialize(currentCellPosition);
+
+        // 건설 비용 차감
+        PayBuildingCost();
+
+        // Grid 점유 등록
         OccupyBuildingCells();
 
         Debug.Log(
             "건물 설치 완료 : " +
-            currentCellPosition
+            placedBuilding.Data.buildingName +
+            " #" + placedBuilding.BuildingNumber +
+            " / 위치 : " + currentCellPosition
         );
     }
 

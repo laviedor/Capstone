@@ -19,6 +19,9 @@ public class BuildingData : ScriptableObject
     public string buildingID;
     public string buildingName;
 
+    [Header("UI")]
+    public Sprite buildingIcon;
+
     [Header("Type")]
     public BuildingType buildingType;
 

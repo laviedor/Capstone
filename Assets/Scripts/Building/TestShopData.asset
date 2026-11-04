@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   buildingID: shop_001
   buildingName: Test Shop
+  buildingIcon: {fileID: 6840857970483876212, guid: 6a1bb9d409a46ab488448f7d4f0c41a1, type: 3}
   buildingType: 0
   width: 4
   height: 4

@@ -33,35 +33,32 @@ public class BuildingDemolition : MonoBehaviour
     }
 
 
-    void Update()
+    private void Update()
     {
         if (buildingModeManager == null)
             return;
 
+        // 철거 확인창이 열려 있는 동안
+        // 선택한 건물을 유지하고 입력 차단
+        if (confirmUI != null && confirmUI.IsOpen)
+            return;
 
-        // 건설 모드가 아니면 철거 선택 해제
+        // 건설 모드가 아니면 선택 해제
         if (!buildingModeManager.IsBuildMode)
         {
             ClearSelection();
             return;
         }
 
-
-        // 철거 도구가 아니면 철거 선택 해제
-        if (buildingModeManager.CurrentTool !=
-            BuildingTool.Demolish)
+        // 철거 도구가 아니면 선택 해제
+        if (buildingModeManager.CurrentTool != BuildingTool.Demolish)
         {
             ClearSelection();
             return;
         }
 
-        // 확인창이 열려 있으면 입력 금지
-        if (confirmUI != null &&
-            confirmUI.IsOpen)
-        {
+        if (Mouse.current == null)
             return;
-        }
-
 
         // 철거 도구 상태에서 좌클릭
         if (Mouse.current.leftButton.wasPressedThisFrame)
@@ -149,6 +146,26 @@ public class BuildingDemolition : MonoBehaviour
         {
             confirmUI.Open(selectedBuilding);
         }
+    }
+
+    public void RequestDemolition(Building building)
+    {
+        if (building == null ||
+            !building.IsPlaced ||
+            building.Data == null)
+        {
+            Debug.LogWarning("철거할 수 없는 건물입니다.");
+            return;
+        }
+
+        if (confirmUI == null)
+        {
+            Debug.LogError("철거 확인 UI가 연결되지 않았습니다.");
+            return;
+        }
+
+        // 기존 철거 선택 기능 재사용
+        SelectBuilding(building);
     }
 
     // 건물 철거 시 자원 환급 ( 현재 비율 : 90% 환급 )

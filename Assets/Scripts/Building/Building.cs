@@ -1,3 +1,4 @@
+
 using UnityEngine;
 
 public class Building : MonoBehaviour
@@ -8,10 +9,14 @@ public class Building : MonoBehaviour
     // 설치된 기준 Cell
     private Vector3Int originCell;
 
-
     private bool isPlaced = false;
 
+    // 건물 고유 번호
+    private int buildingNumber = 0;
+
     public bool IsPlaced => isPlaced;
+
+    public int BuildingNumber => buildingNumber;
 
     public BuildingData Data
     {
@@ -60,5 +65,17 @@ public class Building : MonoBehaviour
     {
         originCell = cell;
         isPlaced = true;
+    }
+
+    // 건물 번호 지정
+    public void SetBuildingNumber(int number)
+    {
+        if (number <= 0)
+        {
+            Debug.LogWarning("건물 번호는 1 이상이어야 합니다.");
+            return;
+        }
+
+        buildingNumber = number;
     }
 }

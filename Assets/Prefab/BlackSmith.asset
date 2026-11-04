@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   buildingID: blacksmith
   buildingName: Blacksmith
+  buildingIcon: {fileID: -3683829509223291553, guid: a74d2ba51b9258247a5ad9f1eb6a79f8, type: 3}
   buildingType: 0
   width: 4
   height: 4

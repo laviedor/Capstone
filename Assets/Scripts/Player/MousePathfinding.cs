@@ -36,7 +36,10 @@ public class MousePathfinding : MonoBehaviour
     [Header("Inventory UI")]
     [SerializeField] private InventoryUI inventoryUI;
 
-    void Update()
+    [Header("Camera")]
+    [SerializeField] private CameraFollow cameraFollow;
+
+    private void Update()
     {
         if (Mouse.current == null)
             return;
@@ -50,11 +53,34 @@ public class MousePathfinding : MonoBehaviour
             demolitionConfirmUI.IsOpen)
             return;
 
+        // 건물 위치 보기 중에는 이동 차단
+        if (cameraFollow != null &&
+            cameraFollow.IsViewingBuilding)
+            return;
+
         // 마우스 좌클릭 이동
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
             SetDestination();
         }
+    }
+
+    public void ClearMovementVisuals()
+    {
+        // 이동 경로 선 제거
+        if (lineRenderer != null)
+        {
+            lineRenderer.positionCount = 0;
+        }
+
+        // 목적지 마커 제거
+        if (destinationMarker != null)
+        {
+            Destroy(destinationMarker);
+            destinationMarker = null;
+        }
+
+        Debug.Log("이동 경로 및 목적지 마커 제거");
     }
 
     GridNode GetNode(Vector3Int cellPosition)

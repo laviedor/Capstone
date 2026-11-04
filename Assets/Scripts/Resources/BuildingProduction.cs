@@ -71,7 +71,7 @@ public class BuildingProduction : MonoBehaviour
 
         productionTimer += Time.deltaTime;
 
-        if (productionTimer >= data.productionInterval)
+        while (productionTimer >= data.productionInterval)
         {
             ProduceResources();
 

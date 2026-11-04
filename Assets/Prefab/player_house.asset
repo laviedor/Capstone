@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   buildingID: player_house
   buildingName: Player House
+  buildingIcon: {fileID: -1923994175756728024, guid: 30d0a7d58602b6b4db95a435a7c57cca, type: 3}
   buildingType: 0
   width: 4
   height: 4
