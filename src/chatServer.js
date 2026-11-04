@@ -2,9 +2,15 @@ const net = require('net');
 const chatProtocol = require('./chatProtocol');
 const { MAX_LINE_LENGTH } = require('./config');
 
-// TCP 채팅 서버: 받은 채팅을 접속자 모두에게 전달
-function startChatServer(port) {
+// TCP 서버: 받은 채팅과 건물 변경(건설, 철거, 이동)을 접속자들에게 전달
+//   buildings: 지금 맵에 있는 건물 (buildings.js), 입장하는 사람에게 목록을 보내 줌
+function startChatServer(port, buildings) {
   const clients = new Map(); // 사용자명 -> socket
+
+  // except 를 뺀 접속자 모두에게
+  const broadcast = (data, except) => {
+    for (const s of clients.values()) if (s !== except) s.write(data);
+  };
 
   const server = net.createServer(socket => {
     let name = null;
@@ -44,10 +50,28 @@ function startChatServer(port) {
         name = msg.name;
         clients.set(name, socket);
         console.log(`[채팅] ${name} 입장`);
-      } else if (msg.t === 'chat' && name && clients.get(name) === socket) {
+        socket.write(chatProtocol.buildingList(buildings.list())); // 지금 맵에 있는 건물
+        return;
+      }
+      if (!name || clients.get(name) !== socket) return; // 입장하지 않았거나 끊긴 접속
+
+      if (msg.t === 'chat') {
         console.log(`[채팅] ${name}: ${msg.text}`);
-        const data = chatProtocol.chat(name, msg.text);
-        for (const s of clients.values()) s.write(data);
+        broadcast(chatProtocol.chat(name, msg.text));
+      } else if (msg.t === 'build') {
+        const b = { id: msg.id, type: msg.type, x: msg.x, y: msg.y, owner: name };
+        if (!buildings.add(b)) return;
+        console.log(`[건물] ${name} 건설 ${b.type} (${b.x}, ${b.y})`);
+        broadcast(chatProtocol.build(b), socket);
+      } else if (msg.t === 'demolish') {
+        if (!buildings.remove(msg.id)) return;
+        console.log(`[건물] ${name} 철거 ${msg.id}`);
+        broadcast(chatProtocol.demolish(msg.id), socket);
+      } else if (msg.t === 'move') {
+        const b = buildings.move(msg.id, msg.x, msg.y);
+        if (!b) return;
+        console.log(`[건물] ${name} 이동 ${b.type} -> (${b.x}, ${b.y})`);
+        broadcast(chatProtocol.move(b), socket);
       }
     }
   });

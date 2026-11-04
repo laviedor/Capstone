@@ -23,6 +23,8 @@ module.exports = {
   MAX_NAME_LENGTH: 32,     // 사용자명 최대 길이
   MAX_CHAT_LENGTH: 200,    // 채팅 메시지 최대 길이
   MAX_LINE_LENGTH: 4096,   // 채팅(TCP) 한 줄 최대 길이, 넘으면 연결을 끊음
+  MAX_BUILDINGS: 2000,     // 맵에 지을 수 있는 건물 수 (서버 메모리 보호)
+  MAX_CELL: 10000,         // 건물 칸 좌표 범위 (-MAX_CELL ~ MAX_CELL)
 
   // 로그인
   PUBLIC_URL: (process.env.PUBLIC_URL || '').replace(/\/+$/, ''), // Steam 로그인 후 브라우저가 돌아올 이 서버 주소, 비우면 게임이 접속해 온 주소를 그대로 사용
