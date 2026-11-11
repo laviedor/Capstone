@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 // 로그인 서버(HTTP) API, 서버 주소는 NetworkClient의 serverIp, serverPort를 같이 씀 (서버 auth.js 참고)
+// 친구, 1:1 채팅 API(FriendApi)도 여기의 Send 로 같은 서버에 요청한다
 // 서버가 HTTPS가 아니라서 UnityWebRequest 대신 HttpClient 사용 (UnityWebRequest는 HTTP 요청을 막음)
 // (await 뒤의 코드는 Unity 메인 스레드에서 이어서 실행됨)
 public static class AuthApi
@@ -18,13 +19,14 @@ public static class AuthApi
         public string nickname;
     }
 
-    // start, poll, signup 응답
+    // start, poll, signup, guest login 응답
     [Serializable]
     public class LoginResponse
     {
         public string loginKey; // start: 결과를 확인할 때 쓰는 키
         public string url;      // start: 브라우저로 열 Steam 로그인 주소
         public string status;   // poll, signup: pending, ok, unregistered, failed
+                                // guest login: ok, unregistered, wrong_password, taken, invalid, too_many
         public string token;    // ok: 세션 토큰
         public User user;       // ok
         public string nickname; // unregistered: 가입하면 쓰일 닉네임
@@ -41,6 +43,14 @@ public static class AuthApi
     private class LoginKeyBody
     {
         public string loginKey;
+    }
+
+    [Serializable]
+    private class GuestLoginBody
+    {
+        public string id;
+        public string password;
+        public bool signup;
     }
 
     // Multiplayer Play Mode로 한 PC에서 플레이어 창을 여러 개 띄우면 PlayerPrefs를 같이 쓰므로,
@@ -87,6 +97,13 @@ public static class AuthApi
     public static Task<Result<LoginResponse>> SignUp(string loginKey) =>
         Send<LoginResponse>(HttpMethod.Post, "/auth/steam/signup", KeyBody(loginKey));
 
+    // Guest 로그인 (아이디 + 비밀번호), 로그인과 회원가입을 같이 처리
+    //   있는 아이디면 비밀번호가 맞아야 ok, 틀리면 wrong_password
+    //   없는 아이디면 unregistered, signup 을 true 로 다시 보내면 그 아이디로 가입하고 ok
+    public static Task<Result<LoginResponse>> GuestLogin(string id, string password, bool signup) =>
+        Send<LoginResponse>(HttpMethod.Post, "/auth/guest/login",
+            JsonUtility.ToJson(new GuestLoginBody { id = id, password = password, signup = signup }));
+
     public static Task<Result<User>> Me(string token) =>
         Send<User>(HttpMethod.Get, "/auth/me", null, token);
 
@@ -100,7 +117,8 @@ public static class AuthApi
 
     private static string KeyBody(string loginKey) => JsonUtility.ToJson(new LoginKeyBody { loginKey = loginKey });
 
-    private static async Task<Result<T>> Send<T>(HttpMethod method, string path, string json = null, string token = null)
+    // 요청을 보내고 JSON 응답을 T 로 읽음 (FriendApi 도 사용)
+    internal static async Task<Result<T>> Send<T>(HttpMethod method, string path, string json = null, string token = null)
     {
         var (status, text) = await SendRaw(method, path, json, token);
         T body = default;
@@ -132,7 +150,7 @@ public static class AuthApi
         }
         catch (Exception e) when (e is HttpRequestException || e is TaskCanceledException || e is UriFormatException)
         {
-            Debug.LogWarning($"로그인 서버 요청 실패 ({method} {path}): {e.Message}");
+            Debug.LogWarning($"서버 요청 실패 ({method} {path}): {e.Message}");
             return (0, null); // 서버에 연결할 수 없음, 시간 초과
         }
     }

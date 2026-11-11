@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-// 채팅 서버와의 TCP 통신 (채팅, 건물 변경): 로그인하면 접속하고, 끊기면 다시 접속
+// 채팅 서버와의 TCP 통신 (채팅, 건물 변경, 친구/1:1 채팅 알림): 로그인하면 접속하고, 끊기면 다시 접속
 // (await 뒤의 코드는 Unity 메인 스레드에서 이어서 실행됨)
 public class ChatClient : MonoBehaviour
 {
@@ -15,6 +15,9 @@ public class ChatClient : MonoBehaviour
     public event Action<ChatMessage> MessageReceived;
     public event Action<BuildingMessage> BuildingReceived; // 건물 변경 (BuildingSync 가 처리)
     public event Action<string> Notice; // 연결 상태 안내
+    public event Action Connected;                  // 채팅 서버에 연결됨 (다시 연결될 때마다)
+    public event Action FriendsChanged;             // 친구 목록이나 친구의 접속 상태가 바뀜 (FriendUI 가 목록을 다시 받음)
+    public event Action<long> DirectMessageArrived; // 이 유저(id)가 1:1 채팅을 보냄 (내용은 FriendUI 가 FriendApi 로 받음)
 
     private static readonly UTF8Encoding Utf8 = new UTF8Encoding(false);
 
@@ -75,10 +78,11 @@ public class ChatClient : MonoBehaviour
             {
                 await tcp.ConnectAsync(host, chatPort);
                 stream = tcp.GetStream();
-                Write(new ChatMessage { t = ChatMessage.Join, name = LoginUI.Username });
+                Write(new JoinMessage { name = LoginUI.Username, token = AuthApi.SavedToken });
                 if (noticed) Notice?.Invoke("채팅 서버에 다시 연결되었습니다.");
                 wasConnected = true;
                 noticed = false;
+                Connected?.Invoke();
 
                 var reader = new StreamReader(stream, Utf8);
                 string line;
@@ -131,6 +135,14 @@ public class ChatClient : MonoBehaviour
         else if (BuildingMessage.IsBuildingMessage(msg.t))
         {
             BuildingReceived?.Invoke(JsonUtility.FromJson<BuildingMessage>(line));
+        }
+        else if (msg.t == ChatMessage.Dm)
+        {
+            DirectMessageArrived?.Invoke(JsonUtility.FromJson<FriendPush>(line).sender);
+        }
+        else if (msg.t == ChatMessage.Friends)
+        {
+            FriendsChanged?.Invoke();
         }
     }
 

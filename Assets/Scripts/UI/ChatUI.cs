@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-// 오른쪽 아래 채팅 버튼과 채팅창
+// 오른쪽 아래 채팅 버튼과 채팅창 (접속한 모두에게 보이는 광장 채팅, 친구와의 1:1 채팅은 FriendUI)
 public class ChatUI : MonoBehaviour
 {
     [SerializeField] private ChatClient chatClient;
     [SerializeField] private Button chatButton;
     [SerializeField] private Text chatButtonText;
     [SerializeField] private GameObject chatPanel;
+    [SerializeField] private GameObject friendPanel; // 친구 창 (같은 자리에 뜨므로 채팅창을 열면 닫음)
     [SerializeField] private ScrollRect scrollRect;
     [SerializeField] private Text messagesText;
     [SerializeField] private InputField messageInput;
@@ -56,6 +57,7 @@ public class ChatUI : MonoBehaviour
         chatPanel.SetActive(open);
         if (!open) return;
 
+        if (friendPanel != null) friendPanel.SetActive(false);
         unread = 0;
         UpdateButtonText();
         ScrollToBottom();

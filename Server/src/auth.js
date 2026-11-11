@@ -2,9 +2,17 @@ const crypto = require('crypto');
 const express = require('express');
 const steam = require('./steam');
 const accounts = require('./accounts');
-const { PUBLIC_URL, LOGIN_TTL_MS, MAX_PENDING_LOGINS } = require('./config');
+const friends = require('./friends');
+const presence = require('./presence');
+const chatProtocol = require('./chatProtocol');
+const { bearer, sessionUser, wrap, errorHandler } = require('./httpUtil');
+const {
+  PUBLIC_URL, LOGIN_TTL_MS, MAX_PENDING_LOGINS,
+  GUEST_ID_PATTERN, MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH,
+  MAX_LOGIN_FAILURES, LOGIN_FAILURE_WINDOW_MS, MAX_SIGNUPS_PER_IP, SIGNUP_WINDOW_MS,
+} = require('./config');
 
-// Steam 로그인 API (HTTP, JSON)
+// 로그인 API (HTTP, JSON): Steam 로그인, Guest 로그인(아이디 + 비밀번호)
 //   POST   /auth/steam/start                  -> { loginKey, url }
 //            url 을 브라우저로 열어 Steam 로그인. loginKey 는 클라이언트만 갖고 있는다
 //   GET    /auth/steam/callback               Steam 로그인 후 브라우저가 돌아오는 곳 (클라이언트가 부르지 않음)
@@ -16,6 +24,13 @@ const { PUBLIC_URL, LOGIN_TTL_MS, MAX_PENDING_LOGINS } = require('./config');
 //               404 { status: 'expired' }                  없는 요청이거나 시간 초과
 //   POST   /auth/steam/signup  { loginKey }   회원가입 (poll 이 unregistered 일 때)
 //            -> { status: 'ok', token, user: { id, nickname } } / 404 { status: 'expired' }
+//   POST   /auth/guest/login  { id, password, signup }   Guest 로그인. 로그인과 회원가입을 같이 처리한다
+//            -> { status: 'ok', token, user: { id, nickname } }  로그인 완료 (가입했으면 created: true)
+//               { status: 'unregistered' }            없는 아이디. 가입할지 물어본 뒤 signup: true 로 다시 보내면 가입
+//               401 { status: 'wrong_password' }      있는 아이디인데 비밀번호가 다름
+//               409 { status: 'taken' }               다른 계정이 닉네임으로 쓰고 있어 가입할 수 없는 아이디
+//               400 { status: 'invalid' }             아이디, 비밀번호 형식이 맞지 않음 (config.js)
+//               429 { status: 'too_many' }            비밀번호를 너무 많이 틀렸거나 가입을 너무 많이 함
 //   GET    /auth/me     Authorization: Bearer 토큰 -> { id, nickname } / 401
 //   DELETE /auth/me     Authorization: Bearer 토큰 -> { ok: true } / 401   회원 탈퇴
 //   POST   /auth/logout Authorization: Bearer 토큰 -> { ok: true }         로그아웃 (이 토큰만 무효화)
@@ -51,20 +66,36 @@ function findLogin(loginKey) {
   return { state, login };
 }
 
-// Authorization: Bearer 토큰, 없으면 null
-function bearer(req) {
-  const m = /^Bearer (\S+)$/.exec(req.get('authorization') || '');
-  return m ? m[1] : null;
+// 횟수 제한: key 마다 windowMs 동안 max 번까지
+class Limiter {
+  constructor(max, windowMs) {
+    this.max = max;
+    this.windowMs = windowMs;
+    this.hits = new Map(); // key -> { count, resetAt }
+  }
+
+  blocked(key, now = Date.now()) {
+    const hit = this.hits.get(key);
+    if (hit && hit.resetAt <= now) this.hits.delete(key);
+    return !!hit && hit.resetAt > now && hit.count >= this.max;
+  }
+
+  add(key, now = Date.now()) {
+    if (this.hits.size >= 10000) {
+      for (const [k, hit] of this.hits) if (hit.resetAt <= now) this.hits.delete(k);
+    }
+    const hit = this.hits.get(key);
+    if (hit && hit.resetAt > now) hit.count++;
+    else this.hits.set(key, { count: 1, resetAt: now + this.windowMs });
+  }
+
+  clear(key) {
+    this.hits.delete(key);
+  }
 }
 
-// 토큰의 유저, 없으면 null
-async function sessionUser(req) {
-  const token = bearer(req);
-  return token ? accounts.findSessionUser(token) : null;
-}
-
-// Express 4 는 async 핸들러의 오류를 잡지 못하므로 넘겨준다
-const wrap = fn => (req, res, next) => fn(req, res).catch(next);
+const loginFailures = new Limiter(MAX_LOGIN_FAILURES, LOGIN_FAILURE_WINDOW_MS); // 'IP|아이디' 마다 비밀번호 틀린 횟수
+const signups = new Limiter(MAX_SIGNUPS_PER_IP, SIGNUP_WINDOW_MS);              // IP 마다 만든 Guest 계정 수
 
 const router = express.Router();
 
@@ -139,6 +170,44 @@ router.post('/auth/steam/signup', express.json(), wrap(async (req, res) => {
   res.json({ status: 'ok', token, user });
 }));
 
+router.post('/auth/guest/login', express.json(), wrap(async (req, res) => {
+  const id = typeof req.body?.id === 'string' ? req.body.id.normalize('NFC').trim() : '';
+  const password = req.body?.password;
+  if (!GUEST_ID_PATTERN.test(id) || typeof password !== 'string'
+      || password.length < MIN_PASSWORD_LENGTH || password.length > MAX_PASSWORD_LENGTH) {
+    return res.status(400).json({ status: 'invalid' });
+  }
+
+  const failKey = `${req.ip}|${id.toLowerCase()}`;
+  if (loginFailures.blocked(failKey)) return res.status(429).json({ status: 'too_many' });
+
+  // 있는 아이디: 비밀번호가 맞아야 로그인
+  const guest = await accounts.findGuest(id);
+  if (guest) {
+    if (!await accounts.verifyPassword(password, guest.passwordHash)) {
+      loginFailures.add(failKey);
+      return res.status(401).json({ status: 'wrong_password' });
+    }
+    loginFailures.clear(failKey);
+    const user = { id: guest.id, nickname: guest.nickname };
+    const token = await accounts.createSession(user.id);
+    console.log(`[로그인] ${user.nickname} (#${user.id}, guest)`);
+    return res.json({ status: 'ok', token, user });
+  }
+
+  // 없는 아이디: 회원가입 (게임에서 가입할지 확인받고 signup: true 로 다시 보냄)
+  if (await accounts.nicknameTaken(id)) return res.status(409).json({ status: 'taken' });
+  if (req.body.signup !== true) return res.json({ status: 'unregistered' });
+  if (signups.blocked(req.ip)) return res.status(429).json({ status: 'too_many' });
+
+  const user = await accounts.createGuestUser(id, password);
+  if (!user) return res.status(409).json({ status: 'taken' });
+  signups.add(req.ip);
+  const token = await accounts.createSession(user.id);
+  console.log(`[회원가입] ${user.nickname} (#${user.id}, guest)`);
+  res.json({ status: 'ok', token, user, created: true });
+}));
+
 router.get('/auth/me', wrap(async (req, res) => {
   const user = await sessionUser(req);
   if (!user) return res.status(401).json({ error: 'UNAUTHORIZED' });
@@ -148,7 +217,9 @@ router.get('/auth/me', wrap(async (req, res) => {
 router.delete('/auth/me', wrap(async (req, res) => {
   const user = await sessionUser(req);
   if (!user) return res.status(401).json({ error: 'UNAUTHORIZED' });
+  const friendIds = await friends.friendIds(user.id);
   await accounts.deleteUser(user.id);
+  for (const id of friendIds) presence.send(id, chatProtocol.friends()); // 친구들의 목록에서도 사라지도록
   console.log(`[회원 탈퇴] ${user.nickname} (#${user.id})`);
   res.json({ ok: true });
 }));
@@ -159,12 +230,7 @@ router.post('/auth/logout', wrap(async (req, res) => {
   res.json({ ok: true });
 }));
 
-// 잘못된 JSON(400), DB 오류(500) 등
-router.use((err, req, res, next) => {
-  const status = err.status || 500;
-  if (status >= 500) console.error('[로그인] 오류:', err.message);
-  res.status(status).json({ error: status >= 500 ? 'SERVER_ERROR' : 'BAD_REQUEST' });
-});
+router.use(errorHandler('로그인'));
 
 // 로그인 결과를 브라우저에 보여주는 페이지
 function page(res, status, message) {

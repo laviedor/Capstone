@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// 채팅 버튼 위의 [회원 탈퇴] 버튼: 확인을 받은 뒤 계정을 지우고 처음(로그인) 화면으로 돌아감
+// 친구 버튼 위의 [회원 탈퇴] 버튼: 확인을 받은 뒤 계정을 지우고 처음(로그인) 화면으로 돌아감
 public class WithdrawUI : MonoBehaviour
 {
     [SerializeField] private Button withdrawButton;
