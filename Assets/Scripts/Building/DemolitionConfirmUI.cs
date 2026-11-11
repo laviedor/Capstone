@@ -19,16 +19,16 @@ public class DemolitionConfirmUI : MonoBehaviour
         get
         {
             return confirmPanel != null &&
-                   confirmPanel.activeSelf;
+                   confirmPanel.activeInHierarchy;
         }
     }
 
-
-
-    void Start()
+    private void Awake()
     {
-        // 게임 시작 시 확인창 숨기기
-        confirmPanel.SetActive(false);
+        if (confirmPanel != null)
+        {
+            confirmPanel.SetActive(false);
+        }
     }
 
 

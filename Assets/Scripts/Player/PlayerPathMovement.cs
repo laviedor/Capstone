@@ -1,3 +1,4 @@
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,21 +10,30 @@ public class PlayerPathMovement : MonoBehaviour
 
     private Coroutine moveCoroutine;
 
-
     public void MoveAlongPath(List<GridNode> path)
     {
         if (path == null || path.Count == 0)
             return;
 
-        if (moveCoroutine != null)
-        {
-            StopCoroutine(moveCoroutine);
-        }
+        // 기존 이동 중단
+        StopMovement();
 
+        // 새로운 경로 이동 시작
         moveCoroutine =
             StartCoroutine(FollowPath(path));
     }
 
+    // 현재 진행 중인 이동 중지
+    public void StopMovement()
+    {
+        if (moveCoroutine != null)
+        {
+            StopCoroutine(moveCoroutine);
+            moveCoroutine = null;
+
+            Debug.Log("플레이어 이동 중지");
+        }
+    }
 
     IEnumerator FollowPath(List<GridNode> path)
     {
@@ -36,7 +46,6 @@ public class PlayerPathMovement : MonoBehaviour
 
             targetPosition.z =
                 transform.position.z;
-
 
             while (Vector3.Distance(
                 transform.position,
@@ -52,12 +61,9 @@ public class PlayerPathMovement : MonoBehaviour
                 yield return null;
             }
 
-
             // 정확하게 Cell 중앙에 맞춤
-            transform.position =
-                targetPosition;
+            transform.position = targetPosition;
         }
-
 
         moveCoroutine = null;
     }

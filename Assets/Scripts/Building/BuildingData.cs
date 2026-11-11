@@ -19,6 +19,9 @@ public class BuildingData : ScriptableObject
     public string buildingID;
     public string buildingName;
 
+    [Header("UI")]
+    public Sprite buildingIcon;
+
     [Header("Type")]
     public BuildingType buildingType;
 
@@ -31,4 +34,9 @@ public class BuildingData : ScriptableObject
 
     [Header("Interaction")]
     public bool canInteract;
+
+    [Header("Production")]
+    public ResourceProduction[] productions;
+
+    public float productionInterval = 10f;
 }

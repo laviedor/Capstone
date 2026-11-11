@@ -58,7 +58,7 @@ public class BuildingToolUI : MonoBehaviour
             case BuildingTool.Build:
 
                 Cursor.SetCursor(
-                    hammerCursor,
+                    null,   
                     Vector2.zero,
                     CursorMode.Auto
                 );
@@ -69,7 +69,7 @@ public class BuildingToolUI : MonoBehaviour
             case BuildingTool.Demolish:
 
                 Cursor.SetCursor(
-                    pickaxeCursor,
+                    null,
                     Vector2.zero,
                     CursorMode.Auto
                 );

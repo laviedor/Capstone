@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Tilemaps;
 
 
 
@@ -16,13 +17,23 @@ public class BuildingPlacement : MonoBehaviour
     ///
     /////건설모드 
     ///
-    [Header("Build Grid")]
+    [Header("Build Grid")] // 마우스용 그리드 
     [SerializeField] private GameObject buildGridCellPrefab;
 
     [SerializeField] private int gridPadding = 2;
 
-
     private List<GameObject> buildGridCells = new List<GameObject>();
+    ///
+    ///
+    ///
+    [Header("Map Grid")]
+    [SerializeField] private GameObject mapGridCellPrefab;
+    [SerializeField] private MapBounds mapBounds;
+
+    private List<GameObject> mapGridCells = new List<GameObject>();
+
+
+
 
     [Header("Player Resources")]
     [SerializeField] private PlayerResources playerResources;
@@ -45,6 +56,27 @@ public class BuildingPlacement : MonoBehaviour
 
     // 이미 건물이 설치된 Grid 칸들
     private HashSet<Vector3Int> occupiedCells = new HashSet<Vector3Int>();
+    // 건물 종류별 마지막으로 사용한 번호
+    private Dictionary<string, int> buildingNumberCounters =
+        new Dictionary<string, int>();
+
+    private int GetNextBuildingNumber(string buildingID)
+    {
+        if (string.IsNullOrEmpty(buildingID))
+        {
+            Debug.LogError("BuildingID가 비어 있습니다.");
+            return 0;
+        }
+
+        if (!buildingNumberCounters.ContainsKey(buildingID))
+        {
+            buildingNumberCounters[buildingID] = 0;
+        }
+
+        buildingNumberCounters[buildingID]++;
+
+        return buildingNumberCounters[buildingID];
+    }
 
     //Grid Preview Cell을 저장할 변수
     private List<GameObject> gridPreviewCells = new List<GameObject>();
@@ -63,6 +95,8 @@ public class BuildingPlacement : MonoBehaviour
         CreateGridPreview();
 
         CreateBuildGrid();
+
+        CreateMapGrid();
 
         SetBuildModeVisuals(false);
     }
@@ -218,14 +252,29 @@ public class BuildingPlacement : MonoBehaviour
         if (currentBuildingData == null)
             return false;
 
+        if (mapBounds == null)
+            return false;
+
         for (int x = 0; x < currentBuildingData.width; x++)
         {
             for (int y = 0; y < currentBuildingData.height; y++)
             {
                 Vector3Int cell =
-                    currentCellPosition + new Vector3Int(x, y, 0);
+                    currentCellPosition +
+                    new Vector3Int(x, y, 0);
 
+                // 이미 건물이 있는 Cell인지 검사
                 if (occupiedCells.Contains(cell))
+                {
+                    return false;
+                }
+
+                // Cell의 중앙 월드 좌표
+                Vector3 cellWorldPosition =
+                    grid.GetCellCenterWorld(cell);
+
+                // MapBounds 밖인지 검사
+                if (!mapBounds.IsInside(cellWorldPosition))
                 {
                     return false;
                 }
@@ -233,6 +282,58 @@ public class BuildingPlacement : MonoBehaviour
         }
 
         return true;
+    }
+
+    // 건물 목록 및 목록에서 건물 선택 및 설치
+    public void SelectBuilding( GameObject newBuildingPrefab )
+    {
+        if (newBuildingPrefab == null)
+        {
+            Debug.LogError(
+                "선택할 Building Prefab이 없습니다."
+            );
+
+            return;
+        }
+
+        Building building =
+            newBuildingPrefab.GetComponent<Building>();
+
+        if (building == null)
+        {
+            Debug.LogError(
+                "선택한 Prefab에 Building 컴포넌트가 없습니다."
+            );
+
+            return;
+        }
+
+        if (building.Data == null)
+        {
+            Debug.LogError(
+                "선택한 Prefab에 BuildingData가 연결되어 있지 않습니다."
+            );
+
+            return;
+        }
+
+        buildingPrefab = newBuildingPrefab;
+        currentBuildingData = building.Data;
+
+        Debug.Log(
+            "건물 선택 : " +
+            currentBuildingData.buildingName
+        );
+
+        if (previewObject != null)
+        {
+            Destroy(previewObject);
+            previewObject = null;
+        }
+
+        CreatePreview();
+        CreateGridPreview();
+        CreateBuildGrid();
     }
 
 
@@ -245,13 +346,34 @@ public class BuildingPlacement : MonoBehaviour
             return;
         }
 
+        if (buildingPrefab == null ||
+            currentBuildingData == null ||
+            previewObject == null)
+        {
+            Debug.LogError("건물 설치에 필요한 정보가 없습니다.");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(currentBuildingData.buildingID))
+        {
+            Debug.LogError("BuildingID가 설정되지 않았습니다.");
+            return;
+        }
+
+        Building prefabBuilding =
+            buildingPrefab.GetComponent<Building>();
+
+        if (prefabBuilding == null || prefabBuilding.Data == null)
+        {
+            Debug.LogError("건물 Prefab 설정이 올바르지 않습니다.");
+            return;
+        }
+
         if (!CanAffordBuilding())
         {
             Debug.Log("건물을 설치하기 위한 자원이 부족합니다.");
             return;
         }
-
-        PayBuildingCost();
 
         GameObject placedObject = Instantiate(
             buildingPrefab,
@@ -262,11 +384,33 @@ public class BuildingPlacement : MonoBehaviour
         Building placedBuilding =
             placedObject.GetComponent<Building>();
 
-        if (placedBuilding != null)
+        if (placedBuilding == null)
         {
-            placedBuilding.Initialize(currentCellPosition);
+            Debug.LogError("생성된 건물에 Building 컴포넌트가 없습니다.");
+            Destroy(placedObject);
+            return;
         }
 
+        // 건물 번호 부여
+        int newNumber = GetNextBuildingNumber(
+            placedBuilding.BuildingID
+        );
+
+        if (newNumber <= 0)
+        {
+            Destroy(placedObject);
+            return;
+        }
+
+        placedBuilding.SetBuildingNumber(newNumber);
+
+        // 실제 설치 완료 처리
+        placedBuilding.Initialize(currentCellPosition);
+
+        // 건설 비용 차감
+        PayBuildingCost();
+
+        // Grid 점유 등록
         OccupyBuildingCells();
 
         // 다른 플레이어 화면에도 보이도록 서버로 알림
@@ -277,7 +421,9 @@ public class BuildingPlacement : MonoBehaviour
 
         Debug.Log(
             "건물 설치 완료 : " +
-            currentCellPosition
+            placedBuilding.Data.buildingName +
+            " #" + placedBuilding.BuildingNumber +
+            " / 위치 : " + currentCellPosition
         );
     }
 
@@ -437,6 +583,58 @@ public class BuildingPlacement : MonoBehaviour
             buildGridCells.Add(cell);
         }
     }
+    //맵 그리드 만들기
+    void CreateMapGrid()
+    {
+        foreach (GameObject cell in mapGridCells)
+        {
+            Destroy(cell);
+        }
+
+        mapGridCells.Clear();
+
+        if (mapBounds == null)
+        {
+            Debug.LogError("MapBounds가 연결되어 있지 않습니다.");
+            return;
+        }
+
+        Vector3Int minCell =
+            grid.WorldToCell(mapBounds.Min);
+
+        Vector3Int maxCell =
+            grid.WorldToCell(mapBounds.Max);
+
+        for (int x = minCell.x; x < maxCell.x; x++)
+        {
+            for (int y = minCell.y; y < maxCell.y; y++)
+            {
+                Vector3Int cellPosition =
+                    new Vector3Int(x, y, 0);
+
+                Vector3 worldPosition =
+                    grid.GetCellCenterWorld(cellPosition);
+
+                GameObject cell =
+                    Instantiate(
+                        mapGridCellPrefab,
+                        worldPosition,
+                        Quaternion.identity
+                    );
+
+                mapGridCells.Add(cell);
+            }
+        }
+
+        Debug.Log(
+            "Map Grid 생성 완료 : " +
+            minCell + " ~ " + maxCell
+        );
+    }
+
+
+
+
     void SetBuildModeVisuals(bool active)
     {
         if (previewObject != null)
@@ -454,6 +652,11 @@ public class BuildingPlacement : MonoBehaviour
 
         // 마우스 주변 격자
         foreach (GameObject cell in buildGridCells)
+        {
+            cell.SetActive(active);
+        }
+        // 맵 전체 격자
+        foreach (GameObject cell in mapGridCells)
         {
             cell.SetActive(active);
         }
