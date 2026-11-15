@@ -157,8 +157,7 @@ function startChatServer(port) {
           return;
         }
         if (old) {
-          old.socket.end(chatProtocol.kick()); // 같은 사용자명의 기존 접속 끊기
-          if (old.world !== null) worlds.leaveView(old);
+          worlds.disconnect(old); // 같은 계정(사용자명)의 기존 접속 끊기: 그쪽 클라이언트는 로그아웃된다
           console.log(`[채팅] ${name} 중복 접속 - 기존 접속 종료`);
         }
         client = { socket, name, userId: user ? user.id : null, world: null, zone: '', nextProductionAt: null, settling: false };

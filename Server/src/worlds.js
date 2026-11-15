@@ -3,7 +3,7 @@ const presence = require('./presence');
 const buildings = require('./buildings');
 const friends = require('./friends');
 const accounts = require('./accounts');
-const { MULTIVERSE } = require('./config');
+const { MULTIVERSE, KICK_GRACE_MS } = require('./config');
 
 // 월드 이동
 //   월드 0: 멀티버스. 누구나 들어가고, 로그인한 사람은 건물도 짓는다
@@ -59,6 +59,24 @@ function setZone(client, zone) {
   client.zone = zone;
 }
 
+// 중복 로그인: 같은 계정(사용자명)이 다른 곳에서 로그인하거나 접속했을 때 먼저 있던 접속을 끊는다
+//   kick 을 받은 클라이언트는 로그아웃하고 로그인 화면으로 돌아간다. 같이 보이던 사람들 화면에서는 바로 사라진다
+function disconnect(client) {
+  if (client.socket.writableEnded) return; // 이미 끊는 중
+  client.socket.end(chatProtocol.kick());
+  if (client.world !== null) leaveView(client);
+  // 응답이 없는 클라이언트가 접속 목록에 남지 않도록, 스스로 닫지 않으면 서버가 닫는다
+  setTimeout(() => client.socket.destroy(), KICK_GRACE_MS).unref();
+}
+
+// 이 계정의 접속이 있으면 끊고 true (다른 곳에서 그 계정으로 로그인했을 때 auth.js 가 부른다)
+function kick(userId) {
+  const client = presence.byUser(userId);
+  if (!client || client.socket.writableEnded) return false;
+  disconnect(client);
+  return true;
+}
+
 // 그 월드에 있는 사람들에게 건물 목록을 다시 보냄 (서버와 화면이 어긋났을 때 맞추는 용도)
 async function resync(world) {
   broadcast(world, chatProtocol.buildingList(await buildings.list(world)));
@@ -83,4 +101,4 @@ async function closeVillage(userId) {
   await resync(MULTIVERSE);
 }
 
-module.exports = { broadcast, enter, leaveView, setZone, resync, evict, closeVillage };
+module.exports = { broadcast, enter, leaveView, setZone, disconnect, kick, resync, evict, closeVillage };

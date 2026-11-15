@@ -31,14 +31,17 @@ public static class FriendApi
     public class ListResponse
     {
         public Friend[] friends;
+        public Friend[] incoming; // 나에게 친구 요청을 보낸 사람들 (id, nickname). 아직 수락, 거절하지 않은 것
+        public Friend[] outgoing; // 내가 친구 요청을 보내 둔 사람들 (id, nickname). 상대가 아직 수락하지 않은 것
     }
 
-    // 친구 추가, 1:1 채팅 응답
+    // 친구 요청, 수락, 1:1 채팅 응답
     [Serializable]
     public class Response
     {
-        public string status;      // ok, 아니면 not_found, self, already, full, ambiguous, not_friend, invalid
-        public Friend friend;      // 친구 추가: 추가된 친구 (id, nickname)
+        public string status;      // ok, requested(요청을 보냄), 아니면 not_found, self, already, pending, full, too_many,
+                                   // ambiguous, none(그런 요청이 없음), not_friend, invalid
+        public Friend friend;      // 친구 요청, 수락: 상대 (id, nickname)
         public Message[] messages; // 1:1 채팅 목록 (오래된 것부터)
     }
 
@@ -54,14 +57,27 @@ public static class FriendApi
         public string text;
     }
 
-    // 친구 목록 (접속 여부, 안 읽은 메시지 수 포함)
+    // 친구 목록 (접속 여부, 안 읽은 메시지 수 포함)과 주고받은 친구 요청
     public static Task<AuthApi.Result<ListResponse>> List() =>
         AuthApi.Send<ListResponse>(HttpMethod.Get, "/friends", null, AuthApi.SavedToken);
 
-    // 닉네임으로 친구 추가 (바로 서로 친구가 됨)
+    // 닉네임으로 친구 요청 보내기: status 가 requested 면 상대가 수락해야 친구가 된다
+    //   (상대가 먼저 나에게 요청을 보내 둔 상태였으면 바로 친구가 되고 status 는 ok)
     public static Task<AuthApi.Result<Response>> Add(string nickname) =>
         AuthApi.Send<Response>(HttpMethod.Post, "/friends",
             JsonUtility.ToJson(new NicknameBody { nickname = nickname }), AuthApi.SavedToken);
+
+    // 받은 친구 요청 수락 (userId: 요청을 보낸 사람). 서로 친구가 된다
+    public static Task<AuthApi.Result<Response>> Accept(long userId) =>
+        AuthApi.Send<Response>(HttpMethod.Post, $"/friends/requests/{userId}/accept", null, AuthApi.SavedToken);
+
+    // 받은 친구 요청 거절 (userId: 요청을 보낸 사람), 성공하면 Status 가 200
+    public static Task<AuthApi.Result<Response>> Reject(long userId) =>
+        AuthApi.Send<Response>(HttpMethod.Post, $"/friends/requests/{userId}/reject", null, AuthApi.SavedToken);
+
+    // 내가 보낸 친구 요청 취소 (userId: 요청을 받은 사람), 성공하면 Status 가 200
+    public static Task<AuthApi.Result<Response>> Cancel(long userId) =>
+        AuthApi.Send<Response>(HttpMethod.Post, $"/friends/requests/{userId}/cancel", null, AuthApi.SavedToken);
 
     // 친구 삭제 (서로의 목록에서 지워짐), 성공하면 Status 가 200
     public static Task<AuthApi.Result<Response>> Remove(long friendId) =>

@@ -15,7 +15,8 @@ const { MAX_NAME_LENGTH, MAX_CHAT_LENGTH, MAX_CELL, MAX_TOKEN_LENGTH, MAX_ZONE_L
 //                 { t: 'exp_start', area }          채집 타이머 시작 (area: 채집 장소 이름)
 //                 { t: 'exp_claim' }                끝난 채집 타이머의 보상 수령
 //   서버 -> 클라  { t: 'chat', name, text }        어느 월드에 있든 모든 접속자에게 전달
-//                 { t: 'kick' }                    같은 사용자명이 다른 곳에서 접속해 끊김
+//                 { t: 'kick' }                    같은 계정(사용자명)이 다른 곳에서 로그인하거나 접속해 끊김.
+//                                                  받은 클라이언트는 다시 접속하지 않고 로그아웃해 로그인 화면으로 돌아간다
 //                 { t: 'world', id, name, mine, build }  들어간 월드. name 은 마을 주인 닉네임(멀티버스는 ''),
 //                                                  mine 은 내 마을인지, build 는 여기서 건물을 지을 수 있는지
 //                 { t: 'buildings', list: [{ id, type, x, y, owner }] }  지금 있는 월드의 건물 전부
@@ -30,7 +31,7 @@ const { MAX_NAME_LENGTH, MAX_CHAT_LENGTH, MAX_CELL, MAX_TOKEN_LENGTH, MAX_ZONE_L
 //                 { t: 'notice', text }            안내 (요청이 거절된 이유, 받은 보상 등)
 //                 { t: 'dm', sender }              친구(유저 id sender)가 1:1 채팅을 보냄. 그 사람에게만 가고
 //                                                  내용은 HTTP 로 받아 간다 (friendRoutes.js)
-//                 { t: 'friends' }                 친구 목록이나 친구의 접속 상태가 바뀜 (목록을 다시 받아 가라는 알림)
+//                 { t: 'friends' }                 친구 목록, 친구 요청, 친구의 접속 상태가 바뀜 (목록을 다시 받아 가라는 알림)
 
 const isId = v => typeof v === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(v);
 const isCell = v => Number.isInteger(v) && Math.abs(v) <= MAX_CELL;

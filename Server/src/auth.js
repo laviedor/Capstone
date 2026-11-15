@@ -34,9 +34,12 @@ const {
 //               429 { status: 'too_many' }            비밀번호를 너무 많이 틀렸거나 가입을 너무 많이 함
 //   GET    /auth/me     Authorization: Bearer 토큰 -> { id, nickname } / 401
 //   DELETE /auth/me     Authorization: Bearer 토큰 -> { ok: true } / 401   회원 탈퇴
-//   POST   /auth/logout Authorization: Bearer 토큰 -> { ok: true }         로그아웃 (이 토큰만 무효화)
+//   POST   /auth/logout Authorization: Bearer 토큰 -> { ok: true }         로그아웃 (이 토큰을 무효화)
 //
 // token 은 클라이언트에 저장해 두고, 다음 실행 때 /auth/me 가 성공하면 Steam 로그인을 건너뛴다
+//
+// 한 계정은 한 곳에서만 로그인: 로그인하면 그 계정의 이전 토큰은 무효가 되고(accounts.createSession),
+// 그 계정으로 접속해 있던 게임은 채팅 서버 연결로 kick 을 받아 로그아웃된다 (endOtherLogin)
 
 const CALLBACK_PATH = '/auth/steam/callback';
 
@@ -98,6 +101,11 @@ class Limiter {
 const loginFailures = new Limiter(MAX_LOGIN_FAILURES, LOGIN_FAILURE_WINDOW_MS); // 'IP|아이디' 마다 비밀번호 틀린 횟수
 const signups = new Limiter(MAX_SIGNUPS_PER_IP, SIGNUP_WINDOW_MS);              // IP 마다 만든 Guest 계정 수
 
+// 중복 로그인 방지: 방금 로그인한 계정으로 이미 접속해 있는 게임이 있으면 그 접속을 끊는다 (그쪽은 로그아웃된다)
+function endOtherLogin(user) {
+  if (worlds.kick(user.id)) console.log(`[로그인] ${user.nickname} 다른 곳에서 로그인 - 기존 접속 종료`);
+}
+
 const router = express.Router();
 
 router.post('/auth/steam/start', (req, res) => {
@@ -157,6 +165,7 @@ router.post('/auth/steam/poll', express.json(), wrap(async (req, res) => {
   logins.delete(state); // 결과는 한 번만 전달
   if (login.status === 'failed') return res.json({ status: 'failed' });
   const token = await accounts.createSession(login.user.id);
+  endOtherLogin(login.user);
   res.json({ status: 'ok', token, user: login.user });
 }));
 
@@ -193,6 +202,7 @@ router.post('/auth/guest/login', express.json(), wrap(async (req, res) => {
     const user = { id: guest.id, nickname: guest.nickname };
     const token = await accounts.createSession(user.id);
     console.log(`[로그인] ${user.nickname} (#${user.id}, guest)`);
+    endOtherLogin(user);
     return res.json({ status: 'ok', token, user });
   }
 
@@ -218,9 +228,9 @@ router.get('/auth/me', wrap(async (req, res) => {
 router.delete('/auth/me', wrap(async (req, res) => {
   const user = await sessionUser(req);
   if (!user) return res.status(401).json({ error: 'UNAUTHORIZED' });
-  const friendIds = await friends.friendIds(user.id);
+  const contactIds = await friends.contactIds(user.id);
   await accounts.deleteUser(user.id);
-  for (const id of friendIds) presence.send(id, chatProtocol.friends()); // 친구들의 목록에서도 사라지도록
+  for (const id of contactIds) presence.send(id, chatProtocol.friends()); // 친구, 친구 요청을 주고받던 사람들의 목록에서도 사라지도록
   await worlds.closeVillage(user.id); // 마을을 구경하던 친구는 돌려보내고, 멀티버스에 지은 건물도 화면에서 지움
   console.log(`[회원 탈퇴] ${user.nickname} (#${user.id})`);
   res.json({ ok: true });

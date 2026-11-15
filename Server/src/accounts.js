@@ -139,9 +139,11 @@ function toNickname(name, steamId) {
 const hash = token => crypto.createHash('sha256').update(token).digest('hex');
 
 // 로그인 처리: 세션 토큰을 새로 발급하고 마지막 접속 시각을 갱신
+//   한 계정은 한 곳에서만 로그인: 전에 발급한 토큰은 모두 무효화한다 (다른 곳에서 로그인하면 먼저 로그인한 쪽은 로그아웃된다)
+//   먼저 로그인한 쪽의 접속을 끊는 것은 부르는 쪽(auth.js)에서 worlds.kick 으로 한다
 async function createSession(userId) {
   const token = crypto.randomBytes(32).toString('base64url');
-  await pool.query('DELETE FROM sessions WHERE user_id = ? AND expires_at <= UTC_TIMESTAMP(3)', [userId]);
+  await pool.query('DELETE FROM sessions WHERE user_id = ?', [userId]);
   await pool.query(
     'INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, UTC_TIMESTAMP(3) + INTERVAL ? DAY)',
     [hash(token), userId, SESSION_TTL_DAYS],
@@ -150,7 +152,7 @@ async function createSession(userId) {
   return token;
 }
 
-// 로그아웃: 이 세션 토큰만 무효화 (다른 기기의 로그인은 유지)
+// 로그아웃: 이 세션 토큰을 무효화
 async function deleteSession(token) {
   await pool.query('DELETE FROM sessions WHERE token_hash = ?', [hash(token)]);
 }

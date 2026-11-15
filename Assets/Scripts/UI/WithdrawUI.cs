@@ -38,6 +38,7 @@ public class WithdrawUI : MonoBehaviour
     async void Withdraw()
     {
         withdrawButton.interactable = false;
+        LoginUI.Leaving = true; // 서버가 계정을 지운 뒤 화면이 바뀌기 전에 온 응답을 강제 로그아웃으로 보지 않게
         int status = await AuthApi.DeleteAccount(AuthApi.SavedToken);
         if (this == null) return;
 
@@ -53,6 +54,7 @@ public class WithdrawUI : MonoBehaviour
         }
         else
         {
+            LoginUI.Leaving = false; // 탈퇴하지 못함: 계속 로그인한 상태
             withdrawButton.interactable = true;
             dialog.Show(status == 0 ? "서버에 연결할 수 없습니다.\n잠시 후 다시 시도해 주세요." : "탈퇴하지 못했습니다.\n잠시 후 다시 시도해 주세요.", "확인", null);
         }

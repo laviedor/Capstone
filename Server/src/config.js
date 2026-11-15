@@ -47,6 +47,7 @@ module.exports = {
   LOGIN_TTL_MS: 10 * 60 * 1000, // Steam 로그인을 끝내야 하는 시간
   MAX_PENDING_LOGINS: 1000,     // 동시에 진행 중일 수 있는 로그인 수
   SESSION_TTL_DAYS: 30,         // 세션 토큰 유효 기간
+  KICK_GRACE_MS: 3000,          // 중복 로그인으로 끊는 접속이 이 시간 안에 스스로 닫지 않으면 서버가 닫음
   MAX_NICKNAME_LENGTH: 20,      // DB users.nickname 최대 길이
   MAX_TOKEN_LENGTH: 128,        // 세션 토큰 최대 길이 (채팅 서버 입장 메시지 검사용)
 
@@ -60,8 +61,9 @@ module.exports = {
   SIGNUP_WINDOW_MS: 60 * 60 * 1000,       //   (이 시간마다)
 
   // 친구, 1:1 채팅
-  MAX_FRIENDS: 100, // 한 사람이 둘 수 있는 친구 수
-  DM_PAGE_SIZE: 50, // 1:1 채팅을 한 번에 불러오는 개수
+  MAX_FRIENDS: 100,        // 한 사람이 둘 수 있는 친구 수
+  MAX_FRIEND_REQUESTS: 50, // 한 사람이 보내 둘 수 있는 친구 요청 수, 받아 둘 수 있는 친구 요청 수 (수락, 거절 전의 것)
+  DM_PAGE_SIZE: 50,        // 1:1 채팅을 한 번에 불러오는 개수
 
   // MySQL (DB/docker-compose.yml)
   DB: {

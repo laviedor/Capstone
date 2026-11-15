@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 // 채팅 서버와의 TCP 통신 (채팅, 월드/구역 이동, 건물 변경, 채집, 재화, 친구/1:1 채팅 알림): 로그인하면 접속하고, 끊기면 다시 접속
+//   다른 곳에서 같은 계정으로 로그인해 서버가 끊은 경우(kick)에는 다시 접속하지 않고 로그아웃한다
 // (await 뒤의 코드는 Unity 메인 스레드에서 이어서 실행됨)
 public class ChatClient : MonoBehaviour
 {
@@ -151,8 +152,9 @@ public class ChatClient : MonoBehaviour
         }
         else if (msg.t == ChatMessage.Kick)
         {
+            // 다른 곳에서 같은 계정으로 로그인(접속)함: 다시 접속하지 않고, 이쪽은 로그아웃해 로그인 화면으로 돌아간다
             kicked = true;
-            Notice?.Invoke("같은 사용자명으로 다른 곳에서 접속하여 채팅 연결이 끊겼습니다.");
+            LoginUI.ForceLogout(LoginUI.LoggedInElsewhere);
         }
         else if (BuildingMessage.IsBuildingMessage(msg.t))
         {

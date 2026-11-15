@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
@@ -11,6 +12,7 @@ using UnityEngine.UI;
 //   [Steam으로 로그인]: 브라우저에서 로그인, 처음 온 Steam 계정이면 회원가입 할지 물어봄
 //   [Guest로 로그인]: 아이디와 비밀번호를 입력. 로그인과 회원가입을 한 번에 처리한다
 //     있는 아이디면 비밀번호가 맞아야 로그인되고, 없는 아이디면 회원가입 할지 물어본 뒤 그 아이디로 가입
+//   한 계정은 한 곳에서만 로그인된다: 다른 곳에서 같은 계정으로 로그인하면 이쪽은 로그아웃되어 이 화면으로 돌아온다 (ForceLogout)
 // (await 뒤의 코드는 Unity 메인 스레드에서 이어서 실행됨)
 public class LoginUI : MonoBehaviour
 {
@@ -18,6 +20,16 @@ public class LoginUI : MonoBehaviour
     public static long UserId { get; private set; }     // 로그인한 계정의 유저 id (1:1 채팅에서 내가 보낸 메시지를 구분)
 
     public static event Action LoggedIn;
+
+    // 강제로 로그아웃될 때의 안내
+    public const string LoggedInElsewhere = "다른 곳에서 이 계정으로 로그인하여\n로그아웃되었습니다.";
+    public const string SessionEnded = "다른 곳에서 로그인했거나 로그인이 만료되어\n로그아웃되었습니다.";
+
+    // 스스로 로그아웃하거나 탈퇴하는 중 (LogoutUI, WithdrawUI 가 켠다): 그 사이 서버가 토큰을 거절해도 강제 로그아웃으로 처리하지 않는다
+    public static bool Leaving { get; set; }
+
+    // 강제로 로그아웃된 이유. 씬을 다시 불러온 뒤의 로그인 화면이 한 번 보여 주고 지운다
+    private static string logoutNotice;
 
     [SerializeField] private GameObject loginPanel;
     [SerializeField] private Text statusText;
@@ -54,8 +66,9 @@ public class LoginUI : MonoBehaviour
 
     void Awake()
     {
-        Username = null; // 탈퇴 후 씬을 다시 불러온 경우 이전 계정을 지움
+        Username = null; // 로그아웃, 탈퇴 후 씬을 다시 불러온 경우 이전 계정을 지움
         UserId = 0;
+        Leaving = false;
 
         foreach (Behaviour b in disableUntilLogin)
             b.enabled = false;
@@ -74,10 +87,34 @@ public class LoginUI : MonoBehaviour
 
     void Start()
     {
-        if (string.IsNullOrEmpty(AuthApi.SavedToken))
+        if (logoutNotice != null)
+        {
+            // 강제로 로그아웃된 직후: 이유를 알리고, 저장된 토큰으로 바로 다시 로그인하지는 않는다
+            string notice = logoutNotice;
+            logoutNotice = null;
+            ShowIdle(notice);
+            dialog.Show(notice, "확인", null);
+        }
+        else if (string.IsNullOrEmpty(AuthApi.SavedToken))
+        {
             ShowIdle(Welcome);
+        }
         else
+        {
             Login(false);
+        }
+    }
+
+    // 로그인이 풀렸을 때 (다른 곳에서 같은 계정으로 로그인함, 토큰 만료): 로그인 화면으로 돌아가 이유를 알려 준다
+    //   ChatClient(서버가 접속을 끊으며 보낸 kick), FriendUI(서버가 토큰을 거절: 401)가 부른다
+    //   저장된 토큰은 지우지 않는다: 서버에서 이미 무효가 됐으면 다음에 로그인할 때 지워지고,
+    //   한 PC 에서 게임을 두 개 띄운 경우처럼 다른 창이 같은 토큰으로 로그인해 있으면 그 창의 다음 실행 때 다시 쓰인다
+    public static void ForceLogout(string message)
+    {
+        if (string.IsNullOrEmpty(Username) || Leaving || logoutNotice != null) return; // 로그인 전, 스스로 나가는 중, 이미 처리 중
+
+        logoutNotice = message;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); // 로그인 화면부터 다시 시작 (연결도 모두 끊긴다)
     }
 
     void Update()
