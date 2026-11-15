@@ -1,6 +1,7 @@
 
 using UnityEngine;
 
+// 설치된 건물들을 정렬하여 관리 카드로 나열하고 전체 생산량을 갱신한다.
 public class InstalledBuildingListUI : MonoBehaviour
 {
     [Header("UI References")]
@@ -12,6 +13,7 @@ public class InstalledBuildingListUI : MonoBehaviour
 
     [SerializeField] private GameObject totalProductionPanel;
 
+    // 관리 화면이 열리면 전체 생산 패널을 표시하고 목록을 새로 만든다.
     private void OnEnable()
     {
         if (totalProductionPanel != null)
@@ -20,12 +22,14 @@ public class InstalledBuildingListUI : MonoBehaviour
         RefreshList();
     }
 
+    // 관리 화면이 닫히면 전체 생산 패널을 숨긴다.
     private void OnDisable()
     {
         if (totalProductionPanel != null)
             totalProductionPanel.SetActive(false);
     }
 
+    // 기존 카드를 지우고 설치된 건물을 ID와 번호로 정렬해 목록을 재생성한다.
     public void RefreshList()
     {
         if (content == null ||
@@ -50,6 +54,7 @@ public class InstalledBuildingListUI : MonoBehaviour
             FindObjectsSortMode.None
         );
 
+        // 건물 ID를 우선 비교하고 같은 ID라면 고유 번호로 순서를 결정한다.
         System.Array.Sort(buildings, (a, b) =>
         {
             if (a == null && b == null) return 0;

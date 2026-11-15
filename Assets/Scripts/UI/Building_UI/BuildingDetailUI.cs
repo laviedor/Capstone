@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Text;
 
+// 선택한 설치 건물의 상세 정보와 위치 보기 및 철거 버튼을 관리한다.
 public class BuildingDetailUI : MonoBehaviour
 {
     [Header("Detail Texts")]
@@ -25,8 +26,10 @@ public class BuildingDetailUI : MonoBehaviour
 
     [SerializeField] private BuildingDemolition buildingDemolition;
 
+    // 현재 상세 패널에서 선택된 설치 건물을 기억한다.
     private Building selectedBuilding;
 
+    // 버튼에 동작을 연결하고 선택 정보를 초기화한다.
     private void Awake()
     {
         if (viewBuildingButton != null)
@@ -44,6 +47,7 @@ public class BuildingDetailUI : MonoBehaviour
         ClearDetail();
     }
 
+    // 선택한 건물의 이름, 위치, 생산 정보를 상세 패널에 표시한다.
     public void ShowBuilding(Building building)
     {
         if (building == null || building.Data == null)
@@ -97,6 +101,7 @@ public class BuildingDetailUI : MonoBehaviour
             demolishBuildingButton.interactable = true;
     }
 
+    // 건물 선택을 해제하고 상세 정보 및 동작 버튼을 초기화한다.
     public void ClearDetail()
     {
         selectedBuilding = null;
@@ -111,6 +116,7 @@ public class BuildingDetailUI : MonoBehaviour
             demolishBuildingButton.interactable = false;
     }
 
+    // 플레이어 이동과 경로 표시를 정리하고 카메라를 선택한 건물로 전환한다.
     private void ViewSelectedBuilding()
     {
         if (selectedBuilding == null ||
@@ -143,6 +149,7 @@ public class BuildingDetailUI : MonoBehaviour
 
         Debug.Log("건물 위치 보기 및 이동 상태 초기화");
     }
+    // 인벤토리를 닫고 선택한 건물의 철거 확인 절차를 요청한다.
     private void DemolishSelectedBuilding()
     {
         if (selectedBuilding == null ||
@@ -171,6 +178,7 @@ public class BuildingDetailUI : MonoBehaviour
     }
 
 
+    // 오브젝트 파괴 시 등록한 버튼 리스너를 해제한다.
     private void OnDestroy()
     {
         if (viewBuildingButton != null)

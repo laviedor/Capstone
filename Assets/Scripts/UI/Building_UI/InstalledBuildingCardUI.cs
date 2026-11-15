@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Text;
 
+// 설치된 건물 한 개의 이름과 생산 정보를 표시하고 상세 정보 선택을 처리한다.
 public class InstalledBuildingCardUI : MonoBehaviour
 {
     [Header("UI")]
@@ -13,6 +14,7 @@ public class InstalledBuildingCardUI : MonoBehaviour
     private Building building;
     private BuildingDetailUI detailUI;
 
+    // 건물 참조와 번호를 설정하고 카드 텍스트 및 클릭 이벤트를 초기화한다.
     public void Setup(
         Building targetBuilding,
         BuildingDetailUI targetDetailUI,
@@ -43,6 +45,7 @@ public class InstalledBuildingCardUI : MonoBehaviour
         }
     }
 
+    // 건물의 자원별 생산량과 생산 주기를 카드에 표시한다.
     private void UpdateProductionText()
     {
         if (buildingProductionText == null ||
@@ -81,6 +84,7 @@ public class InstalledBuildingCardUI : MonoBehaviour
             sb.Length > 0 ? sb.ToString() : "생산 없음";
     }
 
+    // 선택한 건물의 상세 정보를 관리 패널에 전달한다.
     private void OnCardClicked()
     {
         if (building == null || detailUI == null)
@@ -94,6 +98,7 @@ public class InstalledBuildingCardUI : MonoBehaviour
         );
     }
 
+    // 카드 파괴 시 버튼 리스너를 해제한다.
     private void OnDestroy()
     {
         if (cardButton != null)

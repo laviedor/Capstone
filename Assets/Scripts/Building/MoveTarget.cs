@@ -1,12 +1,17 @@
 using UnityEngine;
 
+// 스크립트 설명: 마우스로 클릭한 위치까지 오브젝트를 직접 이동시킨다.
 public class MoveTarget : MonoBehaviour
 {
+    // 변수 설명: 목표 지점으로 이동하는 속도
     public float moveSpeed = 5f;
 
+    // 변수 설명: 마우스로 지정한 이동 목표 월드 좌표
     private Vector3 targetPosition;
+    // 변수 설명: 현재 목표 위치로 이동 중인지 나타내는 값
     private bool isMoving = false;
 
+    // 함수 설명: 마우스 클릭 좌표를 월드 좌표로 바꾸고 목표 위치까지 매 프레임 이동한다.
     void Update()
     {
         // 마우스 왼쪽 클릭
