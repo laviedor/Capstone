@@ -39,17 +39,17 @@ public class WithdrawUI : MonoBehaviour
     {
         withdrawButton.interactable = false;
         LoginUI.Leaving = true; // 서버가 계정을 지운 뒤 화면이 바뀌기 전에 온 응답을 강제 로그아웃으로 보지 않게
-        int status = await AuthApi.DeleteAccount(AuthApi.SavedToken);
+        int status = await AuthApi.DeleteAccount(AuthApi.Token);
         if (this == null) return;
 
         if (status == 200)
         {
-            AuthApi.SavedToken = null;
+            AuthApi.EndSession(true);
             dialog.Show("탈퇴되었습니다.\n그동안 이용해 주셔서 감사합니다.", "확인", Restart);
         }
         else if (status == 401)
         {
-            AuthApi.SavedToken = null;
+            AuthApi.EndSession(true);
             dialog.Show("로그인이 만료되었습니다.\n다시 로그인한 뒤 탈퇴해 주세요.", "확인", Restart);
         }
         else

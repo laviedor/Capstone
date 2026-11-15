@@ -40,10 +40,10 @@ public class LogoutUI : MonoBehaviour
         LoginUI.Leaving = true; // 서버가 토큰을 지운 뒤 화면이 바뀌기 전에 온 응답을 강제 로그아웃으로 보지 않게
 
         // 서버에서도 토큰을 무효화 (서버에 연결하지 못해도 이 PC에서는 로그아웃)
-        await AuthApi.Logout(AuthApi.SavedToken);
+        await AuthApi.Logout(AuthApi.Token);
         if (this == null) return;
 
-        AuthApi.SavedToken = null;
+        AuthApi.EndSession(true);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); // 로그인 화면부터 다시 시작
     }
 }

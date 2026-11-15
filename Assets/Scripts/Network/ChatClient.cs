@@ -101,7 +101,7 @@ public class ChatClient : MonoBehaviour
             {
                 await tcp.ConnectAsync(host, chatPort);
                 stream = tcp.GetStream();
-                Write(new JoinMessage { name = LoginUI.Username, token = AuthApi.SavedToken, world = JoinWorld });
+                Write(new JoinMessage { name = LoginUI.Username, token = AuthApi.Token, world = JoinWorld });
                 if (noticed) Notice?.Invoke("채팅 서버에 다시 연결되었습니다.");
                 wasConnected = true;
                 noticed = false;

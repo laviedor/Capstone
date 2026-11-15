@@ -61,14 +61,16 @@ public class LoginUI : MonoBehaviour
     private const int MinPasswordLength = 4;
     private const int MaxPasswordLength = 64;
 
-    private int attempt;  // 로그인 시도 번호, 취소하거나 새로 시도하면 바뀌어 이전 시도는 멈춤
-    private bool waiting; // 브라우저 로그인을 기다리는 중 (버튼이 [취소]로 바뀜)
+    private int attempt;     // 로그인 시도 번호, 취소하거나 새로 시도하면 바뀌어 이전 시도는 멈춤
+    private bool waiting;    // 브라우저 로그인을 기다리는 중 (버튼이 [취소]로 바뀜)
+    private bool retrySaved; // 시작할 때 서버에 연결하지 못해 지난번 로그인을 아직 확인하지 못함
 
     void Awake()
     {
         Username = null; // 로그아웃, 탈퇴 후 씬을 다시 불러온 경우 이전 계정을 지움
         UserId = 0;
         Leaving = false;
+        AuthApi.EndSession(false); // 쓰던 세션 토큰도 잊는다 (저장해 둔 토큰은 그대로: 아래 Start 에서 자동 로그인)
 
         foreach (Behaviour b in disableUntilLogin)
             b.enabled = false;
@@ -89,7 +91,7 @@ public class LoginUI : MonoBehaviour
     {
         if (logoutNotice != null)
         {
-            // 강제로 로그아웃된 직후: 이유를 알리고, 저장된 토큰으로 바로 다시 로그인하지는 않는다
+            // 강제로 로그아웃된 직후: 이유를 알리고 로그인 방법을 고르게 한다 (쓰던 로그인은 ForceLogout 에서 지웠다)
             string notice = logoutNotice;
             logoutNotice = null;
             ShowIdle(notice);
@@ -101,19 +103,20 @@ public class LoginUI : MonoBehaviour
         }
         else
         {
-            Login(false);
+            Login(true, false); // 지난번 로그인으로 바로 들어감
         }
     }
 
     // 로그인이 풀렸을 때 (다른 곳에서 같은 계정으로 로그인함, 토큰 만료): 로그인 화면으로 돌아가 이유를 알려 준다
     //   ChatClient(서버가 접속을 끊으며 보낸 kick), FriendUI(서버가 토큰을 거절: 401)가 부른다
-    //   저장된 토큰은 지우지 않는다: 서버에서 이미 무효가 됐으면 다음에 로그인할 때 지워지고,
-    //   한 PC 에서 게임을 두 개 띄운 경우처럼 다른 창이 같은 토큰으로 로그인해 있으면 그 창의 다음 실행 때 다시 쓰인다
+    //   이 창이 쓰던 로그인은 저장해 둔 것까지 지운다: 그래야 [Steam으로 로그인]이 같은 계정으로 다시 들어가
+    //   지금 로그인해 있는 쪽을 끊는 대신, 브라우저에서 새로 로그인하게 된다
     public static void ForceLogout(string message)
     {
         if (string.IsNullOrEmpty(Username) || Leaving || logoutNotice != null) return; // 로그인 전, 스스로 나가는 중, 이미 처리 중
 
         logoutNotice = message;
+        AuthApi.EndSession(true);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); // 로그인 화면부터 다시 시작 (연결도 모두 끊긴다)
     }
 
@@ -135,32 +138,37 @@ public class LoginUI : MonoBehaviour
         }
         else
         {
-            Login(true);
+            // 브라우저에서 Steam 로그인. 시작할 때 서버에 연결하지 못해 지난번 로그인을 확인하지 못했다면 그것부터 다시 해 본다
+            Login(retrySaved, true);
         }
     }
 
-    // 저장된 토큰으로 로그인하고, 안 되면 steam이 true일 때 브라우저에서 Steam 로그인
-    async void Login(bool steam)
+    // saved: 저장해 둔 토큰(지난번 로그인)으로 먼저 로그인해 본다
+    // steam: 그걸로 들어가지 못하면 브라우저에서 Steam 로그인
+    async void Login(bool saved, bool steam)
     {
         int my = ++attempt;
         ShowBusy("로그인 중...");
+        retrySaved = false;
 
-        string token = AuthApi.SavedToken;
+        string token = saved ? AuthApi.SavedToken : null;
         if (!string.IsNullOrEmpty(token))
         {
             var me = await AuthApi.Me(token);
             if (Stale(my)) return;
             if (me.Status == 200)
             {
+                AuthApi.StartSession(token);
                 Enter(me.Body);
                 return;
             }
             if (me.Status == 0)
             {
+                retrySaved = true; // 서버가 다시 연결되면 [Steam으로 로그인]으로 이어서 들어갈 수 있게
                 ShowIdle(ServerDown);
                 return;
             }
-            AuthApi.SavedToken = null; // 만료되었거나 탈퇴한 계정
+            AuthApi.Forget(token); // 만료되었거나, 다른 곳에서 로그인해 무효가 되었거나, 탈퇴한 계정
         }
 
         if (!steam)
@@ -195,7 +203,7 @@ public class LoginUI : MonoBehaviour
                 case "pending":
                     continue;
                 case "ok":
-                    AuthApi.SavedToken = poll.Body.token;
+                    AuthApi.StartSession(poll.Body.token);
                     Enter(poll.Body.user);
                     return;
                 case "unregistered":
@@ -229,7 +237,7 @@ public class LoginUI : MonoBehaviour
         if (Stale(my)) return;
         if (result.Status == 200 && result.Body?.status == "ok")
         {
-            AuthApi.SavedToken = result.Body.token;
+            AuthApi.StartSession(result.Body.token);
             Enter(result.Body.user);
         }
         else
@@ -266,7 +274,7 @@ public class LoginUI : MonoBehaviour
         switch (result.Status == 0 ? null : result.Body?.status)
         {
             case "ok":
-                AuthApi.SavedToken = result.Body.token;
+                AuthApi.StartSession(result.Body.token);
                 Enter(result.Body.user);
                 break;
             case "unregistered":

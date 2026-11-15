@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -53,10 +54,20 @@ public static class AuthApi
         public bool signup;
     }
 
-    // Multiplayer Play Mode로 한 PC에서 플레이어 창을 여러 개 띄우면 PlayerPrefs를 같이 쓰므로,
-    // 가상 플레이어(-vpId=mppm... 로 실행됨)는 각자 다른 키에 토큰을 저장해 서로 다른 계정으로 로그인
+    private const int MaxWindows = 8; // 창 번호를 나눠 주는 최대 개수 (넘는 창은 첫 번째 창과 같은 키를 씀)
+
+    // 이 창이 차지한 창 번호를 게임이 꺼질 때까지 쥐고 있다 (같은 PC 의 다른 창이 같은 번호를 쓰지 않게)
+#pragma warning disable 0414 // 값을 읽지는 않고 쥐고만 있는다
+    private static Mutex windowLock;
+#pragma warning restore 0414
+
+    // 한 PC 에서 게임 창을 여러 개 띄우면 PlayerPrefs 를 같이 쓰므로 (Windows 는 레지스트리: 다른 창이 저장한 값이 바로 보인다),
+    // 창마다 다른 키에 토큰을 저장해 각자 자기 계정을 기억한다
     private static readonly string TokenKey = "auth.token" + InstanceSuffix();
 
+    // 토큰을 저장하는 키의 뒷부분
+    //   Multiplayer Play Mode 의 가상 플레이어(-vpId=mppm... 로 실행됨): 그 id
+    //   빌드: 먼저 띄운 창은 "" (auth.token), 그다음 창부터 ".2", ".3" ... (떠 있는 창이 쓰지 않는 가장 작은 번호)
     private static string InstanceSuffix()
     {
         string[] args = Environment.GetCommandLineArgs();
@@ -64,6 +75,36 @@ public static class AuthApi
         {
             if (args[i].StartsWith("-vpId=")) return "." + args[i].Substring("-vpId=".Length);
             if (args[i] == "-vpId" && i + 1 < args.Length) return "." + args[i + 1];
+        }
+
+#if UNITY_EDITOR
+        return ""; // 에디터는 창이 하나뿐 (가상 플레이어는 위의 vpId 로 구분)
+#else
+        return WindowSuffix();
+#endif
+    }
+
+    // 같은 PC 에 떠 있는 게임 창이 쓰지 않는 가장 작은 창 번호를 차지하고, 그 번호의 키 뒷부분을 돌려준다
+    //   번호는 이름 있는 뮤텍스로 잡는다: 그 이름을 처음 만든 창이 주인이고, 창이 꺼지면 저절로 풀린다
+    private static string WindowSuffix()
+    {
+        try
+        {
+            for (int n = 1; n <= MaxWindows; n++)
+            {
+                var mutex = new Mutex(false, "CapStone.GameWindow." + n, out bool free);
+                if (free)
+                {
+                    windowLock = mutex;
+                    return n == 1 ? "" : "." + n;
+                }
+                mutex.Dispose(); // 다른 창이 쓰고 있는 번호
+            }
+        }
+        catch (Exception e)
+        {
+            // 이름 있는 뮤텍스를 쓸 수 없는 환경: 창을 구분하지 않고 같은 키를 쓴다
+            Debug.LogWarning("창 번호를 정하지 못했습니다: " + e.Message);
         }
         return "";
     }
@@ -76,16 +117,42 @@ public static class AuthApi
     //     UseProxy = true,
     // }) { Timeout = TimeSpan.FromSeconds(10) };
 
-    // 저장해 둔 세션 토큰 (다음 실행 때 Steam 로그인 없이 바로 로그인)
+    // 지금 로그인해 있는 세션 토큰. 로그인하면 정해지고(StartSession), 로그아웃해 씬을 다시 불러오면 비워진다(EndSession)
+    //   서버 요청과 채팅 서버 접속에는 항상 이것을 쓴다 (FriendApi, ChatClient, LogoutUI, WithdrawUI)
+    //   저장해 둔 토큰(SavedToken)을 실행 중에 다시 읽으면 안 된다: 같은 PC 에 띄운 다른 창이 그 사이 로그인해
+    //   바꿔 놓은 다른 계정의 토큰일 수 있고, 그러면 그 계정의 친구 목록을 받아 오게 된다
+    public static string Token { get; private set; }
+
+    // 저장해 둔 세션 토큰 (다음 실행 때 Steam 로그인 없이 바로 로그인). 시작할 때의 자동 로그인에만 쓴다
     public static string SavedToken
     {
         get => PlayerPrefs.GetString(TokenKey, "");
-        set
+        private set
         {
             if (string.IsNullOrEmpty(value)) PlayerPrefs.DeleteKey(TokenKey);
             else PlayerPrefs.SetString(TokenKey, value);
             PlayerPrefs.Save();
         }
+    }
+
+    // 로그인됨: 이 토큰으로 요청하고, 다음 실행 때 자동으로 로그인하도록 저장해 둔다
+    public static void StartSession(string token)
+    {
+        Token = token;
+        SavedToken = token;
+    }
+
+    // 로그아웃됨. forget 이 true 면 저장해 둔 토큰도 지워서 다음 실행 때 자동으로 로그인하지 않는다
+    public static void EndSession(bool forget)
+    {
+        if (forget) Forget(Token);
+        Token = null;
+    }
+
+    // 저장해 둔 토큰이 이 토큰이면 지운다 (다른 창이 그 사이 저장한 다른 계정의 토큰은 건드리지 않는다)
+    public static void Forget(string token)
+    {
+        if (!string.IsNullOrEmpty(token) && SavedToken == token) SavedToken = null;
     }
 
     public static Task<Result<LoginResponse>> StartSteamLogin() =>
