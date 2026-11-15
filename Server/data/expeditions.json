@@ -1,0 +1,6 @@
+{
+  "마당": { "seconds": 10, "gold": 100, "decorationChance": 0.1 },
+  "개울가": { "seconds": 10, "gold": 350, "decorationChance": 0.3 },
+  "들판": { "seconds": 10, "gold": 1200, "decorationChance": 0.6 },
+  "호숫가": { "seconds": 10, "gold": 12000, "decorationChance": 1 }
+}

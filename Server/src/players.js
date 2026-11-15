@@ -4,7 +4,7 @@ const { TIMEOUT_MS, KICKED_TTL_MS } = require('./config');
 // 같은 사용자명이 새 세션으로 들어오면 기존 세션은 끊긴 목록으로 옮김
 class Players {
   constructor() {
-    this.byName = new Map(); // 사용자명 -> { id, name, address, port, x, y, z, lastSeen }
+    this.byName = new Map(); // 사용자명 -> { id, name, world, zone, address, port, x, y, z, lastSeen }
     this.kicked = new Map(); // 끊긴 세션 ID -> 끊긴 시각
   }
 
@@ -24,6 +24,8 @@ class Players {
     const player = {
       id: msg.id,
       name: msg.name,
+      world: msg.world,
+      zone: msg.zone,
       address: rinfo.address,
       port: rinfo.port,
       x: msg.x,
@@ -50,15 +52,15 @@ class Players {
     return removed;
   }
 
-  // name을 제외한 플레이어
-  others(name) {
-    return [...this.byName.values()].filter(p => p.name !== name);
+  // 같은 월드, 같은 구역에 있는, name을 제외한 플레이어
+  others(name, world, zone) {
+    return [...this.byName.values()].filter(p => p.name !== name && p.world === world && p.zone === zone);
   }
 
-  // 웹 확인용 { 사용자명: { x, y, z, t } }
+  // 웹 확인용 { 사용자명: { x, y, z, w: 월드 id, zn: 구역, t } }
   toJSON() {
     const out = {};
-    for (const p of this.byName.values()) out[p.name] = { x: p.x, y: p.y, z: p.z, t: p.lastSeen };
+    for (const p of this.byName.values()) out[p.name] = { x: p.x, y: p.y, z: p.z, w: p.world, zn: p.zone, t: p.lastSeen };
     return out;
   }
 }

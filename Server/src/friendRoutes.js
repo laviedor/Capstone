@@ -2,6 +2,7 @@ const express = require('express');
 const friends = require('./friends');
 const presence = require('./presence');
 const chatProtocol = require('./chatProtocol');
+const worlds = require('./worlds');
 const { sessionUser, wrap, errorHandler } = require('./httpUtil');
 const { MAX_NICKNAME_LENGTH, MAX_CHAT_LENGTH } = require('./config');
 
@@ -16,7 +17,7 @@ const { MAX_NICKNAME_LENGTH, MAX_CHAT_LENGTH } = require('./config');
 //               409 { status: 'already' }     이미 친구
 //               409 { status: 'full' }        친구 수가 가득 참
 //               409 { status: 'ambiguous' }   같은 닉네임을 쓰는 유저가 여럿
-//   DELETE /friends/:id                      친구 삭제 (서로의 목록에서 지워짐) -> { ok: true }
+//   DELETE /friends/:id                      친구 삭제 (서로의 목록에서 지워짐, 마을 구경 중이면 돌려보냄) -> { ok: true }
 //   GET    /friends/:id/messages?after=ID    그 친구와의 1:1 채팅 (ID 뒤의 것만, 없으면 최근 것), 읽음 처리
 //            -> { status: 'ok', messages: [{ id, sender, text }] }   sender 는 보낸 유저 id
 //               403 { status: 'not_friend' }
@@ -71,6 +72,9 @@ router.delete('/:id', wrap(async (req, res) => {
   if (await friends.remove(req.user.id, req.friendId)) {
     presence.send(req.friendId, chatProtocol.friends());
     console.log(`[친구] ${req.user.nickname} - #${req.friendId}`);
+    // 서로의 마을을 구경하던 중이면 자기 마을로 돌려보낸다 (친구만 방문할 수 있으므로)
+    await worlds.evict(req.user.id, req.friendId);
+    await worlds.evict(req.friendId, req.user.id);
   }
   res.json({ ok: true });
 }));

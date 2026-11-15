@@ -1,0 +1,8 @@
+{
+  "nodes": {
+    "FieldStone": { "item": "stone", "amount": 10, "gatherSeconds": 5, "respawnSeconds": 45, "count": 2 },
+    "FieldTree": { "item": "wood", "amount": 10, "gatherSeconds": 3, "respawnSeconds": 30, "count": 2 },
+    "FireldGold": { "item": "gold", "amount": 10, "gatherSeconds": 4, "respawnSeconds": 35, "count": 2 }
+  },
+  "decorations": ["decoration_tree_01"]
+}

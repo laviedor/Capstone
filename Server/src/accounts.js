@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const util = require('util');
 const pool = require('./db');
+const resources = require('./resources');
 const { SESSION_TTL_DAYS, MAX_NICKNAME_LENGTH } = require('./config');
 
 const scrypt = util.promisify(crypto.scrypt);
@@ -19,7 +20,7 @@ async function findSteamUser(steamId) {
   return rows[0] ?? null;
 }
 
-// 회원가입: Steam 계정으로 유저와 마을을 새로 만든다
+// 회원가입: Steam 계정으로 유저와 마을을 새로 만들고 처음 재화를 준다
 //   name: 닉네임으로 쓸 이름 (Steam 프로필 이름 등, toNickname 으로 정리해서 저장)
 async function createSteamUser(steamId, name) {
   const conn = await pool.getConnection();
@@ -29,6 +30,7 @@ async function createSteamUser(steamId, name) {
     const [result] = await conn.query('INSERT INTO users (nickname) VALUES (?)', [nickname]);
     const id = result.insertId;
     await conn.query('INSERT INTO villages (owner_id) VALUES (?)', [id]);
+    await resources.grantStarter(conn, id);
     await conn.query("INSERT INTO user_auth (provider, login_key, user_id) VALUES ('steam', ?, ?)", [steamId, id]);
     await conn.commit();
     return { id, nickname };
@@ -55,7 +57,7 @@ async function findGuest(loginId) {
   return rows[0] ?? null;
 }
 
-// 회원가입: Guest 계정으로 유저와 마을을 새로 만든다. 아이디를 그대로 닉네임으로 쓴다
+// 회원가입: Guest 계정으로 유저와 마을을 새로 만들고 처음 재화를 준다. 아이디를 그대로 닉네임으로 쓴다
 //   그 사이 같은 아이디로 가입됐거나 다른 유저가 닉네임으로 쓰고 있으면 null
 async function createGuestUser(loginId, password) {
   const passwordHash = await hashPassword(password);
@@ -69,6 +71,7 @@ async function createGuestUser(loginId, password) {
     const [result] = await conn.query('INSERT INTO users (nickname) VALUES (?)', [loginId]);
     const id = result.insertId;
     await conn.query('INSERT INTO villages (owner_id) VALUES (?)', [id]);
+    await resources.grantStarter(conn, id);
     await conn.query(
       "INSERT INTO user_auth (provider, login_key, password_hash, user_id) VALUES ('guest', ?, ?, ?)",
       [loginId.toLowerCase(), passwordHash, id],
@@ -115,6 +118,12 @@ async function freeNickname(conn, base) {
   return base;
 }
 
+// 유저 id 의 유저 { id, nickname }, 없으면 null
+async function findUser(userId) {
+  const [rows] = await pool.query('SELECT id, nickname FROM users WHERE id = ?', [userId]);
+  return rows[0] ?? null;
+}
+
 // 회원 탈퇴: 유저를 지우면 마을, 건물, 인벤토리, 탐사, 좋아요, 방명록, 로그인 연결, 세션, 친구, 1:1 채팅이 같이 지워진다 (ON DELETE CASCADE)
 async function deleteUser(userId) {
   await pool.query('DELETE FROM users WHERE id = ?', [userId]);
@@ -158,5 +167,5 @@ async function findSessionUser(token) {
 
 module.exports = {
   findSteamUser, createSteamUser, findGuest, createGuestUser, verifyPassword, nicknameTaken,
-  deleteUser, toNickname, createSession, deleteSession, findSessionUser,
+  findUser, deleteUser, toNickname, createSession, deleteSession, findSessionUser,
 };

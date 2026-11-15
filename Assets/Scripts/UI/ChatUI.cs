@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-// 오른쪽 아래 채팅 버튼과 채팅창 (접속한 모두에게 보이는 광장 채팅, 친구와의 1:1 채팅은 FriendUI)
+// 오른쪽 아래 [멀티버스 채팅] 버튼과 채팅창 (어느 월드에 있든 접속한 모두에게 보이는 채팅, 친구와의 1:1 채팅은 FriendUI)
 public class ChatUI : MonoBehaviour
 {
     [SerializeField] private ChatClient chatClient;
@@ -110,6 +110,6 @@ public class ChatUI : MonoBehaviour
 
     void UpdateButtonText()
     {
-        chatButtonText.text = unread > 0 ? $"채팅 ({unread})" : "채팅";
+        chatButtonText.text = unread > 0 ? $"멀티버스 채팅 ({unread})" : "멀티버스 채팅";
     }
 }

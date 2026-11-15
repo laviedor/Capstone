@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-// 건물 건설, 철거, 이동을 서버(채팅과 같은 TCP 연결)로 주고받아 모든 플레이어 화면에 같은 건물이 보이게 함
+// 건물 건설, 철거, 이동을 서버(채팅과 같은 TCP 연결)로 주고받아 같은 월드에 있는 모든 플레이어 화면에 같은 건물이 보이게 함
+//   건물은 서버 DB 에 월드(멀티버스, 각자의 마을)별로 저장된다. 월드에 들어가면 서버가 그 월드의 건물 목록을 보내 준다
 //   내가 바꾼 것: BuildingPlacement, BuildingDemolition 이 OnLocalBuilt / OnLocalDemolished 를 불러 서버로 보냄
+//     화면에는 먼저 반영하고, 서버가 거절하면(자원 부족, 남의 건물, 구경만 가능한 마을 등) 서버가 다시 보내는 목록으로 되돌린다
 //   다른 사람이 바꾼 것: 서버에서 받아 화면과 점유 칸(겹쳐 짓기 금지, 경로 탐색)에 반영
+//   건설 비용, 철거 환급, 건물의 주기적 생산은 서버가 계산한다 (ResourceSync). 그래서 건물의 BuildingProduction 은 꺼 둔다
 public class BuildingSync : MonoBehaviour
 {
     public static BuildingSync Instance { get; private set; }
@@ -13,8 +16,12 @@ public class BuildingSync : MonoBehaviour
     [SerializeField] private BuildingPlacement buildingPlacement;
     [SerializeField] private Grid grid;
     [SerializeField] private Building[] buildingPrefabs; // 건물 종류(BuildingData.buildingID)별 프리팹
+    [SerializeField] private Transform buildingsParent;  // 서버에서 받은 건물을 넣을 곳 (BuildingPlacement 의 placedBuildingsParent 와 같은 오브젝트)
+    [SerializeField] private PlayerResources playerResources;
 
     private readonly Dictionary<string, Building> buildings = new Dictionary<string, Building>(); // 네트워크 ID -> 건물
+    private readonly Dictionary<string, int> numbers = new Dictionary<string, int>(); // 건물 종류 -> 마지막으로 붙인 번호
+    private long world = -1; // 지금 화면에 있는 건물들의 월드 id
 
     void Awake()
     {
@@ -29,26 +36,43 @@ public class BuildingSync : MonoBehaviour
     void OnEnable()
     {
         chatClient.BuildingReceived += OnMessage;
+        chatClient.WorldEntered += OnWorldEntered;
     }
 
     void OnDisable()
     {
         chatClient.BuildingReceived -= OnMessage;
+        chatClient.WorldEntered -= OnWorldEntered;
+    }
+
+    // 건물 종류(BuildingData.buildingID)의 BuildingData, 등록되지 않은 종류면 null
+    public BuildingData FindData(string type)
+    {
+        Building prefab = Array.Find(buildingPrefabs, p => p != null && p.BuildingID == type);
+        return prefab != null ? prefab.Data : null;
     }
 
     // 내가 지었을 때
     public void OnLocalBuilt(Building building)
     {
+        StopLocalProduction(building);
+
         string id = Guid.NewGuid().ToString("N");
         var msg = new BuildingMessage
         {
             t = BuildingMessage.Build, id = id, type = building.BuildingID,
             x = building.OriginCell.x, y = building.OriginCell.y,
         };
-        if (chatClient.SendBuilding(msg))
-            buildings[id] = building;
-        else
-            Debug.LogWarning("서버에 연결되어 있지 않아 다른 플레이어에게는 이 건물이 보이지 않습니다.");
+        if (!chatClient.SendBuilding(msg))
+        {
+            // 건물과 비용은 서버가 관리하므로 연결되어 있지 않으면 지을 수 없다: 방금 지은 것을 되돌림
+            UndoLocalBuild(building);
+            Toast.Show("서버에 연결되어 있지 않아 건물을 지을 수 없습니다.");
+            return;
+        }
+
+        buildings[id] = building;
+        building.SetBuildingNumber(NextNumber(building.BuildingID));
     }
 
     // 내가 철거했을 때 (건물을 지우기 전에 호출)
@@ -73,6 +97,17 @@ public class BuildingSync : MonoBehaviour
         });
     }
 
+    // 다른 월드에 들어가면 있던 월드의 건물을 모두 지운다 (이어서 오는 목록으로 새 월드의 건물이 채워짐)
+    void OnWorldEntered(WorldMessage m)
+    {
+        if (m.id == world) return; // 다시 접속해 같은 월드로 돌아온 경우: 목록으로 맞추기만 하면 됨
+
+        world = m.id;
+        foreach (string id in new List<string>(buildings.Keys))
+            Remove(id);
+        numbers.Clear();
+    }
+
     void OnMessage(BuildingMessage m)
     {
         switch (m.t)
@@ -92,11 +127,12 @@ public class BuildingSync : MonoBehaviour
         }
     }
 
-    // 입장(다시 접속) 때 받은 목록에 맞춤: 없는 건물은 짓고, 위치가 다르면 옮기고, 서버에 없는 건물은 지움
+    // 서버의 목록에 맞춤: 없는 건물은 짓고, 위치가 다르면 옮기고, 서버에 없는 건물은 지움
+    //   월드에 들어갈 때, 다시 접속했을 때, 내 요청이 거절되어 화면을 되돌릴 때 온다
     void Reconcile(BuildingInfo[] list)
     {
         var alive = new HashSet<string>();
-        foreach (BuildingInfo b in list)
+        foreach (BuildingInfo b in list ?? new BuildingInfo[0])
         {
             alive.Add(b.id);
             if (!buildings.TryGetValue(b.id, out Building existing))
@@ -123,8 +159,10 @@ public class BuildingSync : MonoBehaviour
         }
 
         var cell = new Vector3Int(x, y, 0);
-        Building building = Instantiate(prefab, PositionOf(cell, prefab), Quaternion.identity);
+        Building building = Instantiate(prefab, PositionOf(cell, prefab), Quaternion.identity, buildingsParent);
         building.Initialize(cell);
+        building.SetBuildingNumber(NextNumber(type));
+        StopLocalProduction(building);
         buildingPlacement.OccupyBuildingCells(building);
         buildings[id] = building;
     }
@@ -149,6 +187,38 @@ public class BuildingSync : MonoBehaviour
         building.Initialize(cell);
         building.transform.position = PositionOf(cell, building);
         buildingPlacement.OccupyBuildingCells(building);
+    }
+
+    // 서버에 보내지 못한 건물을 없던 일로: 칸을 비우고, BuildingPlacement 가 쓴 것(건설 비용, 장식물은 장식 아이템 1개)을 돌려놓고, 건물을 지움
+    void UndoLocalBuild(Building building)
+    {
+        buildingPlacement.ReleaseBuildingCells(building);
+        BuildingData data = building.Data;
+        if (data != null && data.buildingType == BuildingType.Decoration)
+        {
+            if (DecorationInventory.Instance != null) DecorationInventory.Instance.AddDecoration(data, 1);
+        }
+        else if (playerResources != null && data != null && data.constructionCosts != null)
+        {
+            foreach (ResourceAmount cost in data.constructionCosts)
+                playerResources.AddResource(cost.resourceType, cost.amount);
+        }
+        Destroy(building.gameObject);
+    }
+
+    // 생산은 서버가 계산해서 재화로 알려 주므로, 건물이 화면에서 따로 자원을 더하지 않게 한다
+    static void StopLocalProduction(Building building)
+    {
+        BuildingProduction production = building.GetComponent<BuildingProduction>();
+        if (production != null) production.enabled = false;
+    }
+
+    // 건물 번호 (같은 종류끼리 1, 2, 3 ...). 서버 목록의 순서(지은 순서)대로 붙는다
+    int NextNumber(string type)
+    {
+        numbers.TryGetValue(type ?? "", out int last);
+        numbers[type ?? ""] = last + 1;
+        return last + 1;
     }
 
     // 기준 칸에 놓을 때의 위치 (BuildingPlacement 의 미리보기 위치와 같은 계산)

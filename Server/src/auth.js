@@ -5,6 +5,7 @@ const accounts = require('./accounts');
 const friends = require('./friends');
 const presence = require('./presence');
 const chatProtocol = require('./chatProtocol');
+const worlds = require('./worlds');
 const { bearer, sessionUser, wrap, errorHandler } = require('./httpUtil');
 const {
   PUBLIC_URL, LOGIN_TTL_MS, MAX_PENDING_LOGINS,
@@ -220,6 +221,7 @@ router.delete('/auth/me', wrap(async (req, res) => {
   const friendIds = await friends.friendIds(user.id);
   await accounts.deleteUser(user.id);
   for (const id of friendIds) presence.send(id, chatProtocol.friends()); // 친구들의 목록에서도 사라지도록
+  await worlds.closeVillage(user.id); // 마을을 구경하던 친구는 돌려보내고, 멀티버스에 지은 건물도 화면에서 지움
   console.log(`[회원 탈퇴] ${user.nickname} (#${user.id})`);
   res.json({ ok: true });
 }));

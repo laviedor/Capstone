@@ -5,10 +5,10 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-// 오른쪽 아래 [친구] 버튼과 친구 창
-//   친구 목록: 닉네임으로 친구 추가(바로 서로 친구가 됨), 친구를 누르면 1:1 채팅, [삭제]로 친구 삭제
-//   1:1 채팅: 그 친구와 둘이서만 주고받는 채팅. 접속한 모두에게 보이는 광장 채팅(ChatUI)과 달리 서버 DB 에 남아서
-//             상대가 접속해 있지 않아도 보낼 수 있고, 다음에 열면 이어서 보인다
+// 오른쪽 아래 [친구], [1:1 채팅] 버튼과 그 창 (두 버튼이 같은 창을 서로 다른 목록으로 연다)
+//   [친구]: 닉네임으로 친구 추가(바로 서로 친구가 됨), 친구 목록에서 [방문]으로 그 친구의 마을 구경, [삭제]로 친구 삭제
+//   [1:1 채팅]: 대화할 친구를 고르면 그 친구와 둘이서만 주고받는 채팅. 어느 월드에 있든 접속한 모두에게 보이는
+//               멀티버스 채팅(ChatUI)과 달리 서버 DB 에 남아서, 상대가 접속해 있지 않아도 보낼 수 있고 다음에 열면 이어서 보인다
 //   서버가 채팅 연결(ChatClient)로 알림을 주면 FriendApi 로 새 메시지나 친구 목록을 다시 받아 온다
 // (await 뒤의 코드는 Unity 메인 스레드에서 이어서 실행됨)
 public class FriendUI : MonoBehaviour
@@ -16,18 +16,21 @@ public class FriendUI : MonoBehaviour
     [SerializeField] private ChatClient chatClient;
     [SerializeField] private ConfirmDialog dialog;
     [SerializeField] private Button friendButton;
-    [SerializeField] private Text friendButtonText;
+    [SerializeField] private Button dmButton;       // [1:1 채팅]
+    [SerializeField] private Text dmButtonText;     // 안 읽은 메시지 수 표시
     [SerializeField] private GameObject friendPanel;
-    [SerializeField] private GameObject chatPanel; // 광장 채팅창 (같은 자리에 뜨므로 친구 창을 열면 닫음)
+    [SerializeField] private GameObject chatPanel;  // 멀티버스 채팅창 (같은 자리에 뜨므로 이 창을 열면 닫음)
 
-    [Header("친구 목록")]
+    [Header("친구 / 대화 상대 목록")]
     [SerializeField] private GameObject listView;
+    [SerializeField] private GameObject addRow;     // 닉네임 입력 칸과 [추가] 버튼 (친구 창에서만 보임)
     [SerializeField] private InputField nicknameInput;
     [SerializeField] private Button addButton;
+    [SerializeField] private Text listTitleText;    // 1:1 채팅 창의 제목 (닉네임 입력 칸 자리에 보임)
     [SerializeField] private Text statusText;       // 친구 추가, 삭제 결과 안내
     [SerializeField] private Transform listContent; // 친구 줄이 들어갈 곳
     [SerializeField] private FriendRowUI rowTemplate;
-    [SerializeField] private GameObject emptyText;  // 친구가 없을 때의 안내
+    [SerializeField] private Text emptyText;        // 친구가 없을 때의 안내
 
     [Header("1:1 채팅")]
     [SerializeField] private GameObject chatView;
@@ -42,13 +45,15 @@ public class FriendUI : MonoBehaviour
     private FriendApi.Friend[] friends = new FriendApi.Friend[0];
     private readonly List<FriendRowUI> rows = new List<FriendRowUI>();
     private readonly Queue<string> lines = new Queue<string>();
-    private FriendApi.Friend chatFriend; // 1:1 채팅 화면의 친구 (친구 목록 화면이면 null)
+    private bool chatsMode;              // 창이 1:1 채팅 창인지 ([친구]로 열었으면 false)
+    private FriendApi.Friend chatFriend; // 1:1 채팅 화면의 친구 (목록 화면이면 null)
     private long lastMessageId;          // 화면에 보인 마지막 메시지 id, 이 뒤의 메시지만 받아 온다
     private int refreshId;               // 친구 목록 요청 번호 (늦게 도착한 이전 응답은 버림)
 
     void Awake()
     {
         friendButton.gameObject.SetActive(false); // 로그인 후에 표시
+        dmButton.gameObject.SetActive(false);
         friendPanel.SetActive(false);
         rowTemplate.gameObject.SetActive(false);
         statusText.text = "";
@@ -56,7 +61,8 @@ public class FriendUI : MonoBehaviour
         nicknameInput.characterLimit = FriendApi.MaxNicknameLength;
         messageInput.characterLimit = ChatMessage.MaxTextLength;
 
-        friendButton.onClick.AddListener(TogglePanel);
+        friendButton.onClick.AddListener(() => TogglePanel(false));
+        dmButton.onClick.AddListener(() => TogglePanel(true));
         addButton.onClick.AddListener(Add);
         nicknameInput.onSubmit.AddListener(_ => Add()); // Enter로 추가
         backButton.onClick.AddListener(BackToList);
@@ -83,37 +89,49 @@ public class FriendUI : MonoBehaviour
     void OnLoggedIn()
     {
         friendButton.gameObject.SetActive(true);
+        dmButton.gameObject.SetActive(true);
         Refresh(); // 접속해 있지 않은 동안 온 메시지 수를 버튼에 표시
     }
 
-    void TogglePanel()
+    // chats: [1:1 채팅] 버튼이면 true, [친구] 버튼이면 false. 같은 버튼을 다시 누르면 닫힘
+    void TogglePanel(bool chats)
     {
-        bool open = !friendPanel.activeSelf;
-        friendPanel.SetActive(open);
-        if (!open) return;
-
-        if (chatPanel != null) chatPanel.SetActive(false);
-        if (chatFriend == null)
+        if (friendPanel.activeSelf && chatsMode == chats)
         {
-            ShowList("");
+            friendPanel.SetActive(false);
+            return;
+        }
+
+        chatsMode = chats;
+        friendPanel.SetActive(true);
+        if (chatPanel != null) chatPanel.SetActive(false);
+
+        if (chats && chatFriend != null)
+        {
+            // 보던 1:1 채팅을 이어서 보여 줌
+            listView.SetActive(false);
+            chatView.SetActive(true);
+            LoadMessages();
+            messageInput.ActivateInputField();
         }
         else
         {
-            // 보던 1:1 채팅을 이어서 보여 줌
-            LoadMessages();
-            messageInput.ActivateInputField();
+            ShowList("");
         }
         Refresh();
     }
 
-    // ---------- 친구 목록 ----------
+    // ---------- 친구 / 대화 상대 목록 ----------
 
     void ShowList(string message)
     {
         chatFriend = null;
         chatView.SetActive(false);
         listView.SetActive(true);
+        addRow.SetActive(!chatsMode);
+        listTitleText.gameObject.SetActive(chatsMode);
         statusText.text = message;
+        BuildRows();
     }
 
     void BackToList()
@@ -139,10 +157,24 @@ public class FriendUI : MonoBehaviour
         {
             long id = chatFriend.id;
             FriendApi.Friend current = Array.Find(friends, f => f.id == id);
-            if (current != null) chatFriend = current;
-            else ShowList($"{chatFriend.nickname}님과 더 이상 친구가 아닙니다."); // 상대가 친구를 삭제했거나 탈퇴함
+            if (current != null)
+            {
+                chatFriend = current;
+            }
+            else
+            {
+                // 상대가 친구를 삭제했거나 탈퇴함
+                string name = chatFriend.nickname;
+                ShowList($"{name}님과 더 이상 친구가 아닙니다.");
+            }
         }
 
+        BuildRows();
+        UpdateButtonText();
+    }
+
+    void BuildRows()
+    {
         foreach (FriendRowUI row in rows)
             Destroy(row.gameObject);
         rows.Clear();
@@ -150,12 +182,15 @@ public class FriendUI : MonoBehaviour
         foreach (FriendApi.Friend friend in friends)
         {
             FriendRowUI row = Instantiate(rowTemplate, listContent);
-            row.Set(friend, () => OpenChat(friend), () => AskRemove(friend));
+            row.Set(friend, !chatsMode, () => OpenChat(friend), () => Visit(friend), () => AskRemove(friend));
             row.gameObject.SetActive(true);
             rows.Add(row);
         }
-        emptyText.SetActive(friends.Length == 0);
-        UpdateButtonText();
+
+        emptyText.gameObject.SetActive(friends.Length == 0);
+        emptyText.text = chatsMode
+            ? "대화할 친구가 없습니다.\n[친구]에서 먼저 친구를 추가해 주세요."
+            : "아직 친구가 없습니다.\n닉네임으로 친구를 추가해 보세요.";
     }
 
     async void Add()
@@ -197,6 +232,13 @@ public class FriendUI : MonoBehaviour
         }
     }
 
+    // 친구의 마을로 이동 (구경만 할 수 있다). 돌아올 때는 화면 위의 [내 마을]
+    void Visit(FriendApi.Friend friend)
+    {
+        friendPanel.SetActive(false);
+        WorldSync.Instance.Enter(friend.id);
+    }
+
     void AskRemove(FriendApi.Friend friend)
     {
         dialog.Show($"{friend.nickname}님을\n친구에서 삭제하시겠습니까?", "삭제", () => Remove(friend), "취소");
@@ -217,6 +259,7 @@ public class FriendUI : MonoBehaviour
 
     void OpenChat(FriendApi.Friend friend)
     {
+        chatsMode = true; // 친구 창에서 이름을 눌러 들어와도 여기부터는 1:1 채팅 창
         chatFriend = friend;
         lastMessageId = 0;
         lines.Clear();
@@ -294,7 +337,7 @@ public class FriendUI : MonoBehaviour
     // 지금 이 친구와의 1:1 채팅 화면을 보고 있는지
     bool Viewing(long friendId)
     {
-        return friendPanel.activeInHierarchy && chatFriend != null && chatFriend.id == friendId;
+        return friendPanel.activeInHierarchy && chatView.activeSelf && chatFriend != null && chatFriend.id == friendId;
     }
 
     void AddLine(string line)
@@ -308,7 +351,7 @@ public class FriendUI : MonoBehaviour
         scrollRect.verticalNormalizedPosition = 0f;
     }
 
-    // [친구] 버튼에 안 읽은 메시지 수 표시 (지금 보고 있는 대화는 빼고)
+    // [1:1 채팅] 버튼에 안 읽은 메시지 수 표시 (지금 보고 있는 대화는 빼고)
     void UpdateButtonText()
     {
         int unread = 0;
@@ -316,7 +359,7 @@ public class FriendUI : MonoBehaviour
         {
             if (!Viewing(friend.id)) unread += friend.unread;
         }
-        friendButtonText.text = unread > 0 ? $"친구 ({unread})" : "친구";
+        dmButtonText.text = unread > 0 ? $"1:1 채팅 ({unread})" : "1:1 채팅";
     }
 
     static string ErrorText(int status, string message)
