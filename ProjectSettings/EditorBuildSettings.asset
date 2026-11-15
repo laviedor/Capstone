@@ -6,8 +6,14 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 8c9cfa26abfee488c85f1582747f6a02
+    path: Assets/Scenes/Village.unity
+    guid: 90c394eb8a0d18041a08ecb99c5ce597
+  - enabled: 1
+    path: Assets/Scenes/ForestScene.unity
+    guid: 28a69d614aeace64e832d7b599011c25
+  - enabled: 1
+    path: Assets/Scenes/ResourceField.unity
+    guid: 36169ef3d705b3a4cade07294fb1f7a2
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0
