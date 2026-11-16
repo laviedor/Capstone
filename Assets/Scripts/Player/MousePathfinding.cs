@@ -26,6 +26,15 @@ public class MousePathfinding : MonoBehaviour
     // 탐색된 이동 경로를 선으로 표시
     [SerializeField] private LineRenderer lineRenderer;
 
+    // 경로 선이 플레이어 발밑으로 판정되는 거리 (이 안에 들어온 꼭짓점은 지운다)
+    [SerializeField] private float pathPointReachDistance = 0.05f;
+
+    // 아직 지나가지 않은 경로 선 꼭짓점 (플레이어 위치는 제외)
+    private readonly List<Vector3> remainingPathPoints = new List<Vector3>();
+
+    // 경로 선이 그려지는 z 위치
+    private const float PathLineZ = -1f;
+
     // 실제 경로 이동을 수행하는 컴포넌트
     [SerializeField] private PlayerPathMovement playerMovement;
 
@@ -54,6 +63,10 @@ public class MousePathfinding : MonoBehaviour
     [Header("Camera")]
     [SerializeField] private CameraFollow cameraFollow;
 
+    [Header("Building Mode")]
+    // 건설 모드 중에는 좌클릭이 건물 설치에 쓰이므로 이동을 막는다 (비어 있으면 자동 검색)
+    [SerializeField] private BuildingModeManager buildingModeManager;
+
     [Header("자원 접근")]
     // 자원에 접근한 것으로 판정하는 거리
     [SerializeField] private float resourceInteractionDistance = 1.5f;
@@ -67,12 +80,20 @@ public class MousePathfinding : MonoBehaviour
     // 현재 표시 중인 채집 진행률 UI
     private GatheringProgressUI activeProgressUI;
 
+    // 좌클릭을 눌렀고 아직 드래그로 바뀌지 않아 클릭으로 처리될 예정인지 여부
+    private bool isLeftClickPending = false;
+    // 좌클릭을 누른 화면 좌표 (클릭과 드래그 구분용)
+    private Vector2 leftPressScreenPosition;
+
 
     /// <summary>최초 지정된 마을 경계를 저장한다.</summary>
     private void Awake()
     {
         // 처음 연결된 마을 MapBounds 저장
         villageMapBounds = mapBounds;
+
+        if (buildingModeManager == null)
+            buildingModeManager = FindFirstObjectByType<BuildingModeManager>();
     }
 
     /// <summary>UI 상태를 확인한 뒤 좌클릭 자원 탐색 또는 일반 이동을 실행한다.</summary>
@@ -83,21 +104,65 @@ public class MousePathfinding : MonoBehaviour
 
         // 인벤토리가 열려 있으면 이동 차단
         if (inventoryUI != null && inventoryUI.IsOpen)
+        {
+            isLeftClickPending = false;
             return;
+        }
 
         // 철거 확인창이 열려 있으면 이동 차단
         if (demolitionConfirmUI != null &&
             demolitionConfirmUI.IsOpen)
+        {
+            isLeftClickPending = false;
             return;
+        }
 
         // 건물 위치 보기 중에는 이동 차단
         if (cameraFollow != null &&
             cameraFollow.IsViewingBuilding)
+        {
+            isLeftClickPending = false;
             return;
+        }
 
-        // 마우스 좌클릭 이동
+        // 건설 모드(건설·철거 도구) 중에는 좌클릭이 건물 조작용이므로 이동 차단
+        if (buildingModeManager != null &&
+            buildingModeManager.IsBuildMode)
+        {
+            isLeftClickPending = false;
+            return;
+        }
+
+        // 좌클릭을 누른 위치를 기록해 두고, 뗄 때 클릭인지 드래그인지 판정한다
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
+            isLeftClickPending = true;
+            leftPressScreenPosition = Mouse.current.position.ReadValue();
+        }
+
+        // 누른 채로 일정 거리 이상 움직였다면 화면 드래그(둘러보기)이므로 이동하지 않는다
+        if (isLeftClickPending && Mouse.current.leftButton.isPressed)
+        {
+            float dragThreshold =
+                cameraFollow != null ? cameraFollow.DragThresholdPixels : 8f;
+
+            if (Vector2.Distance(
+                    Mouse.current.position.ReadValue(),
+                    leftPressScreenPosition) >= dragThreshold)
+            {
+                isLeftClickPending = false;
+            }
+        }
+
+        // 마우스 좌클릭 이동 (드래그 없이 버튼을 뗐을 때)
+        if (Mouse.current.leftButton.wasReleasedThisFrame && isLeftClickPending)
+        {
+            isLeftClickPending = false;
+
+            // 둘러보던 중이었다면 다시 플레이어를 따라간다
+            if (cameraFollow != null)
+                cameraFollow.ResumeFollow();
+
             // 먼저 클릭한 위치에 자원이 있는지 확인
             Vector2 mouseScreenPosition =
                 Mouse.current.position.ReadValue();
@@ -115,6 +180,19 @@ public class MousePathfinding : MonoBehaviour
             // 클릭 지점과 겹치는 모든 콜라이더를 조사해 자원을 우선 탐색
             Collider2D[] hitColliders =
                 Physics2D.OverlapPointAll(clickPosition);
+
+            // 건물 수확 버튼을 눌렀다면 수확만 하고 이동하지 않는다
+            foreach (Collider2D hit in hitColliders)
+            {
+                BuildingHarvestButton harvestButton =
+                    hit.GetComponentInParent<BuildingHarvestButton>();
+
+                if (harvestButton != null)
+                {
+                    harvestButton.Click();
+                    return;
+                }
+            }
 
             foreach (Collider2D hit in hitColliders)
             {
@@ -145,6 +223,8 @@ public class MousePathfinding : MonoBehaviour
     public void ClearMovementVisuals()
     {
         // 이동 경로 선 제거
+        remainingPathPoints.Clear();
+
         if (lineRenderer != null)
         {
             lineRenderer.positionCount = 0;
@@ -433,6 +513,8 @@ public class MousePathfinding : MonoBehaviour
     /// <summary>찾은 경로를 LineRenderer의 점들로 시각화한다.</summary>
     void DrawPath(List<GridNode> path)
     {
+        remainingPathPoints.Clear();
+
         if (lineRenderer == null)
             return;
 
@@ -442,19 +524,8 @@ public class MousePathfinding : MonoBehaviour
             return;
         }
 
-        lineRenderer.positionCount =
-            path.Count + 1;
-
-        Vector3 startPosition =
-            grid.GetCellCenterWorld(startCell);
-
-        startPosition.z = -1f;
-
-        lineRenderer.SetPosition(
-            0,
-            startPosition
-        );
-
+        // 지나가야 할 각 칸의 중앙을 저장한다.
+        // 시작점은 고정된 셀 중앙 대신 매 프레임 플레이어 위치를 사용한다.
         for (int i = 0; i < path.Count; i++)
         {
             Vector3 worldPosition =
@@ -462,19 +533,81 @@ public class MousePathfinding : MonoBehaviour
                     path[i].cellPosition
                 );
 
-            worldPosition.z = -1f;
+            worldPosition.z = PathLineZ;
 
-            lineRenderer.SetPosition(
-                i + 1,
-                worldPosition
-            );
+            remainingPathPoints.Add(worldPosition);
         }
+
+        UpdatePathLine();
     }
 
+    /// <summary>플레이어 이동이 끝난 뒤 매 프레임 지나간 경로 선을 지운다.</summary>
+    private void LateUpdate()
+    {
+        if (lineRenderer == null || remainingPathPoints.Count == 0)
+            return;
 
+        // 다른 곳에서 선을 지웠다면 남은 경로도 비운다.
+        if (lineRenderer.positionCount == 0)
+        {
+            remainingPathPoints.Clear();
+            return;
+        }
 
+        UpdatePathLine();
+    }
 
+    /// <summary>
+    /// 플레이어가 지나간 꼭짓점을 제거하고,
+    /// 선의 시작점을 플레이어 현재 위치로 맞춰 선이 점점 줄어들게 한다.
+    /// </summary>
+    private void UpdatePathLine()
+    {
+        if (player == null)
+            return;
 
+        Vector3 playerPosition = player.position;
+        playerPosition.z = PathLineZ;
+
+        while (remainingPathPoints.Count > 0)
+        {
+            Vector3 nextPoint = remainingPathPoints[0];
+
+            // 꼭짓점에 도착했으면 제거
+            bool reached =
+                Vector2.Distance(playerPosition, nextPoint)
+                <= pathPointReachDistance;
+
+            // 이미 꼭짓점을 지나 다음 구간으로 들어섰으면 제거
+            bool passed = false;
+            if (remainingPathPoints.Count >= 2)
+            {
+                Vector2 toPlayer = playerPosition - nextPoint;
+                Vector2 nextSegment = remainingPathPoints[1] - nextPoint;
+                passed = Vector2.Dot(toPlayer, nextSegment) > 0f;
+            }
+
+            if (!reached && !passed)
+                break;
+
+            remainingPathPoints.RemoveAt(0);
+        }
+
+        // 모든 꼭짓점을 지나면 선을 완전히 없앤다.
+        if (remainingPathPoints.Count == 0)
+        {
+            lineRenderer.positionCount = 0;
+            return;
+        }
+
+        lineRenderer.positionCount = remainingPathPoints.Count + 1;
+        lineRenderer.SetPosition(0, playerPosition);
+
+        for (int i = 0; i < remainingPathPoints.Count; i++)
+        {
+            lineRenderer.SetPosition(i + 1, remainingPathPoints[i]);
+        }
+    }
 
     /// <summary>클릭 위치를 목적지로 변환하고 이동 가능한 경로를 계산하여 이동을 요청한다.</summary>
     void SetDestination()

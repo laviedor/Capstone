@@ -82,6 +82,17 @@ public class BuildingModeManager : MonoBehaviour
         Debug.Log("현재 도구 : Build");
     }
 
+    // 함수 설명: 건설 모드를 끈다. (건물 하나를 설치한 뒤 등 외부에서 호출)
+    public void ExitBuildMode()
+    {
+        if (!isBuildMode)
+            return;
+
+        isBuildMode = false;
+
+        Debug.Log("건설 모드 OFF");
+    }
+
     // 함수 설명: 건설 모드가 활성화된 경우 건설 도구로 전환한다.
     public void SetBuildTool()
     {

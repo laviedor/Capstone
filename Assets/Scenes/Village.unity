@@ -2489,6 +2489,7 @@ MonoBehaviour:
   villageVisualRoot: {fileID: 1571190641}
   villageTilemap: {fileID: 1532428656}
   mousePathfinding: {fileID: 290610232}
+  player: {fileID: 0}
 --- !u!1 &290610230
 GameObject:
   m_ObjectHideFlags: 0
@@ -2539,6 +2540,7 @@ MonoBehaviour:
   destinationMarkerPrefab: {fileID: 2981467073924080956, guid: a9355e522a70c0040bd4d66af86c195e, type: 3}
   buildingPlacement: {fileID: 2124353327}
   lineRenderer: {fileID: 290610233}
+  pathPointReachDistance: 0.05
   playerMovement: {fileID: 1673237388}
   demolitionConfirmUI: {fileID: 33575458}
   mapBounds: {fileID: 882871899}
@@ -5001,7 +5003,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 5.02
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -5026,7 +5028,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalPosition: {x: 0, y: -0.24, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5050,6 +5052,11 @@ MonoBehaviour:
   zoomSpeed: 5
   minZoom: 1
   maxZoom: 8
+  fitToMapBounds: 1
+  enableDragPan: 1
+  dragThresholdPixels: 8
+  horizontalScrollPanSpeed: 1
+  returnToPlayerDelay: 5
 --- !u!1 &538301903
 GameObject:
   m_ObjectHideFlags: 0
@@ -7819,7 +7826,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0, y: -0.24}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -7829,7 +7836,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 70, y: 10}
+  m_Size: {x: 71.4, y: 10.04}
   m_EdgeRadius: 0
 --- !u!1 &898143683
 GameObject:

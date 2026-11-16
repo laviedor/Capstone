@@ -1,6 +1,8 @@
 
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 
 /// <summary>플레이어 또는 선택된 건물을 추적하고 카메라 이동 범위 및 줌을 제어한다.</summary>
 public class CameraFollow : MonoBehaviour
@@ -25,8 +27,42 @@ public class CameraFollow : MonoBehaviour
     // 카메라 직교 크기의 최대값
     [SerializeField] private float maxZoom = 8f;
 
+    [Header("Screen Fit")]
+    // 켜면 MapBounds를 하나의 화면 틀(1920x270 기준)로 사용한다.
+    // 세로는 맵 높이에 딱 맞춰 고정하고, 가로는 맵 밖이 절대 보이지 않게 한다. (휠 줌 비활성)
+    [SerializeField] private bool fitToMapBounds = true;
+
+    [Header("Drag Pan")]
+    // 좌클릭 드래그로 화면 둘러보기 사용 여부
+    [SerializeField] private bool enableDragPan = true;
+    // 이 거리(px) 이상 움직여야 클릭이 아닌 드래그로 판정
+    [SerializeField] private float dragThresholdPixels = 8f;
+    // 트랙패드 가로 스크롤로 둘러보는 속도 (0이면 사용 안 함)
+    [SerializeField] private float horizontalScrollPanSpeed = 1f;
+    // 둘러본 뒤 조작이 없으면 플레이어로 돌아오기까지의 시간(초). 0이면 자동 복귀 안 함
+    [SerializeField] private float returnToPlayerDelay = 5f;
+
     // 같은 게임 오브젝트의 Camera 컴포넌트
     private Camera cam;
+
+    // 좌클릭이 화면(UI 밖)에서 시작되어 드래그 후보인지 여부
+    private bool isPanPointerDown = false;
+    // 현재 드래그로 화면을 움직이는 중인지 여부
+    private bool isDragging = false;
+    // 좌클릭을 누른 화면 좌표
+    private Vector2 pressScreenPosition;
+    // 직전 프레임의 드래그 화면 좌표
+    private Vector2 lastDragScreenPosition;
+
+    // 사용자가 직접 둘러보는 중이라 플레이어 추적을 멈춘 상태
+    private bool isManualView = false;
+    // 마지막으로 직접 둘러본 시각
+    private float lastManualViewTime;
+
+    // 클릭과 드래그를 구분하는 기준 거리(px). MousePathfinding에서 같은 값을 사용
+    public float DragThresholdPixels => dragThresholdPixels;
+    // 현재 드래그 중인지 여부
+    public bool IsDragging => isDragging;
 
     // 건물 위치 보기 모드
     private bool isViewingBuilding = false;
@@ -44,19 +80,178 @@ public class CameraFollow : MonoBehaviour
         cam = GetComponent<Camera>();
     }
 
-    /// <summary>이동 후 카메라 추적 및 줌을 처리한다.</summary>
+    /// <summary>이동 후 카메라 추적, 줌, 드래그 둘러보기를 처리한다.</summary>
     private void LateUpdate()
     {
-        HandleZoom();
+        if (fitToMapBounds)
+        {
+            ApplyScreenFit();
+        }
+        else
+        {
+            HandleZoom();
+        }
 
         if (isViewingBuilding)
         {
             FollowBuilding();
+            return;
+        }
+
+        HandleDragPan();
+        HandleHorizontalScrollPan();
+
+        if (isManualView)
+        {
+            UpdateManualView();
         }
         else
         {
             FollowTarget();
         }
+    }
+
+    /// <summary>
+    /// 카메라 크기를 맵(MapBounds)에 맞춘다. 창 크기가 바뀌어도 매 프레임 다시 계산한다.
+    /// - 세로: 맵 높이가 화면 높이에 딱 맞는다.
+    /// - 가로: 창이 맵 비율보다 넓으면 맵 가로가 딱 맞게 줄이고,
+    ///         좁으면(노트북 등) 맵 일부만 보이며 나머지는 드래그로 둘러본다.
+    /// </summary>
+    private void ApplyScreenFit()
+    {
+        if (cam == null || mapBounds == null)
+            return;
+
+        Bounds bounds = mapBounds.Bounds;
+
+        float sizeByHeight =
+            bounds.size.y / 2f;
+
+        float sizeByWidth =
+            bounds.size.x / (2f * cam.aspect);
+
+        cam.orthographicSize = Mathf.Min(sizeByHeight, sizeByWidth);
+    }
+
+    /// <summary>좌클릭 드래그로 카메라를 움직인다. 클릭(짧은 이동)은 MousePathfinding이 처리한다.</summary>
+    private void HandleDragPan()
+    {
+        if (!enableDragPan || cam == null || Mouse.current == null)
+            return;
+
+        ButtonControl leftButton = Mouse.current.leftButton;
+        Vector2 screenPosition = Mouse.current.position.ReadValue();
+
+        if (leftButton.wasPressedThisFrame)
+        {
+            // UI(슬라이더, 스크롤 목록 등) 위에서 시작한 드래그는 화면을 움직이지 않는다
+            isPanPointerDown = !IsPointerOverUI();
+            isDragging = false;
+            pressScreenPosition = screenPosition;
+            lastDragScreenPosition = screenPosition;
+        }
+
+        if (isPanPointerDown && leftButton.isPressed)
+        {
+            if (!isDragging &&
+                Vector2.Distance(screenPosition, pressScreenPosition) >= dragThresholdPixels)
+            {
+                isDragging = true;
+            }
+
+            if (isDragging)
+            {
+                // 마우스 아래의 땅이 손가락을 따라오도록 같은 거리만큼 반대로 카메라 이동
+                Vector3 previousWorld = cam.ScreenToWorldPoint(lastDragScreenPosition);
+                Vector3 currentWorld = cam.ScreenToWorldPoint(screenPosition);
+
+                Vector3 delta = previousWorld - currentWorld;
+                delta.z = 0f;
+
+                // 화면 맞춤 모드에서는 세로가 고정이므로 좌우로만 움직인다
+                if (fitToMapBounds)
+                    delta.y = 0f;
+
+                MoveCameraManually(delta);
+
+                lastDragScreenPosition = screenPosition;
+            }
+        }
+
+        if (leftButton.wasReleasedThisFrame || !leftButton.isPressed)
+        {
+            isPanPointerDown = false;
+            isDragging = false;
+        }
+    }
+
+    /// <summary>트랙패드 두 손가락 가로 스와이프(또는 가로 휠)로 카메라를 좌우로 움직인다.</summary>
+    private void HandleHorizontalScrollPan()
+    {
+        if (!enableDragPan || horizontalScrollPanSpeed <= 0f ||
+            cam == null || Mouse.current == null)
+            return;
+
+        float scrollX = Mouse.current.scroll.ReadValue().x;
+
+        if (scrollX == 0f)
+            return;
+
+        float worldDelta =
+            scrollX * horizontalScrollPanSpeed * 0.01f * cam.orthographicSize;
+
+        MoveCameraManually(new Vector3(worldDelta, 0f, 0f));
+    }
+
+    /// <summary>직접 둘러보기로 카메라를 옮기고 플레이어 추적을 잠시 멈춘다.</summary>
+    private void MoveCameraManually(Vector3 delta)
+    {
+        Vector3 position = transform.position + delta;
+
+        if (mapBounds != null)
+        {
+            position = ClampCameraPosition(position);
+        }
+
+        transform.position = position;
+
+        isManualView = true;
+        lastManualViewTime = Time.unscaledTime;
+    }
+
+    /// <summary>둘러보는 중에는 위치를 유지하고, 일정 시간 조작이 없으면 플레이어 추적으로 돌아간다.</summary>
+    private void UpdateManualView()
+    {
+        if (isDragging)
+        {
+            lastManualViewTime = Time.unscaledTime;
+        }
+        else if (returnToPlayerDelay > 0f &&
+                 Time.unscaledTime - lastManualViewTime >= returnToPlayerDelay)
+        {
+            isManualView = false;
+            FollowTarget();
+            return;
+        }
+
+        // 줌이 바뀌어도 맵 밖이 보이지 않도록 위치만 다시 제한
+        if (mapBounds != null)
+        {
+            transform.position = ClampCameraPosition(transform.position);
+        }
+    }
+
+    /// <summary>둘러보기를 끝내고 플레이어 추적을 다시 시작한다. (캐릭터 이동 클릭 시 호출)</summary>
+    public void ResumeFollow()
+    {
+        isManualView = false;
+    }
+
+    /// <summary>마우스가 UI 위에 있는지 확인한다.</summary>
+    private bool IsPointerOverUI()
+    {
+        return EventSystem.current != null &&
+               EventSystem.current.IsPointerOverGameObject();
     }
 
     // 기존 플레이어 추적
@@ -132,6 +327,7 @@ public class CameraFollow : MonoBehaviour
     {
         isViewingBuilding = false;
         viewingTarget = null;
+        isManualView = false;
 
         Debug.Log("플레이어 카메라로 복귀");
     }
@@ -175,8 +371,9 @@ public class CameraFollow : MonoBehaviour
             );
         }
 
+        // 화면 맞춤 모드에서는 세로를 맵 중앙에 고정
         // 맵이 화면보다 낮다면 맵 중앙에 고정
-        if (minY > maxY)
+        if (fitToMapBounds || minY > maxY)
         {
             position.y = bounds.center.y;
         }

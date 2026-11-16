@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 
@@ -26,17 +27,26 @@ public class BuildingPlacement : MonoBehaviour
 
     // 변수 설명: 마우스 주변에 생성된 격자 오브젝트 목록
     private List<GameObject> buildGridCells = new List<GameObject>();
+
+    // 변수 설명: 맵 전체 격자선이 있으므로 기본은 마우스 주변 격자를 숨긴다
+    [SerializeField] private bool showMouseGrid = false;
     ///
     ///
     ///
     [Header("Map Grid")]
-    // 변수 설명: 맵 전체 격자를 표시할 프리팹
-    [SerializeField] private GameObject mapGridCellPrefab;
     // 변수 설명: 건물 설치와 격자 표시에 사용할 맵 경계
     [SerializeField] private MapBounds mapBounds;
+    // 변수 설명: 맵 전체 격자선 색상
+    [SerializeField] private Color mapGridLineColor = new Color(1f, 1f, 1f, 0.35f);
+    // 변수 설명: 맵 전체 격자선 두께(월드 단위)
+    [SerializeField] private float mapGridLineWidth = 0.03f;
+    // 변수 설명: 격자선 정렬 순서 (바닥 타일맵 -10보다 위, 건물 0·설치 미리보기 -1보다 아래)
+    [SerializeField] private int mapGridSortingOrder = -5;
 
-    // 변수 설명: 전체 맵에 생성된 격자 오브젝트 목록
-    private List<GameObject> mapGridCells = new List<GameObject>();
+    // 변수 설명: 맵 전체 격자선을 묶는 부모 오브젝트
+    private GameObject mapGridRoot;
+    // 변수 설명: 격자선을 그릴 때 사용할 흰색 스프라이트
+    private Sprite gridLineSprite;
 
 
 
@@ -49,6 +59,17 @@ public class BuildingPlacement : MonoBehaviour
     // 변수 설명: 현재 건설 모드 및 선택 도구를 관리하는 컴포넌트
     [SerializeField] private BuildingModeManager buildingModeManager;
 
+
+    [Header("설치 입력")]
+    // 변수 설명: 좌클릭 후 이 거리(px) 이상 끌면 설치가 아닌 화면 드래그로 판정
+    [SerializeField] private float clickDragThreshold = 8f;
+    // 변수 설명: 건물 하나를 설치하면 건설 모드를 자동으로 종료할지 여부
+    [SerializeField] private bool exitBuildModeAfterPlace = true;
+
+    // 변수 설명: 좌클릭을 눌렀고 아직 드래그로 바뀌지 않아 설치로 처리될 예정인지 여부
+    private bool isPlaceClickPending = false;
+    // 변수 설명: 좌클릭을 누른 화면 좌표
+    private Vector2 placePressScreenPosition;
 
     [Header("설치된 건물 관리")]
     // 변수 설명: 실제로 설치한 건물들을 묶어 둘 부모 Transform
@@ -135,6 +156,7 @@ public class BuildingPlacement : MonoBehaviour
         // 건설 모드가 아니면 Preview 숨김
         if (!buildingModeManager.IsBuildMode)
         {
+            isPlaceClickPending = false;
             SetBuildModeVisuals(false);
             return;
         }
@@ -144,6 +166,7 @@ public class BuildingPlacement : MonoBehaviour
         // BuildingPlacement는 아무것도 하지 않음
         if (buildingModeManager.CurrentTool != BuildingTool.Build)
         {
+            isPlaceClickPending = false;
             SetBuildModeVisuals(false);
             return;
         }
@@ -164,11 +187,54 @@ public class BuildingPlacement : MonoBehaviour
         UpdateGridPreviewColor();
 
 
-        // 우클릭 = 건물 설치
-        if (Mouse.current.rightButton.wasPressedThisFrame)
+        HandlePlaceClick();
+    }
+
+    // 함수 설명: 좌클릭(드래그 없이 눌렀다 떼기)으로 건물을 설치한다.
+    //           드래그는 카메라 둘러보기로 쓰이므로 설치하지 않는다.
+    void HandlePlaceClick()
+    {
+        if (Mouse.current == null)
+            return;
+
+        Vector2 mouseScreenPosition =
+            Mouse.current.position.ReadValue();
+
+        if (Mouse.current.leftButton.wasPressedThisFrame)
         {
-            PlaceBuilding();
+            // 버튼 등 UI 위를 누른 경우는 설치하지 않는다
+            isPlaceClickPending = !IsPointerOverUI();
+            placePressScreenPosition = mouseScreenPosition;
         }
+
+        // 누른 채로 일정 거리 이상 움직이면 드래그로 보고 설치 취소
+        if (isPlaceClickPending &&
+            Mouse.current.leftButton.isPressed &&
+            Vector2.Distance(mouseScreenPosition, placePressScreenPosition) >= clickDragThreshold)
+        {
+            isPlaceClickPending = false;
+        }
+
+        if (Mouse.current.leftButton.wasReleasedThisFrame && isPlaceClickPending)
+        {
+            isPlaceClickPending = false;
+
+            bool placed = PlaceBuilding();
+
+            // 건물 하나를 설치하면 건설 상태에서 나간다
+            if (placed && exitBuildModeAfterPlace)
+            {
+                buildingModeManager.ExitBuildMode();
+                SetBuildModeVisuals(false);
+            }
+        }
+    }
+
+    // 함수 설명: 마우스가 UI 위에 있는지 확인한다.
+    bool IsPointerOverUI()
+    {
+        return EventSystem.current != null &&
+               EventSystem.current.IsPointerOverGameObject();
     }
 
     // Preview 생성
@@ -298,12 +364,8 @@ public class BuildingPlacement : MonoBehaviour
                     return false;
                 }
 
-                // Cell의 중앙 월드 좌표
-                Vector3 cellWorldPosition =
-                    grid.GetCellCenterWorld(cell);
-
-                // MapBounds 밖인지 검사
-                if (!mapBounds.IsInside(cellWorldPosition))
+                // 맵 전체 격자선 안쪽(칸 전체가 맵 경계 안)인지 검사
+                if (!IsCellInsideBuildArea(cell))
                 {
                     return false;
                 }
@@ -369,13 +431,13 @@ public class BuildingPlacement : MonoBehaviour
 
     // 실제 건물 설치
     // 함수 설명: 설치 조건과 비용을 확인하고 실제 건물을 생성·초기화한 뒤 자원과 점유 정보를 갱신한다.
-    void PlaceBuilding()
+    bool PlaceBuilding()
     {
         // 설치할 수 없는 위치라면 건설 중단
         if (!canPlace)
         {
             Debug.Log("이 위치에는 건물을 설치할 수 없습니다.");
-            return;
+            return false;
         }
 
         // 건설에 필요한 정보 확인
@@ -384,14 +446,14 @@ public class BuildingPlacement : MonoBehaviour
             previewObject == null)
         {
             Debug.LogError("건물 설치에 필요한 정보가 없습니다.");
-            return;
+            return false;
         }
 
         // 건물 ID 확인
         if (string.IsNullOrEmpty(currentBuildingData.buildingID))
         {
             Debug.LogError("BuildingID가 설정되지 않았습니다.");
-            return;
+            return false;
         }
 
         // 건물 Prefab 확인
@@ -401,21 +463,21 @@ public class BuildingPlacement : MonoBehaviour
         if (prefabBuilding == null || prefabBuilding.Data == null)
         {
             Debug.LogError("건물 Prefab 설정이 올바르지 않습니다.");
-            return;
+            return false;
         }
 
         // 설치된 건물을 보관할 부모 확인
         if (placedBuildingsParent == null)
         {
             Debug.LogError("PlacedBuildings Parent가 연결되지 않았습니다.");
-            return;
+            return false;
         }
 
         // 건설 비용 또는 데코레이션 보유 수량 확인
         if (!CanAffordBuilding())
         {
             Debug.Log("건물을 설치하기 위한 자원이 부족합니다.");
-            return;
+            return false;
         }
 
         // 건물 생성
@@ -434,7 +496,7 @@ public class BuildingPlacement : MonoBehaviour
         {
             Debug.LogError("생성된 건물에 Building 컴포넌트가 없습니다.");
             Destroy(placedObject);
-            return;
+            return false;
         }
 
         // 건물 고유 번호 부여
@@ -445,13 +507,20 @@ public class BuildingPlacement : MonoBehaviour
         if (newNumber <= 0)
         {
             Destroy(placedObject);
-            return;
+            return false;
         }
 
         placedBuilding.SetBuildingNumber(newNumber);
 
         // 실제 설치 완료 처리
         placedBuilding.Initialize(currentCellPosition);
+
+        // 메인 건물(장식 제외)은 30초마다 골드를 수확할 수 있게 한다
+        if (placedBuilding.Data.buildingType != BuildingType.Decoration &&
+            placedObject.GetComponent<BuildingHarvest>() == null)
+        {
+            placedObject.AddComponent<BuildingHarvest>();
+        }
 
         // 건설 비용 또는 데코레이션 수량 차감
         PayBuildingCost();
@@ -465,6 +534,8 @@ public class BuildingPlacement : MonoBehaviour
             " #" + placedBuilding.BuildingNumber +
             " / 위치 : " + currentCellPosition
         );
+
+        return true;
     }
 
     //GridpreviewCell을 생성하는 함수
@@ -614,15 +685,14 @@ public class BuildingPlacement : MonoBehaviour
         }
     }
     //맵 그리드 만들기
-    // 함수 설명: MapBounds 범위에 해당하는 전체 맵 격자를 생성한다.
+    // 함수 설명: 건설 가능 영역(맵 경계 안에 완전히 들어오는 칸)의 경계선을 따라 맵 전체 격자선을 그린다.
     void CreateMapGrid()
     {
-        foreach (GameObject cell in mapGridCells)
+        if (mapGridRoot != null)
         {
-            Destroy(cell);
+            Destroy(mapGridRoot);
+            mapGridRoot = null;
         }
-
-        mapGridCells.Clear();
 
         if (mapBounds == null)
         {
@@ -630,41 +700,127 @@ public class BuildingPlacement : MonoBehaviour
             return;
         }
 
-        Vector3Int minCell =
-            grid.WorldToCell(mapBounds.Min);
-
-        Vector3Int maxCell =
-            grid.WorldToCell(mapBounds.Max);
-
-        for (int x = minCell.x; x < maxCell.x; x++)
+        if (!TryGetBuildAreaCellRange(out Vector3Int minCell, out Vector3Int maxCell))
         {
-            for (int y = minCell.y; y < maxCell.y; y++)
-            {
-                Vector3Int cellPosition =
-                    new Vector3Int(x, y, 0);
-
-                Vector3 worldPosition =
-                    grid.GetCellCenterWorld(cellPosition);
-
-                GameObject cell =
-                    Instantiate(
-                        mapGridCellPrefab,
-                        worldPosition,
-                        Quaternion.identity
-                    );
-
-                mapGridCells.Add(cell);
-            }
+            Debug.LogWarning("맵 경계 안에 건설 가능한 칸이 없습니다.");
+            return;
         }
+
+        if (gridLineSprite == null)
+        {
+            Texture2D texture = Texture2D.whiteTexture;
+
+            // 1x1 월드 크기의 흰색 스프라이트
+            gridLineSprite = Sprite.Create(
+                texture,
+                new Rect(0, 0, texture.width, texture.height),
+                new Vector2(0.5f, 0.5f),
+                texture.width
+            );
+        }
+
+        mapGridRoot = new GameObject("MapGridLines");
+
+        // 건설 가능 영역의 바깥 테두리 월드 좌표
+        Vector3 bottomLeft = grid.CellToWorld(minCell);
+        Vector3 topRight = grid.CellToWorld(maxCell + new Vector3Int(1, 1, 0));
+
+        float width = topRight.x - bottomLeft.x;
+        float height = topRight.y - bottomLeft.y;
+        float centerX = (bottomLeft.x + topRight.x) / 2f;
+        float centerY = (bottomLeft.y + topRight.y) / 2f;
+
+        // 세로선: 각 칸의 왼쪽 경계 + 마지막 오른쪽 경계
+        for (int x = minCell.x; x <= maxCell.x + 1; x++)
+        {
+            float lineX = grid.CellToWorld(new Vector3Int(x, minCell.y, 0)).x;
+
+            CreateGridLine(
+                new Vector3(lineX, centerY, 0f),
+                new Vector2(mapGridLineWidth, height + mapGridLineWidth)
+            );
+        }
+
+        // 가로선: 각 칸의 아래 경계 + 마지막 위쪽 경계
+        for (int y = minCell.y; y <= maxCell.y + 1; y++)
+        {
+            float lineY = grid.CellToWorld(new Vector3Int(minCell.x, y, 0)).y;
+
+            CreateGridLine(
+                new Vector3(centerX, lineY, 0f),
+                new Vector2(width + mapGridLineWidth, mapGridLineWidth)
+            );
+        }
+
+        mapGridRoot.SetActive(false);
 
         Debug.Log(
             "Map Grid 생성 완료 : " +
-            minCell + " ~ " + maxCell
+            minCell + " ~ " + maxCell +
+            " (" + (maxCell.x - minCell.x + 1) + " x " + (maxCell.y - minCell.y + 1) + " 칸)"
         );
     }
 
+    // 함수 설명: 지정한 위치와 크기로 격자선 하나를 만든다.
+    void CreateGridLine(Vector3 position, Vector2 size)
+    {
+        GameObject line = new GameObject("GridLine");
+        line.transform.SetParent(mapGridRoot.transform, false);
+        line.transform.position = position;
+        line.transform.localScale = new Vector3(size.x, size.y, 1f);
 
+        SpriteRenderer renderer = line.AddComponent<SpriteRenderer>();
+        renderer.sprite = gridLineSprite;
+        renderer.color = mapGridLineColor;
+        renderer.sortingOrder = mapGridSortingOrder;
+    }
 
+    // 함수 설명: 칸 전체가 맵 경계 안에 들어오는지 검사한다. (격자선 안쪽 칸에만 건설 가능)
+    bool IsCellInsideBuildArea(Vector3Int cell)
+    {
+        if (mapBounds == null)
+            return false;
+
+        const float epsilon = 0.001f;
+
+        Vector3 cellMin = grid.CellToWorld(cell);
+        Vector3 cellMax = grid.CellToWorld(cell + new Vector3Int(1, 1, 0));
+
+        return mapBounds.IsInside(cellMin + new Vector3(epsilon, epsilon, 0f)) &&
+               mapBounds.IsInside(cellMax - new Vector3(epsilon, epsilon, 0f));
+    }
+
+    // 함수 설명: 건설 가능한 칸들의 최소·최대 셀 좌표를 구한다.
+    bool TryGetBuildAreaCellRange(out Vector3Int minCell, out Vector3Int maxCell)
+    {
+        Vector3Int searchMin =
+            grid.WorldToCell(mapBounds.Min) - new Vector3Int(1, 1, 0);
+
+        Vector3Int searchMax =
+            grid.WorldToCell(mapBounds.Max) + new Vector3Int(1, 1, 0);
+
+        minCell = new Vector3Int(int.MaxValue, int.MaxValue, 0);
+        maxCell = new Vector3Int(int.MinValue, int.MinValue, 0);
+
+        bool found = false;
+
+        for (int x = searchMin.x; x <= searchMax.x; x++)
+        {
+            for (int y = searchMin.y; y <= searchMax.y; y++)
+            {
+                Vector3Int cell = new Vector3Int(x, y, 0);
+
+                if (!IsCellInsideBuildArea(cell))
+                    continue;
+
+                found = true;
+                minCell = Vector3Int.Min(minCell, cell);
+                maxCell = Vector3Int.Max(maxCell, cell);
+            }
+        }
+
+        return found;
+    }
 
     // 함수 설명: 미리보기와 모든 격자 시각 요소의 표시 여부를 일괄 변경한다.
     void SetBuildModeVisuals(bool active)
@@ -682,15 +838,16 @@ public class BuildingPlacement : MonoBehaviour
         }
 
 
-        // 마우스 주변 격자
+        // 마우스 주변 격자 (옵션)
         foreach (GameObject cell in buildGridCells)
         {
-            cell.SetActive(active);
+            cell.SetActive(active && showMouseGrid);
         }
-        // 맵 전체 격자
-        foreach (GameObject cell in mapGridCells)
+
+        // 맵 전체 격자선
+        if (mapGridRoot != null && mapGridRoot.activeSelf != active)
         {
-            cell.SetActive(active);
+            mapGridRoot.SetActive(active);
         }
     }
     // 함수 설명: 마우스 주변 격자 셀을 현재 설치 위치 기준으로 재배치한다.
