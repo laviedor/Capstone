@@ -1,24 +1,24 @@
 using TMPro;
 using UnityEngine;
 
-// ½ºÅ©¸³Æ® ¼³¸í: Ã¶°Å È®ÀÎÃ¢°ú È¯±Ş ¾È³» ¹®±¸¸¦ °ü¸®ÇÑ´Ù.
+// ìŠ¤í¬ë¦½íŠ¸ ì„¤ëª…: ì² ê±° í™•ì¸ì°½ê³¼ í™˜ê¸‰ ì•ˆë‚´ ë¬¸êµ¬ë¥¼ ê´€ë¦¬í•œë‹¤.
 public class DemolitionConfirmUI : MonoBehaviour
 {
     [Header("UI")]
     [SerializeField]
-    // º¯¼ö ¼³¸í: Ã¶°Å È®ÀÎÃ¢ÀÇ ÃÖ»óÀ§ UI ¿ÀºêÁ§Æ®
+    // ë³€ìˆ˜ ì„¤ëª…: ì² ê±° í™•ì¸ì°½ì˜ ìµœìƒìœ„ UI ì˜¤ë¸Œì íŠ¸
     private GameObject confirmPanel;
 
     [SerializeField]
-    // º¯¼ö ¼³¸í: Ã¶°Å ´ë»ó ¹× È¯±Ş ¾È³»¸¦ Ç¥½ÃÇÒ TMP ÅØ½ºÆ®
+    // ë³€ìˆ˜ ì„¤ëª…: ì² ê±° ëŒ€ìƒ ë° í™˜ê¸‰ ì•ˆë‚´ë¥¼ í‘œì‹œí•  TMP í…ìŠ¤íŠ¸
     private TMP_Text messageText;
 
     [Header("Demolition")]
     [SerializeField]
-    // º¯¼ö ¼³¸í: ½ÇÁ¦ °Ç¹° Ã¶°Å Ã³¸®¸¦ ¼öÇàÇÏ´Â ÄÄÆ÷³ÍÆ®
+    // ë³€ìˆ˜ ì„¤ëª…: ì‹¤ì œ ê±´ë¬¼ ì² ê±° ì²˜ë¦¬ë¥¼ ìˆ˜í–‰í•˜ëŠ” ì»´í¬ë„ŒíŠ¸
     private BuildingDemolition buildingDemolition;
 
-    // ¼Ó¼º ¼³¸í: ÇöÀç UI ÆĞ³ÎÀÌ ¿­·Á ÀÖ´ÂÁö ¿ÜºÎ¿¡¼­ È®ÀÎÇÒ ¼ö ÀÖ´Ù.
+    // ì†ì„± ì„¤ëª…: í˜„ì¬ UI íŒ¨ë„ì´ ì—´ë ¤ ìˆëŠ”ì§€ ì™¸ë¶€ì—ì„œ í™•ì¸í•  ìˆ˜ ìˆë‹¤.
     public bool IsOpen
     {
         get
@@ -28,7 +28,7 @@ public class DemolitionConfirmUI : MonoBehaviour
         }
     }
 
-    // ÇÔ¼ö ¼³¸í: Ã¶°Å È®ÀÎ ÆĞ³ÎÀ» Ã³À½ºÎÅÍ ¼û±ä´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ì² ê±° í™•ì¸ íŒ¨ë„ì„ ì²˜ìŒë¶€í„° ìˆ¨ê¸´ë‹¤.
     private void Awake()
     {
         if (confirmPanel != null)
@@ -38,7 +38,7 @@ public class DemolitionConfirmUI : MonoBehaviour
     }
 
 
-    // ÇÔ¼ö ¼³¸í: °Ç¹° Á¾·ù¿¡ ¸Â´Â È¯±Ş ¾È³» ¹®±¸¸¦ Ç¥½ÃÇÏ°í È®ÀÎ ÆĞ³ÎÀ» ¿¬´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ê±´ë¬¼ ì¢…ë¥˜ì— ë§ëŠ” í™˜ê¸‰ ì•ˆë‚´ ë¬¸êµ¬ë¥¼ í‘œì‹œí•˜ê³  í™•ì¸ íŒ¨ë„ì„ ì—°ë‹¤.
     public void Open(Building building)
     {
         if (building == null || building.Data == null)
@@ -57,19 +57,19 @@ public class DemolitionConfirmUI : MonoBehaviour
         if (building.Data.buildingType == BuildingType.Decoration)
         {
             messageText.text =
-                $"{buildingName}À»(¸¦) Ã¶°ÅÇÏ½Ã°Ú½À´Ï±î?\n" +
-                "Ã¶°ÅÇÏ¸é µ¥ÄÚ·¹ÀÌ¼Ç ¾ÆÀÌÅÛ 1°³°¡ ¹İÈ¯µË´Ï´Ù.";
+                $"{buildingName}ì„(ë¥¼) ì² ê±°í•˜ì‹œê² ìŠµë‹ˆê¹Œ?\n" +
+                "ì² ê±°í•˜ë©´ ë°ì½”ë ˆì´ì…˜ ì•„ì´í…œ 1ê°œê°€ ë°˜í™˜ë©ë‹ˆë‹¤.";
         }
         else
         {
             messageText.text =
-                $"{buildingName}À»(¸¦) Ã¶°ÅÇÏ½Ã°Ú½À´Ï±î?\n" +
-                "°Ç¼³¿¡ »ç¿ëÇÑ ÀÚ¿øÀÇ 90%°¡ È¯±ŞµË´Ï´Ù.";
+                $"{buildingName}ì„(ë¥¼) ì² ê±°í•˜ì‹œê² ìŠµë‹ˆê¹Œ?\n" +
+                "ê±´ì„¤ì— ì‚¬ìš©í•œ ìì›ì˜ 90%ê°€ í™˜ê¸‰ë©ë‹ˆë‹¤.";
         }
     }
 
 
-    // ÇÔ¼ö ¼³¸í: È®ÀÎÃ¢À» ´İ°í Ã¶°Å ´ë»ó ¼±ÅÃÀ» ÇØÁ¦ÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: í™•ì¸ì°½ì„ ë‹«ê³  ì² ê±° ëŒ€ìƒ ì„ íƒì„ í•´ì œí•œë‹¤.
     public void Cancel()
     {
         confirmPanel.SetActive(false);
@@ -79,15 +79,15 @@ public class DemolitionConfirmUI : MonoBehaviour
             buildingDemolition.ClearSelection();
         }
 
-        Debug.Log("Ã¶°Å Ãë¼Ò");
+        Debug.Log("ì² ê±° ì·¨ì†Œ");
     }
 
 
 
 
 
-    //Ã¶°Å È®ÀÎ
-    // ÇÔ¼ö ¼³¸í: ¼±ÅÃÇÑ °Ç¹°ÀÇ ½ÇÁ¦ Ã¶°Å Ã³¸®¸¦ ¿äÃ»ÇÏ°í È®ÀÎÃ¢À» ´İ´Â´Ù.
+    //ì² ê±° í™•ì¸
+    // í•¨ìˆ˜ ì„¤ëª…: ì„ íƒí•œ ê±´ë¬¼ì˜ ì‹¤ì œ ì² ê±° ì²˜ë¦¬ë¥¼ ìš”ì²­í•˜ê³  í™•ì¸ì°½ì„ ë‹«ëŠ”ë‹¤.
     public void Confirm()
     {
         if (buildingDemolition == null)

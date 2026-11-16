@@ -3,31 +3,31 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-// ÇÊµå ¼±ÅÃ ¹öÆ°°ú ÀÌµ¿ ¹öÆ°ÀÇ »óÅÂ ¹× ¾È³» ¹®±¸¸¦ °ü¸®ÇÏ´Â UIÀÔ´Ï´Ù.
+// í•„ë“œ ì„ íƒ ë²„íŠ¼ê³¼ ì´ë™ ë²„íŠ¼ì˜ ìƒíƒœ ë° ì•ˆë‚´ ë¬¸êµ¬ë¥¼ ê´€ë¦¬í•˜ëŠ” UIì…ë‹ˆë‹¤.
 public class FieldSelectionUI : MonoBehaviour
 {
-    [Header("ÇÊµå ¼±ÅÃ ¹öÆ°")]
-    // ½£ ÇÊµå¸¦ ¼±ÅÃÇÏ´Â ¹öÆ°ÀÔ´Ï´Ù.
+    [Header("í•„ë“œ ì„ íƒ ë²„íŠ¼")]
+    // ìˆ² í•„ë“œë¥¼ ì„ íƒí•˜ëŠ” ë²„íŠ¼ì…ë‹ˆë‹¤.
     [SerializeField] private Button forestButton;
 
-    [Header("ÇÊµå Á¤º¸")]
-    // ÇöÀç ¼±ÅÃÇÑ Áö¿ªÀÇ ÀÌ¸§À» Ç¥½ÃÇÕ´Ï´Ù.
+    [Header("í•„ë“œ ì •ë³´")]
+    // í˜„ì¬ ì„ íƒí•œ ì§€ì—­ì˜ ì´ë¦„ì„ í‘œì‹œí•©ë‹ˆë‹¤.
     [SerializeField] private TMP_Text fieldNameText;
-    // ¼±ÅÃ Áö¿ª¿¡ ´ëÇÑ ¾È³» ¹®±¸¸¦ Ç¥½ÃÇÕ´Ï´Ù.
+    // ì„ íƒ ì§€ì—­ì— ëŒ€í•œ ì•ˆë‚´ ë¬¸êµ¬ë¥¼ í‘œì‹œí•©ë‹ˆë‹¤.
     [SerializeField] private TMP_Text fieldDescriptionText;
-    // ¼±ÅÃÇÑ ÇÊµå·Î ÀÌµ¿ÇÏ°Å³ª ¸¶À»·Î µ¹¾Æ°¡´Â ¹öÆ°ÀÔ´Ï´Ù.
+    // ì„ íƒí•œ í•„ë“œë¡œ ì´ë™í•˜ê±°ë‚˜ ë§ˆì„ë¡œ ëŒì•„ê°€ëŠ” ë²„íŠ¼ì…ë‹ˆë‹¤.
     [SerializeField] private Button moveButton;
 
-    // »ç¿ëÀÚ°¡ ¼±ÅÃÇÑ ¸ñÀûÁö ¾À ÀÌ¸§À» ÀÓ½Ã ÀúÀåÇÕ´Ï´Ù.
+    // ì‚¬ìš©ìê°€ ì„ íƒí•œ ëª©ì ì§€ ì”¬ ì´ë¦„ì„ ì„ì‹œ ì €ì¥í•©ë‹ˆë‹¤.
     private string selectedSceneName = "";
 
-    // UI°¡ ´Ù½Ã Ç¥½ÃµÉ ¶§ ÇöÀç À§Ä¡¿¡ ¸Â´Â ¹öÆ° »óÅÂ·Î °»½ÅÇÕ´Ï´Ù.
+    // UIê°€ ë‹¤ì‹œ í‘œì‹œë  ë•Œ í˜„ì¬ ìœ„ì¹˜ì— ë§ëŠ” ë²„íŠ¼ ìƒíƒœë¡œ ê°±ì‹ í•©ë‹ˆë‹¤.
     private void OnEnable()
     {
         RefreshFieldUI();
     }
 
-    // ¼±ÅÃ/ÀÌµ¿ ¹öÆ°ÀÇ Å¬¸¯ ÀÌº¥Æ®¸¦ ¿¬°áÇÏ°í ÃÊ±â UI¸¦ °»½ÅÇÕ´Ï´Ù.
+    // ì„ íƒ/ì´ë™ ë²„íŠ¼ì˜ í´ë¦­ ì´ë²¤íŠ¸ë¥¼ ì—°ê²°í•˜ê³  ì´ˆê¸° UIë¥¼ ê°±ì‹ í•©ë‹ˆë‹¤.
     private void Start()
     {
         forestButton.onClick.AddListener(SelectForest);
@@ -36,25 +36,25 @@ public class FieldSelectionUI : MonoBehaviour
         RefreshFieldUI();
     }
 
-    // ¸¶À»¿¡ ÀÖ´ÂÁö ÇÊµå¿¡ ÀÖ´ÂÁö¿¡ µû¶ó ¹öÆ°°ú ¼³¸íÀ» ´Ù¸£°Ô Ç¥½ÃÇÕ´Ï´Ù.
+    // ë§ˆì„ì— ìˆëŠ”ì§€ í•„ë“œì— ìˆëŠ”ì§€ì— ë”°ë¼ ë²„íŠ¼ê³¼ ì„¤ëª…ì„ ë‹¤ë¥´ê²Œ í‘œì‹œí•©ë‹ˆë‹¤.
     private void RefreshFieldUI()
     {
-        // ÇöÀç ¾À ÀüÈ¯ °ü¸®ÀÚ¿¡ Á¢±ÙÇÏ¿© À§Ä¡ »óÅÂ¸¦ È®ÀÎÇÏ°Å³ª ÀÌµ¿À» ¿äÃ»ÇÕ´Ï´Ù.
+        // í˜„ì¬ ì”¬ ì „í™˜ ê´€ë¦¬ìì— ì ‘ê·¼í•˜ì—¬ ìœ„ì¹˜ ìƒíƒœë¥¼ í™•ì¸í•˜ê±°ë‚˜ ì´ë™ì„ ìš”ì²­í•©ë‹ˆë‹¤.
         FieldSceneManager manager = FieldSceneManager.Instance;
 
         if (manager == null)
             return;
 
-        // ÇÊµå¿¡ ÀÖ´Ù¸é ¸¶À» º¹±Í¿ë UI¸¦ º¸¿©Áİ´Ï´Ù.
+        // í•„ë“œì— ìˆë‹¤ë©´ ë§ˆì„ ë³µê·€ìš© UIë¥¼ ë³´ì—¬ì¤ë‹ˆë‹¤.
         if (manager.IsInField)
         {
-            // ½£¿¡ ÀÖÀ» ¶§
-            // º¹±Í È­¸é¿¡ Ç¥½ÃÇÒ ¸¶À» ¾À ÀÌ¸§ÀÔ´Ï´Ù. ½ÇÁ¦ º¹±Í´Â ¸Å´ÏÀúÀÇ ¾ğ·Îµå ÇÔ¼ö·Î Ã³¸®ÇÕ´Ï´Ù.
+            // ìˆ²ì— ìˆì„ ë•Œ
+            // ë³µê·€ í™”ë©´ì— í‘œì‹œí•  ë§ˆì„ ì”¬ ì´ë¦„ì…ë‹ˆë‹¤. ì‹¤ì œ ë³µê·€ëŠ” ë§¤ë‹ˆì €ì˜ ì–¸ë¡œë“œ í•¨ìˆ˜ë¡œ ì²˜ë¦¬í•©ë‹ˆë‹¤.
             selectedSceneName = "VillageScene";
 
-            fieldNameText.text = "¸¶À»";
+            fieldNameText.text = "ë§ˆì„";
             fieldDescriptionText.text =
-                "±âÁ¸ ¸¶À»·Î µ¹¾Æ°©´Ï´Ù.";
+                "ê¸°ì¡´ ë§ˆì„ë¡œ ëŒì•„ê°‘ë‹ˆë‹¤.";
 
             forestButton.gameObject.SetActive(false);
 
@@ -62,12 +62,12 @@ public class FieldSelectionUI : MonoBehaviour
         }
         else
         {
-            // ¸¶À»¿¡ ÀÖÀ» ¶§
-            // ¸¶À»¿¡¼­´Â ¾ÆÁ÷ ÇÊµå¸¦ ¼±ÅÃÇÏÁö ¾ÊÀº »óÅÂ·Î ÃÊ±âÈ­ÇÕ´Ï´Ù.
+            // ë§ˆì„ì— ìˆì„ ë•Œ
+            // ë§ˆì„ì—ì„œëŠ” ì•„ì§ í•„ë“œë¥¼ ì„ íƒí•˜ì§€ ì•Šì€ ìƒíƒœë¡œ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
             selectedSceneName = "";
 
-            fieldNameText.text = "ÇÊµå¸¦ ¼±ÅÃÇÏ¼¼¿ä";
-            fieldDescriptionText.text = "ÀÌµ¿ÇÒ Áö¿ªÀ» ¼±ÅÃÇØÁÖ¼¼¿ä.";
+            fieldNameText.text = "í•„ë“œë¥¼ ì„ íƒí•˜ì„¸ìš”";
+            fieldDescriptionText.text = "ì´ë™í•  ì§€ì—­ì„ ì„ íƒí•´ì£¼ì„¸ìš”.";
 
             forestButton.gameObject.SetActive(true);
 
@@ -75,47 +75,47 @@ public class FieldSelectionUI : MonoBehaviour
         }
     }
 
-    // ½£ ¼±ÅÃ ½Ã ¸ñÀûÁö¿Í ¼³¸íÀ» °»½ÅÇÏ°í ÀÌµ¿ ¹öÆ°À» È°¼ºÈ­ÇÕ´Ï´Ù.
+    // ìˆ² ì„ íƒ ì‹œ ëª©ì ì§€ì™€ ì„¤ëª…ì„ ê°±ì‹ í•˜ê³  ì´ë™ ë²„íŠ¼ì„ í™œì„±í™”í•©ë‹ˆë‹¤.
     private void SelectForest()
     {
-        // ½£¿¡ ÇØ´çÇÏ´Â ¾À ÀÌ¸§À» ¼±ÅÃ »óÅÂ¿¡ ±â·ÏÇÕ´Ï´Ù.
+        // ìˆ²ì— í•´ë‹¹í•˜ëŠ” ì”¬ ì´ë¦„ì„ ì„ íƒ ìƒíƒœì— ê¸°ë¡í•©ë‹ˆë‹¤.
         selectedSceneName = "ResourceField";
 
-        fieldNameText.text = "½£";
+        fieldNameText.text = "ìˆ²";
         fieldDescriptionText.text =
-            "³ª¹«¿Í ÀÚ¿¬ ÀÚ¿øÀ» È¹µæÇÒ ¼ö ÀÖ´Â Áö¿ªÀÔ´Ï´Ù.";
+            "ë‚˜ë¬´ì™€ ìì—° ìì›ì„ íšë“í•  ìˆ˜ ìˆëŠ” ì§€ì—­ì…ë‹ˆë‹¤.";
 
         moveButton.interactable = true;
 
-        Debug.Log("¼±ÅÃÇÑ ÇÊµå: " + selectedSceneName);
+        Debug.Log("ì„ íƒí•œ í•„ë“œ: " + selectedSceneName);
     }
 
-    // ÇöÀç À§Ä¡¿¡ µû¶ó ¸¶À» º¹±Í ¶Ç´Â ¼±ÅÃÇÑ ÇÊµå·ÎÀÇ ÀÌµ¿À» ¿äÃ»ÇÕ´Ï´Ù.
+    // í˜„ì¬ ìœ„ì¹˜ì— ë”°ë¼ ë§ˆì„ ë³µê·€ ë˜ëŠ” ì„ íƒí•œ í•„ë“œë¡œì˜ ì´ë™ì„ ìš”ì²­í•©ë‹ˆë‹¤.
     private void OnMoveButtonClicked()
     {
         FieldSceneManager manager = FieldSceneManager.Instance;
 
         if (manager == null)
         {
-            Debug.LogError("FieldSceneManager¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogError("FieldSceneManagerë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
         if (manager.IsInField)
         {
-            Debug.Log("¸¶À» º¹±Í ¿äÃ»");
+            Debug.Log("ë§ˆì„ ë³µê·€ ìš”ì²­");
             manager.ReturnToVillage();
             return;
         }
 
-        // ¸ñÀûÁö¸¦ ¼±ÅÃÇÏÁö ¾ÊÀº °æ¿ì Àß¸øµÈ ÀÌµ¿ ¿äÃ»À» Â÷´ÜÇÕ´Ï´Ù.
+        // ëª©ì ì§€ë¥¼ ì„ íƒí•˜ì§€ ì•Šì€ ê²½ìš° ì˜ëª»ëœ ì´ë™ ìš”ì²­ì„ ì°¨ë‹¨í•©ë‹ˆë‹¤.
         if (string.IsNullOrEmpty(selectedSceneName))
         {
-            Debug.LogWarning("ÀÌµ¿ÇÒ ÇÊµå°¡ ¼±ÅÃµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            Debug.LogWarning("ì´ë™í•  í•„ë“œê°€ ì„ íƒë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // ¼±ÅÃÇÑ ÇÊµå ¾ÀÀ» ºñµ¿±â·Î ºÒ·¯¿Àµµ·Ï ¸Å´ÏÀú¿¡ ¿äÃ»ÇÕ´Ï´Ù.
+        // ì„ íƒí•œ í•„ë“œ ì”¬ì„ ë¹„ë™ê¸°ë¡œ ë¶ˆëŸ¬ì˜¤ë„ë¡ ë§¤ë‹ˆì €ì— ìš”ì²­í•©ë‹ˆë‹¤.
         manager.MoveToField(selectedSceneName);
     }
 }

@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Text;
 
-// °Ç¼³ ¸ñ·ÏÀÇ °³º° °Ç¹°/Àå½Ä Ä«µå¿¡ ÀÌ¸§, ¾ÆÀÌÄÜ, ºñ¿ë ¶Ç´Â º¸À¯·®À» Ç¥½ÃÇÏ°í ¼±ÅÃÀ» Ã³¸®ÇÑ´Ù.
+// ê±´ì„¤ ëª©ë¡ì˜ ê°œë³„ ê±´ë¬¼/ì¥ì‹ ì¹´ë“œì— ì´ë¦„, ì•„ì´ì½˜, ë¹„ìš© ë˜ëŠ” ë³´ìœ ëŸ‰ì„ í‘œì‹œí•˜ê³  ì„ íƒì„ ì²˜ë¦¬í•œë‹¤.
 public class BuildingCardUI : MonoBehaviour
 {
     [Header("UI")]
@@ -12,14 +12,14 @@ public class BuildingCardUI : MonoBehaviour
     [SerializeField] private TMP_Text buildingCostText;
     [SerializeField] private Button cardButton;
 
-    // Ä«µå°¡ ¼±ÅÃÇÒ °Ç¹° µ¥ÀÌÅÍ¿Í »ı¼ºÇÒ ÇÁ¸®ÆÕ, °Ç¼³ ½Ã½ºÅÛ ÂüÁ¶¸¦ º¸°üÇÑ´Ù.
+    // ì¹´ë“œê°€ ì„ íƒí•  ê±´ë¬¼ ë°ì´í„°ì™€ ìƒì„±í•  í”„ë¦¬íŒ¹, ê±´ì„¤ ì‹œìŠ¤í…œ ì°¸ì¡°ë¥¼ ë³´ê´€í•œë‹¤.
     private BuildingData buildingData;
     private GameObject buildingPrefab;
     private BuildingPlacement buildingPlacement;
     private InventoryUI inventoryUI;
     private BuildingModeManager buildingModeManager;
 
-    // Àå½Ä ÀÎº¥Åä¸® º¯°æ ÀÌº¥Æ®¸¦ ±¸µ¶ÇÏ¿© º¸À¯·® Ç¥½Ã¸¦ ÃÖ½Å »óÅÂ·Î À¯ÁöÇÑ´Ù.
+    // ì¥ì‹ ì¸ë²¤í† ë¦¬ ë³€ê²½ ì´ë²¤íŠ¸ë¥¼ êµ¬ë…í•˜ì—¬ ë³´ìœ ëŸ‰ í‘œì‹œë¥¼ ìµœì‹  ìƒíƒœë¡œ ìœ ì§€í•œë‹¤.
     private void OnEnable()
     {
         if (DecorationInventory.Instance != null)
@@ -31,7 +31,7 @@ public class BuildingCardUI : MonoBehaviour
         UpdateCostText();
     }
 
-    // UI ºñÈ°¼ºÈ­ ½Ã ÀÌº¥Æ® ±¸µ¶À» ÇØÁ¦ÇØ Áßº¹ È£ÃâÀ» ¹æÁöÇÑ´Ù.
+    // UI ë¹„í™œì„±í™” ì‹œ ì´ë²¤íŠ¸ êµ¬ë…ì„ í•´ì œí•´ ì¤‘ë³µ í˜¸ì¶œì„ ë°©ì§€í•œë‹¤.
     private void OnDisable()
     {
         if (DecorationInventory.Instance != null)
@@ -41,7 +41,7 @@ public class BuildingCardUI : MonoBehaviour
         }
     }
 
-    // Ä«µå¿¡ °Ç¹° Á¤º¸¿Í °ü·Ã ½Ã½ºÅÛ ÂüÁ¶¸¦ ¿¬°áÇÏ°í ¹öÆ° Å¬¸¯À» µî·ÏÇÑ´Ù.
+    // ì¹´ë“œì— ê±´ë¬¼ ì •ë³´ì™€ ê´€ë ¨ ì‹œìŠ¤í…œ ì°¸ì¡°ë¥¼ ì—°ê²°í•˜ê³  ë²„íŠ¼ í´ë¦­ì„ ë“±ë¡í•œë‹¤.
     public void Setup(
         BuildingData data,
         GameObject prefab,
@@ -52,7 +52,7 @@ public class BuildingCardUI : MonoBehaviour
         if (data == null || prefab == null)
         {
             Debug.LogWarning(
-                "°Ç¹° µ¥ÀÌÅÍ ¶Ç´Â PrefabÀÌ ¾ø½À´Ï´Ù."
+                "ê±´ë¬¼ ë°ì´í„° ë˜ëŠ” Prefabì´ ì—†ìŠµë‹ˆë‹¤."
             );
             return;
         }
@@ -82,7 +82,7 @@ public class BuildingCardUI : MonoBehaviour
         cardButton.onClick.AddListener(OnCardClicked);
     }
 
-    // ¼±ÅÃ °¡´É ¿©ºÎ¸¦ È®ÀÎÇÑ ÈÄ °Ç¼³ ¸ğµå¸¦ ¿­°í ÀÎº¥Åä¸®¸¦ ´İ´Â´Ù.
+    // ì„ íƒ ê°€ëŠ¥ ì—¬ë¶€ë¥¼ í™•ì¸í•œ í›„ ê±´ì„¤ ëª¨ë“œë¥¼ ì—´ê³  ì¸ë²¤í† ë¦¬ë¥¼ ë‹«ëŠ”ë‹¤.
     private void OnCardClicked()
     {
         if (buildingPlacement == null ||
@@ -91,19 +91,19 @@ public class BuildingCardUI : MonoBehaviour
             buildingData == null)
         {
             Debug.LogError(
-                "°Ç¹° ¼±ÅÃ¿¡ ÇÊ¿äÇÑ ÂüÁ¶°¡ ¾ø½À´Ï´Ù."
+                "ê±´ë¬¼ ì„ íƒì— í•„ìš”í•œ ì°¸ì¡°ê°€ ì—†ìŠµë‹ˆë‹¤."
             );
             return;
         }
 
-        // µ¥ÄÚ·¹ÀÌ¼ÇÀº º¸À¯ ¼ö·® È®ÀÎ
+        // ë°ì½”ë ˆì´ì…˜ì€ ë³´ìœ  ìˆ˜ëŸ‰ í™•ì¸
         if (buildingData.buildingType == BuildingType.Decoration)
         {
             if (DecorationInventory.Instance == null ||
                 DecorationInventory.Instance.GetCount(buildingData) <= 0)
             {
                 Debug.LogWarning(
-                    "º¸À¯ÇÑ µ¥ÄÚ·¹ÀÌ¼ÇÀÌ ¾ø½À´Ï´Ù."
+                    "ë³´ìœ í•œ ë°ì½”ë ˆì´ì…˜ì´ ì—†ìŠµë‹ˆë‹¤."
                 );
                 return;
             }
@@ -116,18 +116,18 @@ public class BuildingCardUI : MonoBehaviour
         inventoryUI.CloseInventory();
 
         Debug.Log(
-            "°Ç¹° Ä«µå ¼±ÅÃ: " +
+            "ê±´ë¬¼ ì¹´ë“œ ì„ íƒ: " +
             buildingData.buildingName
         );
     }
 
-    // Àå½ÄÀÌ¸é º¸À¯ ¼ö·®À», ÀÏ¹İ °Ç¹°ÀÌ¸é °Ç¼³ ºñ¿ëÀ» Ç¥½ÃÇÑ´Ù.
+    // ì¥ì‹ì´ë©´ ë³´ìœ  ìˆ˜ëŸ‰ì„, ì¼ë°˜ ê±´ë¬¼ì´ë©´ ê±´ì„¤ ë¹„ìš©ì„ í‘œì‹œí•œë‹¤.
     private void UpdateCostText()
     {
         if (buildingData == null || buildingCostText == null)
             return;
 
-        // µ¥ÄÚ·¹ÀÌ¼ÇÀº º¸À¯ ¼ö·® Ç¥½Ã
+        // ë°ì½”ë ˆì´ì…˜ì€ ë³´ìœ  ìˆ˜ëŸ‰ í‘œì‹œ
         if (buildingData.buildingType == BuildingType.Decoration)
         {
             int count = 0;
@@ -138,7 +138,7 @@ public class BuildingCardUI : MonoBehaviour
                     .GetCount(buildingData);
             }
 
-            buildingCostText.text = "º¸À¯: " + count + "°³";
+            buildingCostText.text = "ë³´ìœ : " + count + "ê°œ";
 
             if (cardButton != null)
                 cardButton.interactable = count > 0;
@@ -146,14 +146,14 @@ public class BuildingCardUI : MonoBehaviour
             return;
         }
 
-        // ÀÏ¹İ °Ç¹°Àº ±âÁ¸ °Ç¼³ ºñ¿ë Ç¥½Ã
+        // ì¼ë°˜ ê±´ë¬¼ì€ ê¸°ì¡´ ê±´ì„¤ ë¹„ìš© í‘œì‹œ
         if (cardButton != null)
             cardButton.interactable = true;
 
         if (buildingData.constructionCosts == null ||
             buildingData.constructionCosts.Length == 0)
         {
-            buildingCostText.text = "¹«·á";
+            buildingCostText.text = "ë¬´ë£Œ";
             return;
         }
 
@@ -179,22 +179,22 @@ public class BuildingCardUI : MonoBehaviour
         buildingCostText.text =
             builder.Length > 0
             ? builder.ToString()
-            : "¹«·á";
+            : "ë¬´ë£Œ";
     }
 
-    // ÀÚ¿ø Á¾·ù ¿­°ÅÇüÀ» È­¸é¿¡ Ç¥½ÃÇÒ ÇÑ±¹¾î ÀÌ¸§À¸·Î º¯È¯ÇÑ´Ù.
+    // ìì› ì¢…ë¥˜ ì—´ê±°í˜•ì„ í™”ë©´ì— í‘œì‹œí•  í•œêµ­ì–´ ì´ë¦„ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
     private string GetResourceName(ResourceType type)
     {
         switch (type)
         {
             case ResourceType.Wood:
-                return "³ª¹«";
+                return "ë‚˜ë¬´";
 
             case ResourceType.Stone:
-                return "µ¹";
+                return "ëŒ";
 
             case ResourceType.Gold:
-                return "°ñµå";
+                return "ê³¨ë“œ";
 
             default:
                 return type.ToString();

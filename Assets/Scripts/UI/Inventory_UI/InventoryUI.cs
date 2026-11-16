@@ -2,63 +2,63 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-// ÀÎº¥Åä¸® Ã¢ÀÇ ¿­±â/´İ±â¿Í ÇÃ·¹ÀÌ¾î¡¤°Ç¼³¡¤ÇÊµå ÅÇ ÀüÈ¯À» °ü¸®ÇÑ´Ù.
+// ì¸ë²¤í† ë¦¬ ì°½ì˜ ì—´ê¸°/ë‹«ê¸°ì™€ í”Œë ˆì´ì–´Â·ê±´ì„¤Â·í•„ë“œ íƒ­ ì „í™˜ì„ ê´€ë¦¬í•œë‹¤.
 public class InventoryUI : MonoBehaviour
 {
-    // ÀüÃ¼ ÀÎº¥Åä¸® Ã¢ ¿ÀºêÁ§Æ®
+    // ì „ì²´ ì¸ë²¤í† ë¦¬ ì°½ ì˜¤ë¸Œì íŠ¸
     [Header("Inventory Window")]
     [SerializeField] private GameObject inventoryWindow;
 
-    // ÅÇ¿¡ µû¶ó ±³´ë·Î Ç¥½ÃÇÒ ÆĞ³Î
+    // íƒ­ì— ë”°ë¼ êµëŒ€ë¡œ í‘œì‹œí•  íŒ¨ë„
     [Header("Inventory Panels")]
     [SerializeField] private GameObject playerPanel;
     [SerializeField] private GameObject buildingPanel;
     [SerializeField] private GameObject fieldPanel;
 
-    // °¢ ÆĞ³Î·Î ÀüÈ¯ÇÏ´Â ¹öÆ°
+    // ê° íŒ¨ë„ë¡œ ì „í™˜í•˜ëŠ” ë²„íŠ¼
     [Header("Tab Buttons")]
     [SerializeField] private Button playerTabButton;
     [SerializeField] private Button buildingTabButton;
     [SerializeField] private Button fieldTabButton;
 
-    // °Ç¼³ ÅÇÀ» ¿­ ¶§ µ¥ÄÚ·¹ÀÌ¼Ç ¸ñ·ÏÀ» °»½ÅÇÒ ÂüÁ¶
+    // ê±´ì„¤ íƒ­ì„ ì—´ ë•Œ ë°ì½”ë ˆì´ì…˜ ëª©ë¡ì„ ê°±ì‹ í•  ì°¸ì¡°
     [Header("Construction List")]
     [SerializeField] private ConstructionListUI constructionListUI;
 
-    // ÇöÀç ÀÎº¥Åä¸® ¿­¸² ¿©ºÎ
+    // í˜„ì¬ ì¸ë²¤í† ë¦¬ ì—´ë¦¼ ì—¬ë¶€
     private bool isOpen = false;
 
-    // ´Ù¸¥ ½ºÅ©¸³Æ®¿¡¼­ ÀÎº¥Åä¸® »óÅÂ¸¦ È®ÀÎÇÒ ¼ö ÀÖµµ·Ï °ø°³
+    // ë‹¤ë¥¸ ìŠ¤í¬ë¦½íŠ¸ì—ì„œ ì¸ë²¤í† ë¦¬ ìƒíƒœë¥¼ í™•ì¸í•  ìˆ˜ ìˆë„ë¡ ê³µê°œ
     public bool IsOpen => isOpen;
 
-    // ¹öÆ° Å¬¸¯ ÀÌº¥Æ®¸¦ ¿¬°áÇÏ°í ÃÊ±â¿¡´Â ÀÎº¥Åä¸®¸¦ ¼û±ä´Ù.
+    // ë²„íŠ¼ í´ë¦­ ì´ë²¤íŠ¸ë¥¼ ì—°ê²°í•˜ê³  ì´ˆê¸°ì—ëŠ” ì¸ë²¤í† ë¦¬ë¥¼ ìˆ¨ê¸´ë‹¤.
     private void Awake()
     {
-        // ¹öÆ° ÀÌº¥Æ® ¿¬°á
+        // ë²„íŠ¼ ì´ë²¤íŠ¸ ì—°ê²°
         playerTabButton.onClick.AddListener(ShowPlayerPanel);
         buildingTabButton.onClick.AddListener(ShowBuildingPanel);
         fieldTabButton.onClick.AddListener(ShowFieldPanel);
 
-        // ½ÃÀÛ ½Ã ÀÎº¥Åä¸® ´İ±â
+        // ì‹œì‘ ì‹œ ì¸ë²¤í† ë¦¬ ë‹«ê¸°
         isOpen = false;
         inventoryWindow.SetActive(false);
     }
 
-    // ¸Å ÇÁ·¹ÀÓ Tab Å° ÀÔ·ÂÀ» °¨ÁöÇÑ´Ù.
+    // ë§¤ í”„ë ˆì„ Tab í‚¤ ì…ë ¥ì„ ê°ì§€í•œë‹¤.
     private void Update()
     {
-        // Å°º¸µå ÀåÄ¡°¡ ¾øÀ¸¸é ÀÔ·ÂÀ» Ã³¸®ÇÏÁö ¾Ê´Â´Ù.
+        // í‚¤ë³´ë“œ ì¥ì¹˜ê°€ ì—†ìœ¼ë©´ ì…ë ¥ì„ ì²˜ë¦¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
         if (Keyboard.current == null)
             return;
 
-        // Tab Å°¸¦ ´©¸¥ ¼ø°£ ÀÎº¥Åä¸® »óÅÂ¸¦ ÀüÈ¯ÇÑ´Ù.
+        // Tab í‚¤ë¥¼ ëˆ„ë¥¸ ìˆœê°„ ì¸ë²¤í† ë¦¬ ìƒíƒœë¥¼ ì „í™˜í•œë‹¤.
         if (Keyboard.current.tabKey.wasPressedThisFrame)
         {
             ToggleInventory();
         }
     }
 
-    // ÀÎº¥Åä¸®¸¦ ¿­°Å³ª ´İ°í, ¿­¸± ¶§ ±âº» ÅÇÀ» ÇÃ·¹ÀÌ¾î ÅÇÀ¸·Î ÁöÁ¤ÇÑ´Ù.
+    // ì¸ë²¤í† ë¦¬ë¥¼ ì—´ê±°ë‚˜ ë‹«ê³ , ì—´ë¦´ ë•Œ ê¸°ë³¸ íƒ­ì„ í”Œë ˆì´ì–´ íƒ­ìœ¼ë¡œ ì§€ì •í•œë‹¤.
     public void ToggleInventory()
     {
         isOpen = !isOpen;
@@ -69,14 +69,14 @@ public class InventoryUI : MonoBehaviour
             ShowPlayerPanel();
         }
     }
-    // ´Ù¸¥ UI³ª ½Ã½ºÅÛ¿¡¼­ È£ÃâÇÒ ¼ö ÀÖ´Â ÀÎº¥Åä¸® ´İ±â ±â´É
+    // ë‹¤ë¥¸ UIë‚˜ ì‹œìŠ¤í…œì—ì„œ í˜¸ì¶œí•  ìˆ˜ ìˆëŠ” ì¸ë²¤í† ë¦¬ ë‹«ê¸° ê¸°ëŠ¥
     public void CloseInventory()
     {
         isOpen = false;
         inventoryWindow.SetActive(false);
     }
 
-    // ÇÃ·¹ÀÌ¾î ÆĞ³Î¸¸ Ç¥½ÃÇÑ´Ù.
+    // í”Œë ˆì´ì–´ íŒ¨ë„ë§Œ í‘œì‹œí•œë‹¤.
     public void ShowPlayerPanel()
     {
         playerPanel.SetActive(true);
@@ -84,7 +84,7 @@ public class InventoryUI : MonoBehaviour
         fieldPanel.SetActive(false);
     }
 
-    // °Ç¼³ ÆĞ³Î¸¸ Ç¥½ÃÇÏ°í º¸À¯ µ¥ÄÚ·¹ÀÌ¼Ç Ä«µå¸¦ ÃÖ½Å »óÅÂ·Î °»½ÅÇÑ´Ù.
+    // ê±´ì„¤ íŒ¨ë„ë§Œ í‘œì‹œí•˜ê³  ë³´ìœ  ë°ì½”ë ˆì´ì…˜ ì¹´ë“œë¥¼ ìµœì‹  ìƒíƒœë¡œ ê°±ì‹ í•œë‹¤.
     public void ShowBuildingPanel()
     {
         playerPanel.SetActive(false);
@@ -97,7 +97,7 @@ public class InventoryUI : MonoBehaviour
         }
     }
 
-    // ÇÊµå ÆĞ³Î¸¸ Ç¥½ÃÇÑ´Ù.
+    // í•„ë“œ íŒ¨ë„ë§Œ í‘œì‹œí•œë‹¤.
     public void ShowFieldPanel()
     {
         playerPanel.SetActive(false);

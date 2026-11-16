@@ -2,37 +2,37 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-// ½ºÅ©¸³Æ® ¼³¸í: °Ç¹° ¸ñ·ÏÀÇ °³º° ¹öÆ° UI¿Í ¼±ÅÃ ÀÌº¥Æ®¸¦ °ü¸®ÇÑ´Ù.
+// ìŠ¤í¬ë¦½íŠ¸ ì„¤ëª…: ê±´ë¬¼ ëª©ë¡ì˜ ê°œë³„ ë²„íŠ¼ UIì™€ ì„ íƒ ì´ë²¤íŠ¸ë¥¼ ê´€ë¦¬í•œë‹¤.
 public class BuildingSelectionButton : MonoBehaviour
 {
     [Header("Building")]
-    // º¯¼ö ¼³¸í: ¼±ÅÃ ¹öÆ°ÀÌ °¡¸®Å°´Â °Ç¹° ÇÁ¸®ÆÕ
+    // ë³€ìˆ˜ ì„¤ëª…: ì„ íƒ ë²„íŠ¼ì´ ê°€ë¦¬í‚¤ëŠ” ê±´ë¬¼ í”„ë¦¬íŒ¹
     [SerializeField] private GameObject buildingPrefab;
 
     [Header("References")]
-    // º¯¼ö ¼³¸í: ¼³Ä¡µÈ °Ç¹°ÀÇ °İÀÚ Á¡À¯ Á¤º¸¸¦ °ü¸®ÇÏ´Â ÄÄÆ÷³ÍÆ®
+    // ë³€ìˆ˜ ì„¤ëª…: ì„¤ì¹˜ëœ ê±´ë¬¼ì˜ ê²©ì ì ìœ  ì •ë³´ë¥¼ ê´€ë¦¬í•˜ëŠ” ì»´í¬ë„ŒíŠ¸
     [SerializeField] private BuildingPlacement buildingPlacement;
-    // º¯¼ö ¼³¸í: °Ç¹° ¼±ÅÃ ÈÄ ´İÀ» °Ç¹° ¸ñ·Ï UI
+    // ë³€ìˆ˜ ì„¤ëª…: ê±´ë¬¼ ì„ íƒ í›„ ë‹«ì„ ê±´ë¬¼ ëª©ë¡ UI
     [SerializeField] private BuildingListUI buildingListUI;
 
     [Header("UI")]
-    // º¯¼ö ¼³¸í: °Ç¹° ÀÌ¸§À» Ç¥½ÃÇÏ´Â ÅØ½ºÆ®
+    // ë³€ìˆ˜ ì„¤ëª…: ê±´ë¬¼ ì´ë¦„ì„ í‘œì‹œí•˜ëŠ” í…ìŠ¤íŠ¸
     [SerializeField] private TMP_Text nameText;
-    // º¯¼ö ¼³¸í: °Ç¼³ ºñ¿ëÀ» Ç¥½ÃÇÏ´Â ÅØ½ºÆ®
+    // ë³€ìˆ˜ ì„¤ëª…: ê±´ì„¤ ë¹„ìš©ì„ í‘œì‹œí•˜ëŠ” í…ìŠ¤íŠ¸
     [SerializeField] private TMP_Text costText;
 
 
-    // º¯¼ö ¼³¸í: Å¬¸¯ ÀÌº¥Æ®¸¦ ¿¬°áÇÒ Unity UI Button
+    // ë³€ìˆ˜ ì„¤ëª…: í´ë¦­ ì´ë²¤íŠ¸ë¥¼ ì—°ê²°í•  Unity UI Button
     private Button button;
 
 
-    // ÇÔ¼ö ¼³¸í: ¹öÆ°¿¡ Ç¥½ÃÇÒ °Ç¹° ÀÌ¸§°ú °Ç¼³ ºñ¿ëÀ» °»½ÅÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ë²„íŠ¼ì— í‘œì‹œí•  ê±´ë¬¼ ì´ë¦„ê³¼ ê±´ì„¤ ë¹„ìš©ì„ ê°±ì‹ í•œë‹¤.
     private void Start()
     {
         UpdateButtonUI();
     }
 
-    // ÇÔ¼ö ¼³¸í: ¿¬°áµÈ °Ç¹° µ¥ÀÌÅÍ·Î ¹öÆ°ÀÇ ÀÌ¸§ ¹× ºñ¿ë ÅØ½ºÆ®¸¦ ±¸¼ºÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ì—°ê²°ëœ ê±´ë¬¼ ë°ì´í„°ë¡œ ë²„íŠ¼ì˜ ì´ë¦„ ë° ë¹„ìš© í…ìŠ¤íŠ¸ë¥¼ êµ¬ì„±í•œë‹¤.
     private void UpdateButtonUI()
     {
         if (buildingPrefab == null)
@@ -49,13 +49,13 @@ public class BuildingSelectionButton : MonoBehaviour
 
         BuildingData data = building.Data;
 
-        // °Ç¹° ÀÌ¸§
+        // ê±´ë¬¼ ì´ë¦„
         if (nameText != null)
         {
             nameText.text = data.buildingName;
         }
 
-        // °Ç¼³ ºñ¿ë
+        // ê±´ì„¤ ë¹„ìš©
         if (costText != null)
         {
             string costString = "";
@@ -75,7 +75,7 @@ public class BuildingSelectionButton : MonoBehaviour
         }
     }
 
-    // ÇÔ¼ö ¼³¸í: Button ÄÄÆ÷³ÍÆ®¸¦ °¡Á®¿Í Å¬¸¯ ÀÌº¥Æ®¿¡ °Ç¹° ¼±ÅÃ ÇÔ¼ö¸¦ µî·ÏÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: Button ì»´í¬ë„ŒíŠ¸ë¥¼ ê°€ì ¸ì™€ í´ë¦­ ì´ë²¤íŠ¸ì— ê±´ë¬¼ ì„ íƒ í•¨ìˆ˜ë¥¼ ë“±ë¡í•œë‹¤.
     private void Awake()
     {
         button = GetComponent<Button>();
@@ -86,13 +86,13 @@ public class BuildingSelectionButton : MonoBehaviour
         }
     }
 
-    // ÇÔ¼ö ¼³¸í: ¼±ÅÃÇÑ °Ç¹° ÇÁ¸®ÆÕÀ» ¹èÄ¡ ½Ã½ºÅÛ¿¡ Àü´ŞÇÏ°í °Ç¹° ¸ñ·ÏÀ» ´İ´Â´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ì„ íƒí•œ ê±´ë¬¼ í”„ë¦¬íŒ¹ì„ ë°°ì¹˜ ì‹œìŠ¤í…œì— ì „ë‹¬í•˜ê³  ê±´ë¬¼ ëª©ë¡ì„ ë‹«ëŠ”ë‹¤.
     private void SelectBuilding()
     {
         if (buildingPlacement == null)
         {
             Debug.LogError(
-                "BuildingPlacement°¡ ¿¬°áµÇ¾î ÀÖÁö ¾Ê½À´Ï´Ù."
+                "BuildingPlacementê°€ ì—°ê²°ë˜ì–´ ìˆì§€ ì•ŠìŠµë‹ˆë‹¤."
             );
 
             return;
@@ -101,18 +101,18 @@ public class BuildingSelectionButton : MonoBehaviour
         if (buildingPrefab == null)
         {
             Debug.LogError(
-                "Building PrefabÀÌ ¿¬°áµÇ¾î ÀÖÁö ¾Ê½À´Ï´Ù."
+                "Building Prefabì´ ì—°ê²°ë˜ì–´ ìˆì§€ ì•ŠìŠµë‹ˆë‹¤."
             );
 
             return;
         }
 
-        // ¼±ÅÃÇÑ PrefabÀ» BuildingPlacement¿¡ Àü´Ş
+        // ì„ íƒí•œ Prefabì„ BuildingPlacementì— ì „ë‹¬
         buildingPlacement.SelectBuilding(
             buildingPrefab
         );
 
-        // ¼±ÅÃ ÈÄ °Ç¹° ¸ñ·Ï ´İ±â
+        // ì„ íƒ í›„ ê±´ë¬¼ ëª©ë¡ ë‹«ê¸°
         if (buildingListUI != null)
         {
             buildingListUI.Close();

@@ -3,50 +3,50 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// Áı ³»ºÎ ¾ÀÀ» Ãß°¡ ·ÎµåÇÏ°í ¸¶À»°ú Áı »çÀÌÀÇ ÀÌµ¿ »óÅÂ¸¦ °ü¸®ÇÑ´Ù.
+// ì§‘ ë‚´ë¶€ ì”¬ì„ ì¶”ê°€ ë¡œë“œí•˜ê³  ë§ˆì„ê³¼ ì§‘ ì‚¬ì´ì˜ ì´ë™ ìƒíƒœë¥¼ ê´€ë¦¬í•œë‹¤.
 public class HouseSceneManager : MonoBehaviour
 {
-    // ´Ù¸¥ ÄÄÆ÷³ÍÆ®¿¡¼­ Áı ÀÌµ¿ °ü¸®ÀÚ¸¦ ÂüÁ¶ÇÏ±â À§ÇÑ ½Ì±ÛÅÏ ÀÎ½ºÅÏ½º.
+    // ë‹¤ë¥¸ ì»´í¬ë„ŒíŠ¸ì—ì„œ ì§‘ ì´ë™ ê´€ë¦¬ìë¥¼ ì°¸ì¡°í•˜ê¸° ìœ„í•œ ì‹±ê¸€í„´ ì¸ìŠ¤í„´ìŠ¤.
     public static HouseSceneManager Instance { get; private set; }
 
-    [Header("Áı ³»ºÎ Scene ÀÌ¸§")]
+    [Header("ì§‘ ë‚´ë¶€ Scene ì´ë¦„")]
     [SerializeField]
-    // Inspector¿¡¼­ ÁöÁ¤ÇÒ Áı ³»ºÎ ¾À ÀÌ¸§. ÃÖÃÊ ÀÔÀå ½Ã ÀÌ ¾ÀÀ» ·ÎµåÇÑ´Ù.
+    // Inspectorì—ì„œ ì§€ì •í•  ì§‘ ë‚´ë¶€ ì”¬ ì´ë¦„. ìµœì´ˆ ì…ì¥ ì‹œ ì´ ì”¬ì„ ë¡œë“œí•œë‹¤.
     private string houseSceneName = "HouseInteriorScene";
 
-    [Header("¸¶À»¿¡¼­ ¼û±æ ¿ÀºêÁ§Æ®")]
+    [Header("ë§ˆì„ì—ì„œ ìˆ¨ê¸¸ ì˜¤ë¸Œì íŠ¸")]
     [SerializeField]
-    // Áı ³»ºÎ¿¡ ÀÖ´Â µ¿¾È ¼û±æ ¸¶À»ÀÇ ½Ã°¢ ¿ÀºêÁ§Æ® ¹­À½.
+    // ì§‘ ë‚´ë¶€ì— ìˆëŠ” ë™ì•ˆ ìˆ¨ê¸¸ ë§ˆì„ì˜ ì‹œê° ì˜¤ë¸Œì íŠ¸ ë¬¶ìŒ.
     private GameObject villageVisualRoot;
 
     [SerializeField]
-    // Áı ³»ºÎ¿¡ ÀÖ´Â µ¿¾È ¼û±æ ¸¶À» Å¸ÀÏ¸Ê.
+    // ì§‘ ë‚´ë¶€ì— ìˆëŠ” ë™ì•ˆ ìˆ¨ê¸¸ ë§ˆì„ íƒ€ì¼ë§µ.
     private GameObject villageTilemap;
 
-    [Header("ÇÃ·¹ÀÌ¾î ÀÌµ¿ ½Ã½ºÅÛ")]
+    [Header("í”Œë ˆì´ì–´ ì´ë™ ì‹œìŠ¤í…œ")]
     [SerializeField]
-    // ¾À ÀüÈ¯ ½Ã ÀÌµ¿ °æ·Î¿Í ÀÌµ¿ °¡´É ¿µ¿ªÀ» º¯°æÇÒ °æ·Î Å½»ö ÄÄÆ÷³ÍÆ®.
+    // ì”¬ ì „í™˜ ì‹œ ì´ë™ ê²½ë¡œì™€ ì´ë™ ê°€ëŠ¥ ì˜ì—­ì„ ë³€ê²½í•  ê²½ë¡œ íƒìƒ‰ ì»´í¬ë„ŒíŠ¸.
     private MousePathfinding mousePathfinding;
 
-    [Header("ÇÃ·¹ÀÌ¾î")]
-    // ¾À »çÀÌ¿¡¼­ À§Ä¡¸¦ ÀÌµ¿½ÃÅ³ ÇÃ·¹ÀÌ¾î Transform.
+    [Header("í”Œë ˆì´ì–´")]
+    // ì”¬ ì‚¬ì´ì—ì„œ ìœ„ì¹˜ë¥¼ ì´ë™ì‹œí‚¬ í”Œë ˆì´ì–´ Transform.
     [SerializeField] private Transform player;
     public Transform Player => player;
 
-    // Áı ÀÔÀå Á÷Àü À§Ä¡¸¦ ÀúÀåÇØ ÅğÀå ½Ã µ¿ÀÏÇÑ Àå¼Ò·Î µÇµ¹¸°´Ù.
+    // ì§‘ ì…ì¥ ì§ì „ ìœ„ì¹˜ë¥¼ ì €ì¥í•´ í‡´ì¥ ì‹œ ë™ì¼í•œ ì¥ì†Œë¡œ ë˜ëŒë¦°ë‹¤.
     private Vector3 villageReturnPosition;
 
-    // Áßº¹ ÀÔÀå ¹× ÅğÀå ¿äÃ»À» ¸·´Â ¾À ÀüÈ¯ ÁøÇà ÇÃ·¡±×.
+    // ì¤‘ë³µ ì…ì¥ ë° í‡´ì¥ ìš”ì²­ì„ ë§‰ëŠ” ì”¬ ì „í™˜ ì§„í–‰ í”Œë˜ê·¸.
     private bool isTransitioning = false;
-    // Áı ³»ºÎ ¾ÀÀÌ ÀÌ¹Ì ·ÎµåµÇ¾ú´ÂÁö ±â·ÏÇØ ÀçÀÔÀå ½Ã Áßº¹ ·Îµå¸¦ ¹æÁöÇÑ´Ù.
+    // ì§‘ ë‚´ë¶€ ì”¬ì´ ì´ë¯¸ ë¡œë“œë˜ì—ˆëŠ”ì§€ ê¸°ë¡í•´ ì¬ì…ì¥ ì‹œ ì¤‘ë³µ ë¡œë“œë¥¼ ë°©ì§€í•œë‹¤.
     private bool isHouseLoaded = false;
-    // ÇöÀç ÇÃ·¹ÀÌ¾î°¡ Áı ¾È¿¡ ÀÖ´ÂÁö¸¦ ±â·ÏÇÑ´Ù.
+    // í˜„ì¬ í”Œë ˆì´ì–´ê°€ ì§‘ ì•ˆì— ìˆëŠ”ì§€ë¥¼ ê¸°ë¡í•œë‹¤.
     private bool isInsideHouse = false;
 
-    // ´Ù¸¥ ½ºÅ©¸³Æ®¿¡¼­ Áı ³»ºÎ ¿©ºÎ¸¦ ÀĞÀ» ¼ö ÀÖ´Â ¼Ó¼º.
+    // ë‹¤ë¥¸ ìŠ¤í¬ë¦½íŠ¸ì—ì„œ ì§‘ ë‚´ë¶€ ì—¬ë¶€ë¥¼ ì½ì„ ìˆ˜ ìˆëŠ” ì†ì„±.
     public bool IsInsideHouse => isInsideHouse;
 
-    // ¾À¿¡ µ¿ÀÏÇÑ °ü¸®ÀÚ°¡ µÑ ÀÌ»ó Á¸ÀçÇÏÁö ¾Êµµ·Ï ÀÎ½ºÅÏ½º¸¦ ¼³Á¤ÇÑ´Ù.
+    // ì”¬ì— ë™ì¼í•œ ê´€ë¦¬ìê°€ ë‘˜ ì´ìƒ ì¡´ì¬í•˜ì§€ ì•Šë„ë¡ ì¸ìŠ¤í„´ìŠ¤ë¥¼ ì„¤ì •í•œë‹¤.
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -58,42 +58,42 @@ public class HouseSceneManager : MonoBehaviour
         Instance = this;
     }
 
-    // Áı ÀÔÀå
-    // ÀüÈ¯ ÁßÀÌ°Å³ª ÀÌ¹Ì Áı ¾ÈÀÎ °æ¿ì¸¦ Á¦¿ÜÇÏ°í Áı ÀÔÀåÀ» ¿äÃ»ÇÑ´Ù.
+    // ì§‘ ì…ì¥
+    // ì „í™˜ ì¤‘ì´ê±°ë‚˜ ì´ë¯¸ ì§‘ ì•ˆì¸ ê²½ìš°ë¥¼ ì œì™¸í•˜ê³  ì§‘ ì…ì¥ì„ ìš”ì²­í•œë‹¤.
     public void EnterHouse()
     {
         if (isTransitioning || isInsideHouse)
             return;
 
-        // ÇÊµå¿¡ ÀÖ´Â µ¿¾È Áı ÀÔÀå ¹æÁö
+        // í•„ë“œì— ìˆëŠ” ë™ì•ˆ ì§‘ ì…ì¥ ë°©ì§€
         if (FieldSceneManager.Instance != null &&
             FieldSceneManager.Instance.IsInField)
         {
-            Debug.Log("ÇÊµå¿¡¼­´Â Áı¿¡ µé¾î°¥ ¼ö ¾ø½À´Ï´Ù.");
+            Debug.Log("í•„ë“œì—ì„œëŠ” ì§‘ì— ë“¤ì–´ê°ˆ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
         StartCoroutine(EnterHouseRoutine());
     }
 
-    // ÀÌµ¿ »óÅÂ Á¤¸®, Áı ¾À ·Îµå, ÇÃ·¹ÀÌ¾î ÀÌµ¿, ¸¶À» È­¸é ¼û±èÀ» ¼ø¼­´ë·Î Ã³¸®ÇÑ´Ù.
+    // ì´ë™ ìƒíƒœ ì •ë¦¬, ì§‘ ì”¬ ë¡œë“œ, í”Œë ˆì´ì–´ ì´ë™, ë§ˆì„ í™”ë©´ ìˆ¨ê¹€ì„ ìˆœì„œëŒ€ë¡œ ì²˜ë¦¬í•œë‹¤.
     private IEnumerator EnterHouseRoutine()
     {
-        // ¾À ÀüÈ¯ Áß ±âÁ¸ ÀÌµ¿ ¸í·É°ú °æ·Î Ç¥½Ã°¡ ³²Áö ¾Êµµ·Ï ÁØºñÇÑ´Ù.
+        // ì”¬ ì „í™˜ ì¤‘ ê¸°ì¡´ ì´ë™ ëª…ë ¹ê³¼ ê²½ë¡œ í‘œì‹œê°€ ë‚¨ì§€ ì•Šë„ë¡ ì¤€ë¹„í•œë‹¤.
         if (mousePathfinding != null)
         {
             mousePathfinding.PrepareForSceneTransition();
         }
 
         isTransitioning = true;
-        // Áı¿¡ µé¾î°¡±â Àü ÇÃ·¹ÀÌ¾îÀÇ ¸¶À» À§Ä¡ ÀúÀå
+        // ì§‘ì— ë“¤ì–´ê°€ê¸° ì „ í”Œë ˆì´ì–´ì˜ ë§ˆì„ ìœ„ì¹˜ ì €ì¥
         if (player != null)
         {
             villageReturnPosition = player.position;
         }
 
-        // Ã³À½ ÀÔÀåÇÒ ¶§¸¸ Scene ·Îµå
-        // ÃÖÃÊ ÀÔÀå¿¡¸¸ Áı ¾ÀÀ» Additive ¸ğµå·Î ºÒ·¯¿Â´Ù.
+        // ì²˜ìŒ ì…ì¥í•  ë•Œë§Œ Scene ë¡œë“œ
+        // ìµœì´ˆ ì…ì¥ì—ë§Œ ì§‘ ì”¬ì„ Additive ëª¨ë“œë¡œ ë¶ˆëŸ¬ì˜¨ë‹¤.
         if (!isHouseLoaded)
         {
             AsyncOperation operation =
@@ -105,7 +105,7 @@ public class HouseSceneManager : MonoBehaviour
             if (operation == null)
             {
                 Debug.LogError(
-                    "Áı ³»ºÎ Scene ·Îµå ½ÇÆĞ: " +
+                    "ì§‘ ë‚´ë¶€ Scene ë¡œë“œ ì‹¤íŒ¨: " +
                     houseSceneName
                 );
 
@@ -119,16 +119,16 @@ public class HouseSceneManager : MonoBehaviour
             isHouseLoaded = true;
         }
 
-        // Áı ³»ºÎ ¿ÀºêÁ§Æ® È°¼ºÈ­
-        // ÀÌÀü¿¡ ºñÈ°¼ºÈ­Çß´ø Áı ³»ºÎ ¾À ¿ÀºêÁ§Æ®¸¦ ´Ù½Ã Ç¥½ÃÇÑ´Ù.
+        // ì§‘ ë‚´ë¶€ ì˜¤ë¸Œì íŠ¸ í™œì„±í™”
+        // ì´ì „ì— ë¹„í™œì„±í™”í–ˆë˜ ì§‘ ë‚´ë¶€ ì”¬ ì˜¤ë¸Œì íŠ¸ë¥¼ ë‹¤ì‹œ í‘œì‹œí•œë‹¤.
         SetHouseObjectsActive(true);
-        // Áı ³»ºÎ Scene °¡Á®¿À±â
-        // Áı ³»ºÎ MapBounds °Ë»ö
+        // ì§‘ ë‚´ë¶€ Scene ê°€ì ¸ì˜¤ê¸°
+        // ì§‘ ë‚´ë¶€ MapBounds ê²€ìƒ‰
         Scene houseScene =
             SceneManager.GetSceneByName(houseSceneName);
 
-        // Áı ³»ºÎ ÀÔÀå À§Ä¡ °Ë»ö
-        // Áı ³»ºÎ ¾ÀÀÇ ÀÚ½Ä ¿ÀºêÁ§Æ® Áß HouseSpawnPoint¸¦ Ã£¾Æ ÀÔÀå ÁÂÇ¥·Î »ç¿ëÇÑ´Ù.
+        // ì§‘ ë‚´ë¶€ ì…ì¥ ìœ„ì¹˜ ê²€ìƒ‰
+        // ì§‘ ë‚´ë¶€ ì”¬ì˜ ìì‹ ì˜¤ë¸Œì íŠ¸ ì¤‘ HouseSpawnPointë¥¼ ì°¾ì•„ ì…ì¥ ì¢Œí‘œë¡œ ì‚¬ìš©í•œë‹¤.
         Transform houseSpawnPoint = null;
 
         foreach (GameObject root in houseScene.GetRootGameObjects())
@@ -149,8 +149,8 @@ public class HouseSceneManager : MonoBehaviour
                 break;
         }
 
-        // ÇÃ·¹ÀÌ¾î¸¦ Áı ³»ºÎ ÀÔÀå À§Ä¡·Î ÀÌµ¿
-        // Ã£Àº ÀÔÀå À§Ä¡·Î ÇÃ·¹ÀÌ¾î¸¦ ¿Å±âµÇ ±âÁ¸ Z ÁÂÇ¥¸¦ À¯ÁöÇÑ´Ù.
+        // í”Œë ˆì´ì–´ë¥¼ ì§‘ ë‚´ë¶€ ì…ì¥ ìœ„ì¹˜ë¡œ ì´ë™
+        // ì°¾ì€ ì…ì¥ ìœ„ì¹˜ë¡œ í”Œë ˆì´ì–´ë¥¼ ì˜®ê¸°ë˜ ê¸°ì¡´ Z ì¢Œí‘œë¥¼ ìœ ì§€í•œë‹¤.
         if (houseSpawnPoint != null && player != null)
         {
             Vector3 spawnPosition = houseSpawnPoint.position;
@@ -159,17 +159,17 @@ public class HouseSceneManager : MonoBehaviour
 
             player.position = spawnPosition;
 
-            Debug.Log("ÇÃ·¹ÀÌ¾î Áı ³»ºÎ ÀÌµ¿ ¿Ï·á");
+            Debug.Log("í”Œë ˆì´ì–´ ì§‘ ë‚´ë¶€ ì´ë™ ì™„ë£Œ");
         }
         else
         {
             Debug.LogWarning(
-                "HouseSpawnPoint ¶Ç´Â Player¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù."
+                "HouseSpawnPoint ë˜ëŠ” Playerë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤."
             );
         }
 
 
-        // Áı ³»ºÎ ÀÌµ¿ Á¦ÇÑ¿¡ »ç¿ëÇÒ MapBounds ÄÄÆ÷³ÍÆ®¸¦ Å½»öÇÑ´Ù.
+        // ì§‘ ë‚´ë¶€ ì´ë™ ì œí•œì— ì‚¬ìš©í•  MapBounds ì»´í¬ë„ŒíŠ¸ë¥¼ íƒìƒ‰í•œë‹¤.
         MapBounds interiorBounds = null;
 
         foreach (GameObject root in houseScene.GetRootGameObjects())
@@ -181,7 +181,7 @@ public class HouseSceneManager : MonoBehaviour
                 break;
         }
 
-        // °æ·Î Å½»öÀÇ ÀÌµ¿ °¡´É ¿µ¿ªÀ» Áı ³»ºÎ °æ°è·Î ±³Ã¼ÇÑ´Ù.
+        // ê²½ë¡œ íƒìƒ‰ì˜ ì´ë™ ê°€ëŠ¥ ì˜ì—­ì„ ì§‘ ë‚´ë¶€ ê²½ê³„ë¡œ êµì²´í•œë‹¤.
         if (interiorBounds != null && mousePathfinding != null)
         {
             mousePathfinding.SetMapBounds(interiorBounds);
@@ -189,27 +189,27 @@ public class HouseSceneManager : MonoBehaviour
         else
         {
             Debug.LogError(
-                "InteriorMapBounds ¶Ç´Â MousePathfindingÀÌ ¾ø½À´Ï´Ù."
+                "InteriorMapBounds ë˜ëŠ” MousePathfindingì´ ì—†ìŠµë‹ˆë‹¤."
             );
         }
 
-        // ¸¶À» È­¸é ¼û±â±â
+        // ë§ˆì„ í™”ë©´ ìˆ¨ê¸°ê¸°
         if (villageVisualRoot != null)
             villageVisualRoot.SetActive(false);
 
         if (villageTilemap != null)
             villageTilemap.SetActive(false);
 
-        // ¸ğµç ÀÔÀå Ã³¸®°¡ ³¡³­ ÈÄ Áı ³»ºÎ »óÅÂ¸¦ È°¼ºÈ­ÇÑ´Ù.
+        // ëª¨ë“  ì…ì¥ ì²˜ë¦¬ê°€ ëë‚œ í›„ ì§‘ ë‚´ë¶€ ìƒíƒœë¥¼ í™œì„±í™”í•œë‹¤.
         isInsideHouse = true;
 
-        Debug.Log("Áı ³»ºÎ ÀÔÀå ¿Ï·á");
+        Debug.Log("ì§‘ ë‚´ë¶€ ì…ì¥ ì™„ë£Œ");
 
         isTransitioning = false;
     }
 
-    // Áı ÅğÀå
-    // Áı ¾È¿¡ ÀÖÀ» ¶§¿¡¸¸ ÅğÀå ÄÚ·çÆ¾À» ½ÃÀÛÇÑ´Ù.
+    // ì§‘ í‡´ì¥
+    // ì§‘ ì•ˆì— ìˆì„ ë•Œì—ë§Œ í‡´ì¥ ì½”ë£¨í‹´ì„ ì‹œì‘í•œë‹¤.
     public void ExitHouse()
     {
         if (isTransitioning || !isInsideHouse)
@@ -218,7 +218,7 @@ public class HouseSceneManager : MonoBehaviour
         StartCoroutine(ExitHouseRoutine());
     }
 
-    // °æ·Î Å½»ö ¿µ¿ª°ú ÇÃ·¹ÀÌ¾î À§Ä¡¸¦ ¸¶À» ±âÁØÀ¸·Î º¹¿øÇÏ°í Áı È­¸éÀ» ¼û±ä´Ù.
+    // ê²½ë¡œ íƒìƒ‰ ì˜ì—­ê³¼ í”Œë ˆì´ì–´ ìœ„ì¹˜ë¥¼ ë§ˆì„ ê¸°ì¤€ìœ¼ë¡œ ë³µì›í•˜ê³  ì§‘ í™”ë©´ì„ ìˆ¨ê¸´ë‹¤.
     private IEnumerator ExitHouseRoutine()
     {
         isTransitioning = true;
@@ -226,47 +226,47 @@ public class HouseSceneManager : MonoBehaviour
         if (mousePathfinding != null)
         {
             mousePathfinding.PrepareForSceneTransition();
-            // Áı ³»ºÎ °æ°è ´ë½Å ¸¶À»ÀÇ ÀÌµ¿ °¡´É °æ°è¸¦ ´Ù½Ã Àû¿ëÇÑ´Ù.
+            // ì§‘ ë‚´ë¶€ ê²½ê³„ ëŒ€ì‹  ë§ˆì„ì˜ ì´ë™ ê°€ëŠ¥ ê²½ê³„ë¥¼ ë‹¤ì‹œ ì ìš©í•œë‹¤.
             mousePathfinding.RestoreVillageMapBounds();
         }
-        // Áı¿¡ µé¾î°¡±â Àü ¸¶À» À§Ä¡·Î º¹±Í
+        // ì§‘ì— ë“¤ì–´ê°€ê¸° ì „ ë§ˆì„ ìœ„ì¹˜ë¡œ ë³µê·€
         if (player != null)
         {
             player.position = villageReturnPosition;
 
-            Debug.Log("ÇÃ·¹ÀÌ¾î ¸¶À» À§Ä¡ º¹±¸ ¿Ï·á");
+            Debug.Log("í”Œë ˆì´ì–´ ë§ˆì„ ìœ„ì¹˜ ë³µêµ¬ ì™„ë£Œ");
         }
 
-        // Áı ³»ºÎ ¿ÀºêÁ§Æ® ¼û±â±â
-        // Áı ¾ÀÀº ¾ğ·ÎµåÇÏÁö ¾Ê°í ·çÆ® ¿ÀºêÁ§Æ®¸¸ ºñÈ°¼ºÈ­ÇØ ÀçÀÔÀå¿¡ Àç»ç¿ëÇÑ´Ù.
+        // ì§‘ ë‚´ë¶€ ì˜¤ë¸Œì íŠ¸ ìˆ¨ê¸°ê¸°
+        // ì§‘ ì”¬ì€ ì–¸ë¡œë“œí•˜ì§€ ì•Šê³  ë£¨íŠ¸ ì˜¤ë¸Œì íŠ¸ë§Œ ë¹„í™œì„±í™”í•´ ì¬ì…ì¥ì— ì¬ì‚¬ìš©í•œë‹¤.
         SetHouseObjectsActive(false);
 
 
-        // ¸¶À» È­¸é º¹±¸
+        // ë§ˆì„ í™”ë©´ ë³µêµ¬
         if (villageVisualRoot != null)
             villageVisualRoot.SetActive(true);
 
         if (villageTilemap != null)
             villageTilemap.SetActive(true);
 
-        // ¸¶À» È­¸é°ú ÇÃ·¹ÀÌ¾î À§Ä¡ º¹±¸ ÈÄ Áı ³»ºÎ »óÅÂ¸¦ ÇØÁ¦ÇÑ´Ù.
+        // ë§ˆì„ í™”ë©´ê³¼ í”Œë ˆì´ì–´ ìœ„ì¹˜ ë³µêµ¬ í›„ ì§‘ ë‚´ë¶€ ìƒíƒœë¥¼ í•´ì œí•œë‹¤.
         isInsideHouse = false;
 
-        Debug.Log("Áı¿¡¼­ ¸¶À»·Î º¹±Í ¿Ï·á");
+        Debug.Log("ì§‘ì—ì„œ ë§ˆì„ë¡œ ë³µê·€ ì™„ë£Œ");
 
         isTransitioning = false;
 
         yield break;
     }
 
-    // Áı ³»ºÎ SceneÀÇ ·çÆ® ¿ÀºêÁ§Æ® È°¼ºÈ­/ºñÈ°¼ºÈ­
-    // Áı ³»ºÎ ¾ÀÀÇ ¸ğµç ·çÆ® ¿ÀºêÁ§Æ®¸¦ ÀÏ°ı È°¼ºÈ­ÇÏ°Å³ª ºñÈ°¼ºÈ­ÇÑ´Ù.
+    // ì§‘ ë‚´ë¶€ Sceneì˜ ë£¨íŠ¸ ì˜¤ë¸Œì íŠ¸ í™œì„±í™”/ë¹„í™œì„±í™”
+    // ì§‘ ë‚´ë¶€ ì”¬ì˜ ëª¨ë“  ë£¨íŠ¸ ì˜¤ë¸Œì íŠ¸ë¥¼ ì¼ê´„ í™œì„±í™”í•˜ê±°ë‚˜ ë¹„í™œì„±í™”í•œë‹¤.
     private void SetHouseObjectsActive(bool active)
     {
         Scene houseScene =
             SceneManager.GetSceneByName(houseSceneName);
 
-        // Áı ¾ÀÀÌ À¯È¿ÇÏÁö ¾Ê°Å³ª ·ÎµåµÇÁö ¾Ê¾Ò´Ù¸é ¿ÀºêÁ§Æ® º¯°æÀ» »ı·«ÇÑ´Ù.
+        // ì§‘ ì”¬ì´ ìœ íš¨í•˜ì§€ ì•Šê±°ë‚˜ ë¡œë“œë˜ì§€ ì•Šì•˜ë‹¤ë©´ ì˜¤ë¸Œì íŠ¸ ë³€ê²½ì„ ìƒëµí•œë‹¤.
         if (!houseScene.IsValid() || !houseScene.isLoaded)
             return;
 

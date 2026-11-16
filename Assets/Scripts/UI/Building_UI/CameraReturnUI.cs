@@ -2,14 +2,14 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-// °Ç¹° À§Ä¡ º¸±â Áß¿¡¸¸ ÇÃ·¹ÀÌ¾î Ä«¸Ş¶ó º¹±Í ¹öÆ°À» Ç¥½ÃÇÑ´Ù.
+// ê±´ë¬¼ ìœ„ì¹˜ ë³´ê¸° ì¤‘ì—ë§Œ í”Œë ˆì´ì–´ ì¹´ë©”ë¼ ë³µê·€ ë²„íŠ¼ì„ í‘œì‹œí•œë‹¤.
 public class CameraReturnUI : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private CameraFollow cameraFollow;
     [SerializeField] private Button returnButton;
 
-    // º¹±Í ¹öÆ° Å¬¸¯ ½Ã È£ÃâÇÒ ÇÔ¼ö¸¦ µî·ÏÇÑ´Ù.
+    // ë³µê·€ ë²„íŠ¼ í´ë¦­ ì‹œ í˜¸ì¶œí•  í•¨ìˆ˜ë¥¼ ë“±ë¡í•œë‹¤.
     private void Awake()
     {
         if (returnButton != null)
@@ -18,13 +18,13 @@ public class CameraReturnUI : MonoBehaviour
         }
     }
 
-    // Ä«¸Ş¶óÀÇ °Ç¹° º¸±â »óÅÂ¿¡ ¸ÂÃç º¹±Í ¹öÆ° È°¼ºÈ­¸¦ µ¿±âÈ­ÇÑ´Ù.
+    // ì¹´ë©”ë¼ì˜ ê±´ë¬¼ ë³´ê¸° ìƒíƒœì— ë§ì¶° ë³µê·€ ë²„íŠ¼ í™œì„±í™”ë¥¼ ë™ê¸°í™”í•œë‹¤.
     private void Update()
     {
         if (cameraFollow == null || returnButton == null)
             return;
 
-        // °Ç¹° À§Ä¡ º¸±â ÁßÀÏ ¶§¸¸ ¹öÆ° Ç¥½Ã
+        // ê±´ë¬¼ ìœ„ì¹˜ ë³´ê¸° ì¤‘ì¼ ë•Œë§Œ ë²„íŠ¼ í‘œì‹œ
         bool shouldShow = cameraFollow.IsViewingBuilding;
 
         if (returnButton.gameObject.activeSelf != shouldShow)
@@ -33,7 +33,7 @@ public class CameraReturnUI : MonoBehaviour
         }
     }
 
-    // °Ç¹° º¸±â ¸ğµå¸¦ Á¾·áÇÏ°í Ä«¸Ş¶ó ÃßÀû ´ë»óÀ» ÇÃ·¹ÀÌ¾î·Î µÇµ¹¸°´Ù.
+    // ê±´ë¬¼ ë³´ê¸° ëª¨ë“œë¥¼ ì¢…ë£Œí•˜ê³  ì¹´ë©”ë¼ ì¶”ì  ëŒ€ìƒì„ í”Œë ˆì´ì–´ë¡œ ë˜ëŒë¦°ë‹¤.
     private void ReturnToPlayer()
     {
         if (cameraFollow == null)
@@ -41,10 +41,10 @@ public class CameraReturnUI : MonoBehaviour
 
         cameraFollow.ReturnToPlayer();
 
-        Debug.Log("Ä«¸Ş¶ó ÇÃ·¹ÀÌ¾î º¹±Í ¹öÆ° Å¬¸¯");
+        Debug.Log("ì¹´ë©”ë¼ í”Œë ˆì´ì–´ ë³µê·€ ë²„íŠ¼ í´ë¦­");
     }
 
-    // µî·ÏµÈ ¹öÆ° Å¬¸¯ ¸®½º³Ê¸¦ Á¤¸®ÇÑ´Ù.
+    // ë“±ë¡ëœ ë²„íŠ¼ í´ë¦­ ë¦¬ìŠ¤ë„ˆë¥¼ ì •ë¦¬í•œë‹¤.
     private void OnDestroy()
     {
         if (returnButton != null)

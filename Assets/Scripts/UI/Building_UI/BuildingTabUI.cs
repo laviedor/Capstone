@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-// °Ç¼³ ÅÇ°ú °ü¸® ÅÇÀÇ ÆĞ³Î Ç¥½Ã »óÅÂ¸¦ ÀüÈ¯ÇÑ´Ù.
+// ê±´ì„¤ íƒ­ê³¼ ê´€ë¦¬ íƒ­ì˜ íŒ¨ë„ í‘œì‹œ ìƒíƒœë¥¼ ì „í™˜í•œë‹¤.
 public class BuildingTabUI : MonoBehaviour
 {
     [Header("Panels")]
@@ -12,20 +12,20 @@ public class BuildingTabUI : MonoBehaviour
     [SerializeField] private Button constructionButton;
     [SerializeField] private Button managementButton;
 
-    // °Ç¼³/°ü¸® ¹öÆ°ÀÇ Å¬¸¯ ÀÌº¥Æ®¸¦ ¿¬°áÇÑ´Ù.
+    // ê±´ì„¤/ê´€ë¦¬ ë²„íŠ¼ì˜ í´ë¦­ ì´ë²¤íŠ¸ë¥¼ ì—°ê²°í•œë‹¤.
     private void Awake()
     {
         constructionButton.onClick.AddListener(ShowConstruction);
         managementButton.onClick.AddListener(ShowManagement);
     }
 
-    // UI°¡ È°¼ºÈ­µÉ ¶§ ±âº» ÅÇÀÎ °Ç¼³ ÅÇÀ» º¸¿© ÁØ´Ù.
+    // UIê°€ í™œì„±í™”ë  ë•Œ ê¸°ë³¸ íƒ­ì¸ ê±´ì„¤ íƒ­ì„ ë³´ì—¬ ì¤€ë‹¤.
     private void OnEnable()
     {
         ShowConstruction();
     }
 
-    // °Ç¼³ ÆĞ³ÎÀ» ÄÑ°í °ü¸® ÆĞ³ÎÀ» ¼û±ä´Ù.
+    // ê±´ì„¤ íŒ¨ë„ì„ ì¼œê³  ê´€ë¦¬ íŒ¨ë„ì„ ìˆ¨ê¸´ë‹¤.
     public void ShowConstruction()
     {
         if (constructionPanel != null)
@@ -35,7 +35,7 @@ public class BuildingTabUI : MonoBehaviour
             managementPanel.SetActive(false);
     }
 
-    // °ü¸® ÆĞ³ÎÀ» ÄÑ°í °Ç¼³ ÆĞ³ÎÀ» ¼û±ä´Ù.
+    // ê´€ë¦¬ íŒ¨ë„ì„ ì¼œê³  ê±´ì„¤ íŒ¨ë„ì„ ìˆ¨ê¸´ë‹¤.
     public void ShowManagement()
     {
         if (constructionPanel != null)

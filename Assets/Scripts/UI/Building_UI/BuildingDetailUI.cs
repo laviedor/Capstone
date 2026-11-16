@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Text;
 
-// ¼±ÅÃÇÑ ¼³Ä¡ °Ç¹°ÀÇ »ó¼¼ Á¤º¸¿Í À§Ä¡ º¸±â ¹× Ã¶°Å ¹öÆ°À» °ü¸®ÇÑ´Ù.
+// ì„ íƒí•œ ì„¤ì¹˜ ê±´ë¬¼ì˜ ìƒì„¸ ì •ë³´ì™€ ìœ„ì¹˜ ë³´ê¸° ë° ì² ê±° ë²„íŠ¼ì„ ê´€ë¦¬í•œë‹¤.
 public class BuildingDetailUI : MonoBehaviour
 {
     [Header("Detail Texts")]
@@ -26,10 +26,10 @@ public class BuildingDetailUI : MonoBehaviour
 
     [SerializeField] private BuildingDemolition buildingDemolition;
 
-    // ÇöÀç »ó¼¼ ÆĞ³Î¿¡¼­ ¼±ÅÃµÈ ¼³Ä¡ °Ç¹°À» ±â¾ïÇÑ´Ù.
+    // í˜„ì¬ ìƒì„¸ íŒ¨ë„ì—ì„œ ì„ íƒëœ ì„¤ì¹˜ ê±´ë¬¼ì„ ê¸°ì–µí•œë‹¤.
     private Building selectedBuilding;
 
-    // ¹öÆ°¿¡ µ¿ÀÛÀ» ¿¬°áÇÏ°í ¼±ÅÃ Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // ë²„íŠ¼ì— ë™ì‘ì„ ì—°ê²°í•˜ê³  ì„ íƒ ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     private void Awake()
     {
         if (viewBuildingButton != null)
@@ -47,7 +47,7 @@ public class BuildingDetailUI : MonoBehaviour
         ClearDetail();
     }
 
-    // ¼±ÅÃÇÑ °Ç¹°ÀÇ ÀÌ¸§, À§Ä¡, »ı»ê Á¤º¸¸¦ »ó¼¼ ÆĞ³Î¿¡ Ç¥½ÃÇÑ´Ù.
+    // ì„ íƒí•œ ê±´ë¬¼ì˜ ì´ë¦„, ìœ„ì¹˜, ìƒì‚° ì •ë³´ë¥¼ ìƒì„¸ íŒ¨ë„ì— í‘œì‹œí•œë‹¤.
     public void ShowBuilding(Building building)
     {
         if (building == null || building.Data == null)
@@ -60,17 +60,17 @@ public class BuildingDetailUI : MonoBehaviour
 
         BuildingData data = building.Data;
 
-        buildingDetailName.text = "ÀÌ¸§: " + data.buildingName;
+        buildingDetailName.text = "ì´ë¦„: " + data.buildingName;
 
         Vector3Int cell = building.OriginCell;
 
         buildingDetailPosition.text =
-            $"À§Ä¡: ({cell.x}, {cell.y})";
+            $"ìœ„ì¹˜: ({cell.x}, {cell.y})";
 
         if (data.productions == null ||
             data.productions.Length == 0)
         {
-            buildingDetailProduction.text = "»ı»ê: ¾øÀ½";
+            buildingDetailProduction.text = "ìƒì‚°: ì—†ìŒ";
         }
         else
         {
@@ -91,8 +91,8 @@ public class BuildingDetailUI : MonoBehaviour
 
             buildingDetailProduction.text =
                 builder.Length == 0
-                ? "»ı»ê: ¾øÀ½"
-                : $"»ı»ê: {builder} / {data.productionInterval}ÃÊ";
+                ? "ìƒì‚°: ì—†ìŒ"
+                : $"ìƒì‚°: {builder} / {data.productionInterval}ì´ˆ";
         }
 
         if (viewBuildingButton != null)
@@ -101,12 +101,12 @@ public class BuildingDetailUI : MonoBehaviour
             demolishBuildingButton.interactable = true;
     }
 
-    // °Ç¹° ¼±ÅÃÀ» ÇØÁ¦ÇÏ°í »ó¼¼ Á¤º¸ ¹× µ¿ÀÛ ¹öÆ°À» ÃÊ±âÈ­ÇÑ´Ù.
+    // ê±´ë¬¼ ì„ íƒì„ í•´ì œí•˜ê³  ìƒì„¸ ì •ë³´ ë° ë™ì‘ ë²„íŠ¼ì„ ì´ˆê¸°í™”í•œë‹¤.
     public void ClearDetail()
     {
         selectedBuilding = null;
 
-        buildingDetailName.text = "°Ç¹°À» ¼±ÅÃÇÏ¼¼¿ä";
+        buildingDetailName.text = "ê±´ë¬¼ì„ ì„ íƒí•˜ì„¸ìš”";
         buildingDetailProduction.text = "";
         buildingDetailPosition.text = "";
 
@@ -116,13 +116,13 @@ public class BuildingDetailUI : MonoBehaviour
             demolishBuildingButton.interactable = false;
     }
 
-    // ÇÃ·¹ÀÌ¾î ÀÌµ¿°ú °æ·Î Ç¥½Ã¸¦ Á¤¸®ÇÏ°í Ä«¸Ş¶ó¸¦ ¼±ÅÃÇÑ °Ç¹°·Î ÀüÈ¯ÇÑ´Ù.
+    // í”Œë ˆì´ì–´ ì´ë™ê³¼ ê²½ë¡œ í‘œì‹œë¥¼ ì •ë¦¬í•˜ê³  ì¹´ë©”ë¼ë¥¼ ì„ íƒí•œ ê±´ë¬¼ë¡œ ì „í™˜í•œë‹¤.
     private void ViewSelectedBuilding()
     {
         if (selectedBuilding == null ||
             !selectedBuilding.IsPlaced)
         {
-            Debug.LogWarning("¼±ÅÃµÈ °Ç¹°ÀÌ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("ì„ íƒëœ ê±´ë¬¼ì´ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -131,54 +131,54 @@ public class BuildingDetailUI : MonoBehaviour
             playerMovement == null ||
             mousePathfinding == null)
         {
-            Debug.LogError("ÇÊ¿äÇÑ ½Ã½ºÅÛ ÂüÁ¶°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogError("í•„ìš”í•œ ì‹œìŠ¤í…œ ì°¸ì¡°ê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // 1. ÇÃ·¹ÀÌ¾î ÀÌµ¿ ÁßÁö
+        // 1. í”Œë ˆì´ì–´ ì´ë™ ì¤‘ì§€
         playerMovement.StopMovement();
 
-        // 2. ±âÁ¸ °æ·Î ¼±°ú ¸ñÀûÁö ¸¶Ä¿ Á¦°Å
+        // 2. ê¸°ì¡´ ê²½ë¡œ ì„ ê³¼ ëª©ì ì§€ ë§ˆì»¤ ì œê±°
         mousePathfinding.ClearMovementVisuals();
 
-        // 3. Ä«¸Ş¶ó¸¦ ¼±ÅÃÇÑ °Ç¹°·Î ÀÌµ¿
+        // 3. ì¹´ë©”ë¼ë¥¼ ì„ íƒí•œ ê±´ë¬¼ë¡œ ì´ë™
         cameraFollow.ViewBuilding(selectedBuilding);
 
-        // 4. ÀÎº¥Åä¸® ´İ±â
+        // 4. ì¸ë²¤í† ë¦¬ ë‹«ê¸°
         inventoryUI.CloseInventory();
 
-        Debug.Log("°Ç¹° À§Ä¡ º¸±â ¹× ÀÌµ¿ »óÅÂ ÃÊ±âÈ­");
+        Debug.Log("ê±´ë¬¼ ìœ„ì¹˜ ë³´ê¸° ë° ì´ë™ ìƒíƒœ ì´ˆê¸°í™”");
     }
-    // ÀÎº¥Åä¸®¸¦ ´İ°í ¼±ÅÃÇÑ °Ç¹°ÀÇ Ã¶°Å È®ÀÎ ÀıÂ÷¸¦ ¿äÃ»ÇÑ´Ù.
+    // ì¸ë²¤í† ë¦¬ë¥¼ ë‹«ê³  ì„ íƒí•œ ê±´ë¬¼ì˜ ì² ê±° í™•ì¸ ì ˆì°¨ë¥¼ ìš”ì²­í•œë‹¤.
     private void DemolishSelectedBuilding()
     {
         if (selectedBuilding == null ||
             !selectedBuilding.IsPlaced)
         {
-            Debug.LogWarning("¼±ÅÃµÈ °Ç¹°ÀÌ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("ì„ íƒëœ ê±´ë¬¼ì´ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
         if (buildingDemolition == null ||
             inventoryUI == null)
         {
-            Debug.LogError("Ã¶°Å ½Ã½ºÅÛ ÂüÁ¶°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogError("ì² ê±° ì‹œìŠ¤í…œ ì°¸ì¡°ê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
         Building buildingToDemolish = selectedBuilding;
 
-        // ÀÎº¥Åä¸®¸¦ ¸ÕÀú ´İ±â
+        // ì¸ë²¤í† ë¦¬ë¥¼ ë¨¼ì € ë‹«ê¸°
         inventoryUI.CloseInventory();
 
-        // ±âÁ¸ Ã¶°Å È®ÀÎÃ¢ ¿­±â
+        // ê¸°ì¡´ ì² ê±° í™•ì¸ì°½ ì—´ê¸°
         buildingDemolition.RequestDemolition(
             buildingToDemolish
         );
     }
 
 
-    // ¿ÀºêÁ§Æ® ÆÄ±« ½Ã µî·ÏÇÑ ¹öÆ° ¸®½º³Ê¸¦ ÇØÁ¦ÇÑ´Ù.
+    // ì˜¤ë¸Œì íŠ¸ íŒŒê´´ ì‹œ ë“±ë¡í•œ ë²„íŠ¼ ë¦¬ìŠ¤ë„ˆë¥¼ í•´ì œí•œë‹¤.
     private void OnDestroy()
     {
         if (viewBuildingButton != null)

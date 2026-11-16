@@ -2,49 +2,49 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-/// <summary>ÇÃ·¹ÀÌ¾î ¶Ç´Â ¼±ÅÃµÈ °Ç¹°À» ÃßÀûÇÏ°í Ä«¸Ş¶ó ÀÌµ¿ ¹üÀ§ ¹× ÁÜÀ» Á¦¾îÇÑ´Ù.</summary>
+/// <summary>í”Œë ˆì´ì–´ ë˜ëŠ” ì„ íƒëœ ê±´ë¬¼ì„ ì¶”ì í•˜ê³  ì¹´ë©”ë¼ ì´ë™ ë²”ìœ„ ë° ì¤Œì„ ì œì–´í•œë‹¤.</summary>
 public class CameraFollow : MonoBehaviour
 {
     [Header("Target")]
-    // ±âº» Ä«¸Ş¶ó ÃßÀû ´ë»óÀÎ ÇÃ·¹ÀÌ¾î
+    // ê¸°ë³¸ ì¹´ë©”ë¼ ì¶”ì  ëŒ€ìƒì¸ í”Œë ˆì´ì–´
     [SerializeField] private Transform target;
 
     [Header("Map Bounds")]
-    // Ä«¸Ş¶ó°¡ ¹ş¾î³ªÁö ¾Êµµ·Ï Á¦ÇÑÇÒ ¸Ê °æ°è
+    // ì¹´ë©”ë¼ê°€ ë²—ì–´ë‚˜ì§€ ì•Šë„ë¡ ì œí•œí•  ë§µ ê²½ê³„
     [SerializeField] private MapBounds mapBounds;
 
     [Header("Follow")]
-    // ¸ñÇ¥ À§Ä¡·Î ºÎµå·´°Ô ÀÌµ¿ÇÏ´Â º¸°£ ¼Óµµ
+    // ëª©í‘œ ìœ„ì¹˜ë¡œ ë¶€ë“œëŸ½ê²Œ ì´ë™í•˜ëŠ” ë³´ê°„ ì†ë„
     [SerializeField] private float followSpeed = 5f;
 
     [Header("Zoom")]
-    // ¸¶¿ì½º ÈÙ ÁÜ °¨µµ
+    // ë§ˆìš°ìŠ¤ íœ  ì¤Œ ê°ë„
     [SerializeField] private float zoomSpeed = 1f;
-    // Ä«¸Ş¶ó Á÷±³ Å©±âÀÇ ÃÖ¼Ò°ª
+    // ì¹´ë©”ë¼ ì§êµ í¬ê¸°ì˜ ìµœì†Œê°’
     [SerializeField] private float minZoom = 2f;
-    // Ä«¸Ş¶ó Á÷±³ Å©±âÀÇ ÃÖ´ë°ª
+    // ì¹´ë©”ë¼ ì§êµ í¬ê¸°ì˜ ìµœëŒ€ê°’
     [SerializeField] private float maxZoom = 8f;
 
-    // °°Àº °ÔÀÓ ¿ÀºêÁ§Æ®ÀÇ Camera ÄÄÆ÷³ÍÆ®
+    // ê°™ì€ ê²Œì„ ì˜¤ë¸Œì íŠ¸ì˜ Camera ì»´í¬ë„ŒíŠ¸
     private Camera cam;
 
-    // °Ç¹° À§Ä¡ º¸±â ¸ğµå
+    // ê±´ë¬¼ ìœ„ì¹˜ ë³´ê¸° ëª¨ë“œ
     private bool isViewingBuilding = false;
 
-    // È®ÀÎÇÒ °Ç¹°
-    // °Ç¹° º¸±â ¸ğµå¿¡¼­ ÃßÀûÇÒ °Ç¹° À§Ä¡
+    // í™•ì¸í•  ê±´ë¬¼
+    // ê±´ë¬¼ ë³´ê¸° ëª¨ë“œì—ì„œ ì¶”ì í•  ê±´ë¬¼ ìœ„ì¹˜
     private Transform viewingTarget;
 
-    // ÇöÀç °Ç¹° º¸±â ¸ğµå ¿©ºÎ¸¦ ¿ÜºÎ¿¡¼­ Á¶È¸
+    // í˜„ì¬ ê±´ë¬¼ ë³´ê¸° ëª¨ë“œ ì—¬ë¶€ë¥¼ ì™¸ë¶€ì—ì„œ ì¡°íšŒ
     public bool IsViewingBuilding => isViewingBuilding;
 
-    /// <summary>Ä«¸Ş¶ó ÄÄÆ÷³ÍÆ®¸¦ Ä³½ÌÇÑ´Ù.</summary>
+    /// <summary>ì¹´ë©”ë¼ ì»´í¬ë„ŒíŠ¸ë¥¼ ìºì‹±í•œë‹¤.</summary>
     private void Awake()
     {
         cam = GetComponent<Camera>();
     }
 
-    /// <summary>ÀÌµ¿ ÈÄ Ä«¸Ş¶ó ÃßÀû ¹× ÁÜÀ» Ã³¸®ÇÑ´Ù.</summary>
+    /// <summary>ì´ë™ í›„ ì¹´ë©”ë¼ ì¶”ì  ë° ì¤Œì„ ì²˜ë¦¬í•œë‹¤.</summary>
     private void LateUpdate()
     {
         HandleZoom();
@@ -59,8 +59,8 @@ public class CameraFollow : MonoBehaviour
         }
     }
 
-    // ±âÁ¸ ÇÃ·¹ÀÌ¾î ÃßÀû
-    // ÀÏ¹İ ¸ğµå¿¡¼­ ÇÃ·¹ÀÌ¾î À§Ä¡¸¦ ÃßÀû
+    // ê¸°ì¡´ í”Œë ˆì´ì–´ ì¶”ì 
+    // ì¼ë°˜ ëª¨ë“œì—ì„œ í”Œë ˆì´ì–´ ìœ„ì¹˜ë¥¼ ì¶”ì 
     private void FollowTarget()
     {
         if (target == null || cam == null)
@@ -69,8 +69,8 @@ public class CameraFollow : MonoBehaviour
         MoveCamera(target.position);
     }
 
-    // °Ç¹° À§Ä¡ ÃßÀû
-    // °Ç¹° º¸±â ¸ğµå¿¡¼­ ¼±ÅÃµÈ °Ç¹° À§Ä¡¸¦ ÃßÀû
+    // ê±´ë¬¼ ìœ„ì¹˜ ì¶”ì 
+    // ê±´ë¬¼ ë³´ê¸° ëª¨ë“œì—ì„œ ì„ íƒëœ ê±´ë¬¼ ìœ„ì¹˜ë¥¼ ì¶”ì 
     private void FollowBuilding()
     {
         if (viewingTarget == null)
@@ -82,8 +82,8 @@ public class CameraFollow : MonoBehaviour
         MoveCamera(viewingTarget.position);
     }
 
-    // Ä«¸Ş¶ó ÀÌµ¿ °øÅë ÇÔ¼ö
-    /// <summary>¸ñÇ¥ À§Ä¡·Î ºÎµå·´°Ô ÀÌµ¿ÇÏ°í ÇÊ¿äÇÏ¸é ¸Ê ¹üÀ§ ¾ÈÀ¸·Î Á¦ÇÑÇÑ´Ù.</summary>
+    // ì¹´ë©”ë¼ ì´ë™ ê³µí†µ í•¨ìˆ˜
+    /// <summary>ëª©í‘œ ìœ„ì¹˜ë¡œ ë¶€ë“œëŸ½ê²Œ ì´ë™í•˜ê³  í•„ìš”í•˜ë©´ ë§µ ë²”ìœ„ ì•ˆìœ¼ë¡œ ì œí•œí•œë‹¤.</summary>
     private void MoveCamera(Vector3 targetPosition)
     {
         Vector3 desiredPosition = new Vector3(
@@ -107,13 +107,13 @@ public class CameraFollow : MonoBehaviour
         transform.position = followPosition;
     }
 
-    // °Ç¹° À§Ä¡ º¸±â ½ÃÀÛ
-    /// <summary>¼³Ä¡µÈ °Ç¹°À» Ä«¸Ş¶óÀÇ ÃßÀû ´ë»óÀ¸·Î ¼³Á¤ÇÑ´Ù.</summary>
+    // ê±´ë¬¼ ìœ„ì¹˜ ë³´ê¸° ì‹œì‘
+    /// <summary>ì„¤ì¹˜ëœ ê±´ë¬¼ì„ ì¹´ë©”ë¼ì˜ ì¶”ì  ëŒ€ìƒìœ¼ë¡œ ì„¤ì •í•œë‹¤.</summary>
     public void ViewBuilding(Building building)
     {
         if (building == null || !building.IsPlaced)
         {
-            Debug.LogWarning("¼³Ä¡µÈ °Ç¹°ÀÌ ¾Æ´Õ´Ï´Ù.");
+            Debug.LogWarning("ì„¤ì¹˜ëœ ê±´ë¬¼ì´ ì•„ë‹™ë‹ˆë‹¤.");
             return;
         }
 
@@ -121,31 +121,31 @@ public class CameraFollow : MonoBehaviour
         isViewingBuilding = true;
 
         Debug.Log(
-            "°Ç¹° À§Ä¡ º¸±â: " +
+            "ê±´ë¬¼ ìœ„ì¹˜ ë³´ê¸°: " +
             building.Data.buildingName
         );
     }
 
-    // ÇÃ·¹ÀÌ¾î Ä«¸Ş¶ó·Î º¹±Í
-    /// <summary>°Ç¹° º¸±â ¸ğµå¸¦ Á¾·áÇÏ°í ÇÃ·¹ÀÌ¾î ÃßÀûÀ¸·Î µ¹¾Æ°£´Ù.</summary>
+    // í”Œë ˆì´ì–´ ì¹´ë©”ë¼ë¡œ ë³µê·€
+    /// <summary>ê±´ë¬¼ ë³´ê¸° ëª¨ë“œë¥¼ ì¢…ë£Œí•˜ê³  í”Œë ˆì´ì–´ ì¶”ì ìœ¼ë¡œ ëŒì•„ê°„ë‹¤.</summary>
     public void ReturnToPlayer()
     {
         isViewingBuilding = false;
         viewingTarget = null;
 
-        Debug.Log("ÇÃ·¹ÀÌ¾î Ä«¸Ş¶ó·Î º¹±Í");
+        Debug.Log("í”Œë ˆì´ì–´ ì¹´ë©”ë¼ë¡œ ë³µê·€");
     }
 
-    /// <summary>È­¸é Å©±â¸¦ °í·ÁÇØ Ä«¸Ş¶ó Áß½ÉÀÌ ¸Ê ¹ÛÀ¸·Î ¹ş¾î³ªÁö ¾Ê°Ô ÇÑ´Ù.</summary>
+    /// <summary>í™”ë©´ í¬ê¸°ë¥¼ ê³ ë ¤í•´ ì¹´ë©”ë¼ ì¤‘ì‹¬ì´ ë§µ ë°–ìœ¼ë¡œ ë²—ì–´ë‚˜ì§€ ì•Šê²Œ í•œë‹¤.</summary>
     private Vector3 ClampCameraPosition(Vector3 position)
     {
         Bounds bounds = mapBounds.Bounds;
 
-        // ÇöÀç Á÷±³ Ä«¸Ş¶óÀÇ È­¸é ³ôÀÌ Àı¹İ
+        // í˜„ì¬ ì§êµ ì¹´ë©”ë¼ì˜ í™”ë©´ ë†’ì´ ì ˆë°˜
         float cameraHalfHeight =
             cam.orthographicSize;
 
-        // È­¸é Á¾È¾ºñ¸¦ ¹İ¿µÇÑ ³Êºñ Àı¹İ
+        // í™”ë©´ ì¢…íš¡ë¹„ë¥¼ ë°˜ì˜í•œ ë„ˆë¹„ ì ˆë°˜
         float cameraHalfWidth =
             cameraHalfHeight * cam.aspect;
 
@@ -161,7 +161,7 @@ public class CameraFollow : MonoBehaviour
         float maxY =
             bounds.max.y - cameraHalfHeight;
 
-        // ¸ÊÀÌ È­¸éº¸´Ù Á¼´Ù¸é ¸Ê Áß¾Ó¿¡ °íÁ¤
+        // ë§µì´ í™”ë©´ë³´ë‹¤ ì¢ë‹¤ë©´ ë§µ ì¤‘ì•™ì— ê³ ì •
         if (minX > maxX)
         {
             position.x = bounds.center.x;
@@ -175,7 +175,7 @@ public class CameraFollow : MonoBehaviour
             );
         }
 
-        // ¸ÊÀÌ È­¸éº¸´Ù ³·´Ù¸é ¸Ê Áß¾Ó¿¡ °íÁ¤
+        // ë§µì´ í™”ë©´ë³´ë‹¤ ë‚®ë‹¤ë©´ ë§µ ì¤‘ì•™ì— ê³ ì •
         if (minY > maxY)
         {
             position.y = bounds.center.y;
@@ -192,7 +192,7 @@ public class CameraFollow : MonoBehaviour
         return position;
     }
 
-    /// <summary>ÈÙ ÀÔ·ÂÀ¸·Î Á÷±³ Ä«¸Ş¶ó Å©±â¸¦ Á¶ÀıÇÏµÇ ¸Ê Å©±â¿Í ÁÜ ÇÑ°è¸¦ Àû¿ëÇÑ´Ù.</summary>
+    /// <summary>íœ  ì…ë ¥ìœ¼ë¡œ ì§êµ ì¹´ë©”ë¼ í¬ê¸°ë¥¼ ì¡°ì ˆí•˜ë˜ ë§µ í¬ê¸°ì™€ ì¤Œ í•œê³„ë¥¼ ì ìš©í•œë‹¤.</summary>
     private void HandleZoom()
     {
         if (cam == null || Mouse.current == null)
@@ -213,11 +213,11 @@ public class CameraFollow : MonoBehaviour
         {
             Bounds bounds = mapBounds.Bounds;
 
-            // ¸Ê ³ôÀÌ·Î °è»êÇÑ ÃÖ´ë Á÷±³ Å©±â
+            // ë§µ ë†’ì´ë¡œ ê³„ì‚°í•œ ìµœëŒ€ ì§êµ í¬ê¸°
             float maxZoomByHeight =
                 bounds.size.y / 2f;
 
-            // ¸Ê ³Êºñ¿Í Ä«¸Ş¶ó ºñÀ²·Î °è»êÇÑ ÃÖ´ë Á÷±³ Å©±â
+            // ë§µ ë„ˆë¹„ì™€ ì¹´ë©”ë¼ ë¹„ìœ¨ë¡œ ê³„ì‚°í•œ ìµœëŒ€ ì§êµ í¬ê¸°
             float maxZoomByWidth =
                 bounds.size.x / (2f * cam.aspect);
 
@@ -232,7 +232,7 @@ public class CameraFollow : MonoBehaviour
             );
         }
 
-        // ¸ÊÀÌ ÃÖ¼Ò ÁÜ Å©±âº¸´Ù ÀÛÀº °æ¿ìµµ Ã³¸®
+        // ë§µì´ ìµœì†Œ ì¤Œ í¬ê¸°ë³´ë‹¤ ì‘ì€ ê²½ìš°ë„ ì²˜ë¦¬
         allowedMaxZoom = Mathf.Max(
             minZoom,
             allowedMaxZoom

@@ -1,35 +1,35 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// ½ºÅ©¸³Æ® ¼³¸í: °Ç¹° ¼±ÅÃ°ú Ã¶°Å, ÀÚ¿ø È¯±Ş ¹× µ¥ÄÚ·¹ÀÌ¼Ç ¹İÈ¯À» Ã³¸®ÇÑ´Ù.
+// ìŠ¤í¬ë¦½íŠ¸ ì„¤ëª…: ê±´ë¬¼ ì„ íƒê³¼ ì² ê±°, ìì› í™˜ê¸‰ ë° ë°ì½”ë ˆì´ì…˜ ë°˜í™˜ì„ ì²˜ë¦¬í•œë‹¤.
 public class BuildingDemolition : MonoBehaviour
 {
     [Header("Building Mode")]
     [SerializeField]
-    // º¯¼ö ¼³¸í: ÇöÀç °Ç¼³ ¸ğµå ¹× ¼±ÅÃ µµ±¸¸¦ °ü¸®ÇÏ´Â ÄÄÆ÷³ÍÆ®
+    // ë³€ìˆ˜ ì„¤ëª…: í˜„ì¬ ê±´ì„¤ ëª¨ë“œ ë° ì„ íƒ ë„êµ¬ë¥¼ ê´€ë¦¬í•˜ëŠ” ì»´í¬ë„ŒíŠ¸
     private BuildingModeManager buildingModeManager;
 
     [Header("Confirm UI")]
     [SerializeField]
-    // º¯¼ö ¼³¸í: Ã¶°Å ¿©ºÎ¸¦ È®ÀÎ¹Ş´Â UI ÂüÁ¶
+    // ë³€ìˆ˜ ì„¤ëª…: ì² ê±° ì—¬ë¶€ë¥¼ í™•ì¸ë°›ëŠ” UI ì°¸ì¡°
     private DemolitionConfirmUI confirmUI;
 
     [Header("Building Placement")]
     [SerializeField]
-    // º¯¼ö ¼³¸í: ¼³Ä¡µÈ °Ç¹°ÀÇ °İÀÚ Á¡À¯ Á¤º¸¸¦ °ü¸®ÇÏ´Â ÄÄÆ÷³ÍÆ®
+    // ë³€ìˆ˜ ì„¤ëª…: ì„¤ì¹˜ëœ ê±´ë¬¼ì˜ ê²©ì ì ìœ  ì •ë³´ë¥¼ ê´€ë¦¬í•˜ëŠ” ì»´í¬ë„ŒíŠ¸
     private BuildingPlacement buildingPlacement;
 
     [Header("Player Resources")]
     [SerializeField]
-    // º¯¼ö ¼³¸í: °Ç¼³ ºñ¿ëÀ» °Ë»çÇÏ°í ÀÚ¿øÀ» Â÷°¨ÇÏ°Å³ª È¯±ŞÇÒ ´ë»ó
+    // ë³€ìˆ˜ ì„¤ëª…: ê±´ì„¤ ë¹„ìš©ì„ ê²€ì‚¬í•˜ê³  ìì›ì„ ì°¨ê°í•˜ê±°ë‚˜ í™˜ê¸‰í•  ëŒ€ìƒ
     private PlayerResources playerResources;
 
-    // ÇöÀç Ã¶°Å ´ë»óÀ¸·Î ¼±ÅÃµÈ °Ç¹°
-    // º¯¼ö ¼³¸í: ÇöÀç ¼±ÅÃÇÏ°Å³ª Ã¶°Å ´ë»óÀ¸·Î ÁöÁ¤ÇÑ °Ç¹°
+    // í˜„ì¬ ì² ê±° ëŒ€ìƒìœ¼ë¡œ ì„ íƒëœ ê±´ë¬¼
+    // ë³€ìˆ˜ ì„¤ëª…: í˜„ì¬ ì„ íƒí•˜ê±°ë‚˜ ì² ê±° ëŒ€ìƒìœ¼ë¡œ ì§€ì •í•œ ê±´ë¬¼
     private Building selectedBuilding;
 
-    // ¼±ÅÃ Àü ¿ø·¡ »ö»ó
-    // º¯¼ö ¼³¸í: Ã¶°Å ´ë»ó ¼±ÅÃ Àü ½ºÇÁ¶óÀÌÆ® »ö»ó
+    // ì„ íƒ ì „ ì›ë˜ ìƒ‰ìƒ
+    // ë³€ìˆ˜ ì„¤ëª…: ì² ê±° ëŒ€ìƒ ì„ íƒ ì „ ìŠ¤í”„ë¼ì´íŠ¸ ìƒ‰ìƒ
     private Color originalColor = Color.white;
 
     public Building SelectedBuilding
@@ -37,13 +37,13 @@ public class BuildingDemolition : MonoBehaviour
         get { return selectedBuilding; }
     }
 
-    // ÇÔ¼ö ¼³¸í: Ã¶°Å ¸ğµå¿¡¼­ ÁÂÅ¬¸¯ ÀÔ·ÂÀ» ¹Ş¾Æ Ã¶°ÅÇÒ °Ç¹°À» ¼±ÅÃÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ì² ê±° ëª¨ë“œì—ì„œ ì¢Œí´ë¦­ ì…ë ¥ì„ ë°›ì•„ ì² ê±°í•  ê±´ë¬¼ì„ ì„ íƒí•œë‹¤.
     private void Update()
     {
         if (buildingModeManager == null)
             return;
 
-        // Ã¶°Å È®ÀÎÃ¢ÀÌ ¿­·Á ÀÖÀ¸¸é ÀÔ·Â Â÷´Ü
+        // ì² ê±° í™•ì¸ì°½ì´ ì—´ë ¤ ìˆìœ¼ë©´ ì…ë ¥ ì°¨ë‹¨
         if (confirmUI != null && confirmUI.IsOpen)
             return;
 
@@ -68,7 +68,7 @@ public class BuildingDemolition : MonoBehaviour
         }
     }
 
-    // ÇÔ¼ö ¼³¸í: ¸¶¿ì½º À§Ä¡ÀÇ 2D Ãæµ¹Ã¼¿¡¼­ Building ÄÄÆ÷³ÍÆ®¸¦ Å½»öÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ë§ˆìš°ìŠ¤ ìœ„ì¹˜ì˜ 2D ì¶©ëŒì²´ì—ì„œ Building ì»´í¬ë„ŒíŠ¸ë¥¼ íƒìƒ‰í•œë‹¤.
     void TrySelectBuilding()
     {
         Vector2 mouseScreenPosition =
@@ -104,7 +104,7 @@ public class BuildingDemolition : MonoBehaviour
         SelectBuilding(building);
     }
 
-    // ÇÔ¼ö ¼³¸í: Ã¶°Å ´ë»óÀ¸·Î ÁöÁ¤ÇÏ°í ºÓ°Ô Ç¥½ÃÇÑ µÚ È®ÀÎÃ¢À» ¿¬´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ì² ê±° ëŒ€ìƒìœ¼ë¡œ ì§€ì •í•˜ê³  ë¶‰ê²Œ í‘œì‹œí•œ ë’¤ í™•ì¸ì°½ì„ ì—°ë‹¤.
     void SelectBuilding(Building building)
     {
         ClearSelection();
@@ -123,7 +123,7 @@ public class BuildingDemolition : MonoBehaviour
         }
 
         Debug.Log(
-            "Ã¶°Å ´ë»ó ¼±ÅÃ : " +
+            "ì² ê±° ëŒ€ìƒ ì„ íƒ : " +
             selectedBuilding.Data.buildingName
         );
 
@@ -133,28 +133,28 @@ public class BuildingDemolition : MonoBehaviour
         }
     }
 
-    // ÇÔ¼ö ¼³¸í: ¿ÜºÎ¿¡¼­ ÁöÁ¤ÇÑ °Ç¹°¿¡ ´ëÇÑ Ã¶°Å È®ÀÎÀ» ¿äÃ»ÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ì™¸ë¶€ì—ì„œ ì§€ì •í•œ ê±´ë¬¼ì— ëŒ€í•œ ì² ê±° í™•ì¸ì„ ìš”ì²­í•œë‹¤.
     public void RequestDemolition(Building building)
     {
         if (building == null ||
             !building.IsPlaced ||
             building.Data == null)
         {
-            Debug.LogWarning("Ã¶°ÅÇÒ ¼ö ¾ø´Â °Ç¹°ÀÔ´Ï´Ù.");
+            Debug.LogWarning("ì² ê±°í•  ìˆ˜ ì—†ëŠ” ê±´ë¬¼ì…ë‹ˆë‹¤.");
             return;
         }
 
         if (confirmUI == null)
         {
-            Debug.LogError("Ã¶°Å È®ÀÎ UI°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            Debug.LogError("ì² ê±° í™•ì¸ UIê°€ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
             return;
         }
 
         SelectBuilding(building);
     }
 
-    // ÀÏ¹İ °Ç¹° Ã¶°Å ½Ã 90% ÀÚ¿ø È¯±Ş
-    // ÇÔ¼ö ¼³¸í: °Ç¼³ ºñ¿ë Ç×¸ñº°·Î 90%¸¦ ³»¸² °è»êÇÏ¿© ÇÃ·¹ÀÌ¾î ÀÚ¿ø¿¡ ¹İÈ¯ÇÑ´Ù.
+    // ì¼ë°˜ ê±´ë¬¼ ì² ê±° ì‹œ 90% ìì› í™˜ê¸‰
+    // í•¨ìˆ˜ ì„¤ëª…: ê±´ì„¤ ë¹„ìš© í•­ëª©ë³„ë¡œ 90%ë¥¼ ë‚´ë¦¼ ê³„ì‚°í•˜ì—¬ í”Œë ˆì´ì–´ ìì›ì— ë°˜í™˜í•œë‹¤.
     void RefundBuildingCost(Building building)
     {
         if (building == null || building.Data == null)
@@ -163,7 +163,7 @@ public class BuildingDemolition : MonoBehaviour
         if (playerResources == null)
         {
             Debug.LogError(
-                "PlayerResources°¡ ¿¬°áµÇ¾î ÀÖÁö ¾Ê½À´Ï´Ù."
+                "PlayerResourcesê°€ ì—°ê²°ë˜ì–´ ìˆì§€ ì•ŠìŠµë‹ˆë‹¤."
             );
             return;
         }
@@ -187,14 +187,14 @@ public class BuildingDemolition : MonoBehaviour
 
             Debug.Log(
                 cost.resourceType +
-                " Ã¶°Å È¯±Ş : " +
+                " ì² ê±° í™˜ê¸‰ : " +
                 refundAmount
             );
         }
     }
 
-    // µ¥ÄÚ·¹ÀÌ¼Ç Ã¶°Å ½Ã ¾ÆÀÌÅÛ 1°³ ¹İÈ¯
-    // ÇÔ¼ö ¼³¸í: Ã¶°ÅÇÑ µ¥ÄÚ·¹ÀÌ¼ÇÀ» ÀÎº¥Åä¸®¿¡ 1°³ µÇµ¹¸°´Ù.
+    // ë°ì½”ë ˆì´ì…˜ ì² ê±° ì‹œ ì•„ì´í…œ 1ê°œ ë°˜í™˜
+    // í•¨ìˆ˜ ì„¤ëª…: ì² ê±°í•œ ë°ì½”ë ˆì´ì…˜ì„ ì¸ë²¤í† ë¦¬ì— 1ê°œ ë˜ëŒë¦°ë‹¤.
     bool RefundDecoration(Building building)
     {
         if (building == null || building.Data == null)
@@ -203,7 +203,7 @@ public class BuildingDemolition : MonoBehaviour
         if (DecorationInventory.Instance == null)
         {
             Debug.LogError(
-                "DecorationInventory°¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù."
+                "DecorationInventoryê°€ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤."
             );
             return false;
         }
@@ -214,7 +214,7 @@ public class BuildingDemolition : MonoBehaviour
         );
 
         Debug.Log(
-            "µ¥ÄÚ·¹ÀÌ¼Ç ¹İÈ¯ : " +
+            "ë°ì½”ë ˆì´ì…˜ ë°˜í™˜ : " +
             building.Data.buildingName +
             " x1"
         );
@@ -222,7 +222,7 @@ public class BuildingDemolition : MonoBehaviour
         return true;
     }
 
-    // ÇÔ¼ö ¼³¸í: ¼±ÅÃµÈ °Ç¹°ÀÇ ¿ø·¡ »ö»óÀ» º¹¿øÇÏ°í ¼±ÅÃÀ» ÇØÁ¦ÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ì„ íƒëœ ê±´ë¬¼ì˜ ì›ë˜ ìƒ‰ìƒì„ ë³µì›í•˜ê³  ì„ íƒì„ í•´ì œí•œë‹¤.
     public void ClearSelection()
     {
         if (selectedBuilding == null)
@@ -237,15 +237,15 @@ public class BuildingDemolition : MonoBehaviour
         }
 
         Debug.Log(
-            "Ã¶°Å ´ë»ó ¼±ÅÃ ÇØÁ¦ : " +
+            "ì² ê±° ëŒ€ìƒ ì„ íƒ í•´ì œ : " +
             selectedBuilding.Data.buildingName
         );
 
         selectedBuilding = null;
     }
 
-    // ½ÇÁ¦ Ã¶°Å Ã³¸®
-    // ÇÔ¼ö ¼³¸í: Ã¶°Å Á¾·ùº° È¯±ŞÀ» Ã³¸®ÇÏ°í Á¡À¯ ¼¿À» ÇØÁ¦ÇÑ µÚ °Ç¹°À» »èÁ¦ÇÑ´Ù.
+    // ì‹¤ì œ ì² ê±° ì²˜ë¦¬
+    // í•¨ìˆ˜ ì„¤ëª…: ì² ê±° ì¢…ë¥˜ë³„ í™˜ê¸‰ì„ ì²˜ë¦¬í•˜ê³  ì ìœ  ì…€ì„ í•´ì œí•œ ë’¤ ê±´ë¬¼ì„ ì‚­ì œí•œë‹¤.
     public void ConfirmDemolition()
     {
         if (selectedBuilding == null)
@@ -256,27 +256,27 @@ public class BuildingDemolition : MonoBehaviour
         if (!buildingToDestroy.IsPlaced ||
             buildingToDestroy.Data == null)
         {
-            Debug.LogWarning("Ã¶°ÅÇÒ ¼ö ¾ø´Â °Ç¹°ÀÔ´Ï´Ù.");
+            Debug.LogWarning("ì² ê±°í•  ìˆ˜ ì—†ëŠ” ê±´ë¬¼ì…ë‹ˆë‹¤.");
             ClearSelection();
             return;
         }
 
         BuildingData data = buildingToDestroy.Data;
 
-        // °Ç¹° Á¾·ù¿¡ µû¶ó È¯±Ş ¹æ½Ä ±¸ºĞ
+        // ê±´ë¬¼ ì¢…ë¥˜ì— ë”°ë¼ í™˜ê¸‰ ë°©ì‹ êµ¬ë¶„
         if (data.buildingType == BuildingType.Decoration)
         {
-            // µ¥ÄÚ·¹ÀÌ¼ÇÀº ¾ÆÀÌÅÛ 1°³ ¹İÈ¯
+            // ë°ì½”ë ˆì´ì…˜ì€ ì•„ì´í…œ 1ê°œ ë°˜í™˜
             if (!RefundDecoration(buildingToDestroy))
                 return;
         }
         else
         {
-            // ÀÏ¹İ °Ç¹°Àº ±âÁ¸ 90% ÀÚ¿ø È¯±Ş
+            // ì¼ë°˜ ê±´ë¬¼ì€ ê¸°ì¡´ 90% ìì› í™˜ê¸‰
             RefundBuildingCost(buildingToDestroy);
         }
 
-        // Grid Á¡À¯ ÇØÁ¦
+        // Grid ì ìœ  í•´ì œ
         if (buildingPlacement != null)
         {
             buildingPlacement.ReleaseBuildingCells(
@@ -285,7 +285,7 @@ public class BuildingDemolition : MonoBehaviour
         }
 
         Debug.Log(
-            "°Ç¹° Ã¶°Å ¿Ï·á : " +
+            "ê±´ë¬¼ ì² ê±° ì™„ë£Œ : " +
             data.buildingName
         );
 

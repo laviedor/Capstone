@@ -4,31 +4,31 @@ using UnityEngine;
 public class ResourceUI : MonoBehaviour
 {
     [Header("Resources")]
-    // Ç¥½ÃÇÒ ÀÚ¿ø µ¥ÀÌÅÍ¸¦ Á¦°øÇÏ´Â PlayerResources ÂüÁ¶.
+    // í‘œì‹œí•  ìžì› ë°ì´í„°ë¥¼ ì œê³µí•˜ëŠ” PlayerResources ì°¸ì¡°.
     [SerializeField] private PlayerResources playerResources;
 
     [Header("Texts")]
-    // ³ª¹« º¸À¯·®À» Ç¥½ÃÇÒ ÅØ½ºÆ®.
+    // ë‚˜ë¬´ ë³´ìœ ëŸ‰ì„ í‘œì‹œí•  í…ìŠ¤íŠ¸.
     [SerializeField] private TMP_Text woodText;
-    // µ¹ º¸À¯·®À» Ç¥½ÃÇÒ ÅØ½ºÆ®.
+    // ëŒ ë³´ìœ ëŸ‰ì„ í‘œì‹œí•  í…ìŠ¤íŠ¸.
     [SerializeField] private TMP_Text stoneText;
-    // °ñµå º¸À¯·®À» Ç¥½ÃÇÒ ÅØ½ºÆ®.
+    // ê³¨ë“œ ë³´ìœ ëŸ‰ì„ í‘œì‹œí•  í…ìŠ¤íŠ¸.
     [SerializeField] private TMP_Text goldText;
 
-    // ¸Å ÇÁ·¹ÀÓ ÀÚ¿ø Ç¥½Ã ³»¿ëÀ» ÃÖ½Å ¼ö·®À¸·Î °»½ÅÇÑ´Ù.
+    // ë§¤ í”„ë ˆìž„ ìžì› í‘œì‹œ ë‚´ìš©ì„ ìµœì‹  ìˆ˜ëŸ‰ìœ¼ë¡œ ê°±ì‹ í•œë‹¤.
     private void Update()
     {
         UpdateResourceUI();
     }
 
-    // ÀÚ¿ø °ü¸®ÀÚ¿¡¼­ Á¾·ùº° º¸À¯·®À» Á¶È¸ÇÏ¿© UI ÅØ½ºÆ®¸¦ °»½ÅÇÑ´Ù.
+    // ìžì› ê´€ë¦¬ìžì—ì„œ ì¢…ë¥˜ë³„ ë³´ìœ ëŸ‰ì„ ì¡°íšŒí•˜ì—¬ UI í…ìŠ¤íŠ¸ë¥¼ ê°±ì‹ í•œë‹¤.
     private void UpdateResourceUI()
     {
-        // ÀÚ¿ø °ü¸®ÀÚ°¡ ¿¬°áµÇÁö ¾Ê¾Ò´Ù¸é UI °»½ÅÀ» Áß´ÜÇÑ´Ù.
+        // ìžì› ê´€ë¦¬ìžê°€ ì—°ê²°ë˜ì§€ ì•Šì•˜ë‹¤ë©´ UI ê°±ì‹ ì„ ì¤‘ë‹¨í•œë‹¤.
         if (playerResources == null)
             return;
 
-        // ³ª¹« ÅØ½ºÆ®°¡ ¿¬°áµÈ °æ¿ì¿¡¸¸ ¼ö·®À» Ç¥½ÃÇÑ´Ù.
+        // ë‚˜ë¬´ í…ìŠ¤íŠ¸ê°€ ì—°ê²°ëœ ê²½ìš°ì—ë§Œ ìˆ˜ëŸ‰ì„ í‘œì‹œí•œë‹¤.
         if (woodText != null)
         {
             woodText.text =
@@ -38,7 +38,7 @@ public class ResourceUI : MonoBehaviour
                 );
         }
 
-        // µ¹ ÅØ½ºÆ®°¡ ¿¬°áµÈ °æ¿ì¿¡¸¸ ¼ö·®À» Ç¥½ÃÇÑ´Ù.
+        // ëŒ í…ìŠ¤íŠ¸ê°€ ì—°ê²°ëœ ê²½ìš°ì—ë§Œ ìˆ˜ëŸ‰ì„ í‘œì‹œí•œë‹¤.
         if (stoneText != null)
         {
             stoneText.text =
@@ -48,7 +48,7 @@ public class ResourceUI : MonoBehaviour
                 );
         }
 
-        // °ñµå ÅØ½ºÆ®°¡ ¿¬°áµÈ °æ¿ì¿¡¸¸ ¼ö·®À» Ç¥½ÃÇÑ´Ù.
+        // ê³¨ë“œ í…ìŠ¤íŠ¸ê°€ ì—°ê²°ëœ ê²½ìš°ì—ë§Œ ìˆ˜ëŸ‰ì„ í‘œì‹œí•œë‹¤.
         if (goldText != null)
         {
             goldText.text =

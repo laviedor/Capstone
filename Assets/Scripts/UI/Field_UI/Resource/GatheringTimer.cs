@@ -1,34 +1,34 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Àå¼Òº° ½Ã°£Á¦ Ã¤Áı ÁøÇà »óÅÂ¿Í ¿Ï·á º¸»ó Áö±ŞÀ» °ü¸®ÇÑ´Ù.
+// ì¥ì†Œë³„ ì‹œê°„ì œ ì±„ì§‘ ì§„í–‰ ìƒíƒœì™€ ì™„ë£Œ ë³´ìƒ ì§€ê¸‰ì„ ê´€ë¦¬í•œë‹¤.
 public class GatheringTimer : MonoBehaviour
 {
-    // ´Ù¸¥ UI¿¡¼­ Á¢±ÙÇÏ´Â ´ÜÀÏ °ü¸®ÀÚ ÀÎ½ºÅÏ½º.
+    // ë‹¤ë¥¸ UIì—ì„œ ì ‘ê·¼í•˜ëŠ” ë‹¨ì¼ ê´€ë¦¬ì ì¸ìŠ¤í„´ìŠ¤.
     public static GatheringTimer Instance { get; private set; }
 
     [Header("Decoration Rewards")]
     [SerializeField]
-    // ¹«ÀÛÀ§ µ¥ÄÚ·¹ÀÌ¼Ç º¸»ó ÈÄº¸¸¦ °¡Á®¿À´Â µ¥ÀÌÅÍº£ÀÌ½º.
+    // ë¬´ì‘ìœ„ ë°ì½”ë ˆì´ì…˜ ë³´ìƒ í›„ë³´ë¥¼ ê°€ì ¸ì˜¤ëŠ” ë°ì´í„°ë² ì´ìŠ¤.
     private DecorationDatabase decorationDatabase;
 
     [Header("Player Resources")]
     [SerializeField]
-    // Ã¤Áı º¸»ó °ñµå¸¦ ½ÇÁ¦ ÇÃ·¹ÀÌ¾î ÀÚ¿ø¿¡ ´õÇÒ ´ë»ó.
+    // ì±„ì§‘ ë³´ìƒ ê³¨ë“œë¥¼ ì‹¤ì œ í”Œë ˆì´ì–´ ìì›ì— ë”í•  ëŒ€ìƒ.
     private PlayerResources playerResources;
 
-    // Ã¤Áı ÁøÇà Áß ¿©ºÎ¿Í º¸»ó ¼ö·É ´ë±â ¿©ºÎ¸¦ ±¸ºĞÇÑ´Ù.
+    // ì±„ì§‘ ì§„í–‰ ì¤‘ ì—¬ë¶€ì™€ ë³´ìƒ ìˆ˜ë ¹ ëŒ€ê¸° ì—¬ë¶€ë¥¼ êµ¬ë¶„í•œë‹¤.
     public bool IsGathering { get; private set; }
     public bool IsComplete { get; private set; }
 
-    // ÇöÀç Ã¤Áı Àå¼Ò ÀÌ¸§°ú ³²Àº ½Ã°£À» UI¿¡ °ø°³ÇÑ´Ù.
+    // í˜„ì¬ ì±„ì§‘ ì¥ì†Œ ì´ë¦„ê³¼ ë‚¨ì€ ì‹œê°„ì„ UIì— ê³µê°œí•œë‹¤.
     public string CurrentLocation { get; private set; } = "";
     public float RemainingTime { get; private set; }
 
-    // Time.time ±âÁØ Ã¤Áı Á¾·á ¿¹Á¤ ½Ã°¢.
+    // Time.time ê¸°ì¤€ ì±„ì§‘ ì¢…ë£Œ ì˜ˆì • ì‹œê°.
     private float endTime;
 
-    // Áßº¹ °ü¸®ÀÚ°¡ »ı±âÁö ¾Êµµ·Ï ½Ì±ÛÅÏÀ» ÃÊ±âÈ­ÇÑ´Ù.
+    // ì¤‘ë³µ ê´€ë¦¬ìê°€ ìƒê¸°ì§€ ì•Šë„ë¡ ì‹±ê¸€í„´ì„ ì´ˆê¸°í™”í•œë‹¤.
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -40,13 +40,13 @@ public class GatheringTimer : MonoBehaviour
         Instance = this;
     }
 
-    // ¸Å ÇÁ·¹ÀÓ ³²Àº ½Ã°£À» °è»êÇÏ°í Á¾·á ½Ã ¿Ï·á »óÅÂ·Î ÀüÈ¯ÇÑ´Ù.
+    // ë§¤ í”„ë ˆì„ ë‚¨ì€ ì‹œê°„ì„ ê³„ì‚°í•˜ê³  ì¢…ë£Œ ì‹œ ì™„ë£Œ ìƒíƒœë¡œ ì „í™˜í•œë‹¤.
     private void Update()
     {
         if (!IsGathering)
             return;
 
-        // À½¼ö ½Ã°£ÀÌ Ç¥½ÃµÇÁö ¾Êµµ·Ï ³²Àº ½Ã°£À» 0 ÀÌ»óÀ¸·Î Á¦ÇÑÇÑ´Ù.
+        // ìŒìˆ˜ ì‹œê°„ì´ í‘œì‹œë˜ì§€ ì•Šë„ë¡ ë‚¨ì€ ì‹œê°„ì„ 0 ì´ìƒìœ¼ë¡œ ì œí•œí•œë‹¤.
         RemainingTime = Mathf.Max(0f, endTime - Time.time);
 
         if (RemainingTime <= 0f)
@@ -55,11 +55,11 @@ public class GatheringTimer : MonoBehaviour
             IsComplete = true;
             RemainingTime = 0f;
 
-            Debug.Log("Ã¤Áı ¿Ï·á: " + CurrentLocation);
+            Debug.Log("ì±„ì§‘ ì™„ë£Œ: " + CurrentLocation);
         }
     }
 
-    // ÁøÇà ÁßÀÌ°Å³ª ¹Ì¼ö·É º¸»óÀÌ ÀÖÀ¸¸é »õ·Î¿î Ã¤ÁıÀ» ½ÃÀÛÇÏÁö ¾Ê´Â´Ù.
+    // ì§„í–‰ ì¤‘ì´ê±°ë‚˜ ë¯¸ìˆ˜ë ¹ ë³´ìƒì´ ìˆìœ¼ë©´ ìƒˆë¡œìš´ ì±„ì§‘ì„ ì‹œì‘í•˜ì§€ ì•ŠëŠ”ë‹¤.
     public void StartGathering(string location, float duration)
     {
         if (IsGathering || IsComplete)
@@ -70,27 +70,27 @@ public class GatheringTimer : MonoBehaviour
 
         CurrentLocation = location;
         RemainingTime = duration;
-        // °ÔÀÓ ½ÇÇà ½Ã°£À» ±âÁØÀ¸·Î Ã¤Áı Á¾·á ½ÃÁ¡À» ¼³Á¤ÇÑ´Ù.
+        // ê²Œì„ ì‹¤í–‰ ì‹œê°„ì„ ê¸°ì¤€ìœ¼ë¡œ ì±„ì§‘ ì¢…ë£Œ ì‹œì ì„ ì„¤ì •í•œë‹¤.
         endTime = Time.time + duration;
 
         IsGathering = true;
-        // ¼ö·ÉÀ» ¸¶Ä£ Ã¤Áı ±â·ÏÀ» ºñ¿ö ´ÙÀ½ Ã¤ÁıÀ» Çã¿ëÇÑ´Ù.
+        // ìˆ˜ë ¹ì„ ë§ˆì¹œ ì±„ì§‘ ê¸°ë¡ì„ ë¹„ì›Œ ë‹¤ìŒ ì±„ì§‘ì„ í—ˆìš©í•œë‹¤.
         IsComplete = false;
 
-        Debug.Log($"Ã¤Áı ½ÃÀÛ: {location}, {duration}ÃÊ");
+        Debug.Log($"ì±„ì§‘ ì‹œì‘: {location}, {duration}ì´ˆ");
     }
 
-    // Ã¤Áı ¿Ï·á ÈÄ °ñµå ¹× È®·üÀû µ¥ÄÚ·¹ÀÌ¼Ç º¸»óÀ» Áö±ŞÇÑ´Ù.
+    // ì±„ì§‘ ì™„ë£Œ í›„ ê³¨ë“œ ë° í™•ë¥ ì  ë°ì½”ë ˆì´ì…˜ ë³´ìƒì„ ì§€ê¸‰í•œë‹¤.
     public void ClaimReward()
     {
-        // ¿Ï·á Àü¿¡´Â º¸»óÀ» ¹ŞÀ» ¼ö ¾ø´Ù.
+        // ì™„ë£Œ ì „ì—ëŠ” ë³´ìƒì„ ë°›ì„ ìˆ˜ ì—†ë‹¤.
         if (!IsComplete)
             return;
 
         if (playerResources == null)
         {
             Debug.LogError(
-                "PlayerResources°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù."
+                "PlayerResourcesê°€ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤."
             );
             return;
         }
@@ -98,7 +98,7 @@ public class GatheringTimer : MonoBehaviour
         if (decorationDatabase == null)
         {
             Debug.LogError(
-                "DecorationDatabase°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù."
+                "DecorationDatabaseê°€ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤."
             );
             return;
         }
@@ -106,28 +106,28 @@ public class GatheringTimer : MonoBehaviour
         if (DecorationInventory.Instance == null)
         {
             Debug.LogError(
-                "DecorationInventory°¡ ¾ø½À´Ï´Ù."
+                "DecorationInventoryê°€ ì—†ìŠµë‹ˆë‹¤."
             );
             return;
         }
 
-        // º¸»ó °è»ê¿¡ »ç¿ëÇÒ ¿Ï·áµÈ Ã¤Áı Àå¼Ò¸¦ º¸°üÇÑ´Ù.
+        // ë³´ìƒ ê³„ì‚°ì— ì‚¬ìš©í•  ì™„ë£Œëœ ì±„ì§‘ ì¥ì†Œë¥¼ ë³´ê´€í•œë‹¤.
         string location = CurrentLocation;
 
-        // 1. °ñµå º¸»ó °è»ê
+        // 1. ê³¨ë“œ ë³´ìƒ ê³„ì‚°
         int goldReward = GetGoldReward(location);
 
-        // 2. µ¥ÄÚ·¹ÀÌ¼Ç È¹µæ È®·ü °è»ê
+        // 2. ë°ì½”ë ˆì´ì…˜ íšë“ í™•ë¥  ê³„ì‚°
         float decorationChance =
             GetDecorationChance(location);
 
-        // 0~1 ³­¼ö¿Í Àå¼Òº° È®·üÀ» ºñ±³ÇÏ¿© ´çÃ· ¿©ºÎ¸¦ °áÁ¤ÇÑ´Ù.
+        // 0~1 ë‚œìˆ˜ì™€ ì¥ì†Œë³„ í™•ë¥ ì„ ë¹„êµí•˜ì—¬ ë‹¹ì²¨ ì—¬ë¶€ë¥¼ ê²°ì •í•œë‹¤.
         bool decorationSuccess =
             Random.value < decorationChance;
 
         BuildingData decorationReward = null;
 
-        // ´çÃ·µÇ¾ú´Ù¸é ½ÇÁ¦ Áö±Ş °¡´ÉÇÑ µ¥ÄÚ·¹ÀÌ¼ÇÀ» ¼±Á¤ÇÑ´Ù.
+        // ë‹¹ì²¨ë˜ì—ˆë‹¤ë©´ ì‹¤ì œ ì§€ê¸‰ ê°€ëŠ¥í•œ ë°ì½”ë ˆì´ì…˜ì„ ì„ ì •í•œë‹¤.
         if (decorationSuccess)
         {
             decorationReward = GetRandomDecoration();
@@ -135,13 +135,13 @@ public class GatheringTimer : MonoBehaviour
             if (decorationReward == null)
             {
                 Debug.LogError(
-                    "Áö±Ş °¡´ÉÇÑ µ¥ÄÚ·¹ÀÌ¼ÇÀÌ ¾ø½À´Ï´Ù."
+                    "ì§€ê¸‰ ê°€ëŠ¥í•œ ë°ì½”ë ˆì´ì…˜ì´ ì—†ìŠµë‹ˆë‹¤."
                 );
                 return;
             }
         }
 
-        // 3. °ñµå È®Á¤ Áö±Ş
+        // 3. ê³¨ë“œ í™•ì • ì§€ê¸‰
         if (goldReward > 0)
         {
             playerResources.AddResource(
@@ -150,12 +150,12 @@ public class GatheringTimer : MonoBehaviour
             );
 
             Debug.Log(
-                $"Ã¤Áı °ñµå º¸»ó: {location} / " +
+                $"ì±„ì§‘ ê³¨ë“œ ë³´ìƒ: {location} / " +
                 $"{goldReward} G"
             );
         }
 
-        // 4. µ¥ÄÚ·¹ÀÌ¼Ç º¸»ó Áö±Ş
+        // 4. ë°ì½”ë ˆì´ì…˜ ë³´ìƒ ì§€ê¸‰
         if (decorationSuccess)
         {
             DecorationInventory.Instance.AddDecoration(
@@ -164,83 +164,83 @@ public class GatheringTimer : MonoBehaviour
             );
 
             Debug.Log(
-                $"Ã¤Áı µ¥ÄÚ·¹ÀÌ¼Ç º¸»ó: " +
+                $"ì±„ì§‘ ë°ì½”ë ˆì´ì…˜ ë³´ìƒ: " +
                 $"{decorationReward.buildingName} x1"
             );
         }
         else
         {
             Debug.Log(
-                "ÀÌ¹ø Ã¤Áı¿¡¼­´Â µ¥ÄÚ·¹ÀÌ¼ÇÀ» È¹µæÇÏÁö ¸øÇß½À´Ï´Ù."
+                "ì´ë²ˆ ì±„ì§‘ì—ì„œëŠ” ë°ì½”ë ˆì´ì…˜ì„ íšë“í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤."
             );
         }
 
-        // 5. Ã¤Áı »óÅÂ ÃÊ±âÈ­
+        // 5. ì±„ì§‘ ìƒíƒœ ì´ˆê¸°í™”
         IsComplete = false;
         CurrentLocation = "";
         RemainingTime = 0f;
 
-        Debug.Log("Ã¤Áı º¸»ó ¼ö·É ¿Ï·á");
+        Debug.Log("ì±„ì§‘ ë³´ìƒ ìˆ˜ë ¹ ì™„ë£Œ");
     }
 
-    // Àå¼Òº° °íÁ¤ °ñµå º¸»ó: ¸¶´ç 100, °³¿ï°¡ 350, µéÆÇ 1200, È£¼ı°¡ 12000.
+    // ì¥ì†Œë³„ ê³ ì • ê³¨ë“œ ë³´ìƒ: ë§ˆë‹¹ 100, ê°œìš¸ê°€ 350, ë“¤íŒ 1200, í˜¸ìˆ«ê°€ 12000.
     private int GetGoldReward(string location)
     {
         switch (location)
         {
-            case "¸¶´ç":
+            case "ë§ˆë‹¹":
                 return 100;
 
-            case "°³¿ï°¡":
+            case "ê°œìš¸ê°€":
                 return 350;
 
-            case "µéÆÇ":
+            case "ë“¤íŒ":
                 return 1200;
 
-            case "È£¼ı°¡":
+            case "í˜¸ìˆ«ê°€":
                 return 12000;
 
             default:
                 Debug.LogWarning(
-                    "¾Ë ¼ö ¾ø´Â Ã¤Áı Àå¼Ò: " + location
+                    "ì•Œ ìˆ˜ ì—†ëŠ” ì±„ì§‘ ì¥ì†Œ: " + location
                 );
                 return 0;
         }
     }
 
-    // Àå¼Òº° µ¥ÄÚ·¹ÀÌ¼Ç È¹µæ È®·ü: 10%, 30%, 60%, 100%.
+    // ì¥ì†Œë³„ ë°ì½”ë ˆì´ì…˜ íšë“ í™•ë¥ : 10%, 30%, 60%, 100%.
     private float GetDecorationChance(string location)
     {
         switch (location)
         {
-            case "¸¶´ç":
+            case "ë§ˆë‹¹":
                 return 0.10f;
 
-            case "°³¿ï°¡":
+            case "ê°œìš¸ê°€":
                 return 0.30f;
 
-            case "µéÆÇ":
+            case "ë“¤íŒ":
                 return 0.60f;
 
-            case "È£¼ı°¡":
+            case "í˜¸ìˆ«ê°€":
                 return 1.00f;
 
             default:
                 Debug.LogWarning(
-                    "¾Ë ¼ö ¾ø´Â Ã¤Áı Àå¼Ò: " + location
+                    "ì•Œ ìˆ˜ ì—†ëŠ” ì±„ì§‘ ì¥ì†Œ: " + location
                 );
                 return 0f;
         }
     }
 
-    // À¯È¿ÇÑ µ¥ÄÚ·¹ÀÌ¼Ç ÇÁ¸®ÆÕ°ú °Ç¹° µ¥ÀÌÅÍ¸¸ ÈÄº¸·Î ¸ğ¾Æ ¹«ÀÛÀ§ ¼±ÅÃÇÑ´Ù.
+    // ìœ íš¨í•œ ë°ì½”ë ˆì´ì…˜ í”„ë¦¬íŒ¹ê³¼ ê±´ë¬¼ ë°ì´í„°ë§Œ í›„ë³´ë¡œ ëª¨ì•„ ë¬´ì‘ìœ„ ì„ íƒí•œë‹¤.
     private BuildingData GetRandomDecoration()
     {
         if (decorationDatabase == null ||
             decorationDatabase.decorations == null)
             return null;
 
-        // º¸»óÀ¸·Î Áö±ŞÇÒ ¼ö ÀÖ´Â µ¥ÀÌÅÍ¸¸ ´ãÀ» ÀÓ½Ã ¸ñ·Ï.
+        // ë³´ìƒìœ¼ë¡œ ì§€ê¸‰í•  ìˆ˜ ìˆëŠ” ë°ì´í„°ë§Œ ë‹´ì„ ì„ì‹œ ëª©ë¡.
         List<BuildingData> validDecorations =
             new List<BuildingData>();
 
@@ -268,7 +268,7 @@ public class GatheringTimer : MonoBehaviour
         if (validDecorations.Count == 0)
             return null;
 
-        // À¯È¿ ÈÄº¸ Áß ÇÑ Á¾·ù¸¦ µ¿ÀÏÇÑ È®·ü·Î »Ì´Â´Ù.
+        // ìœ íš¨ í›„ë³´ ì¤‘ í•œ ì¢…ë¥˜ë¥¼ ë™ì¼í•œ í™•ë¥ ë¡œ ë½‘ëŠ”ë‹¤.
         int randomIndex =
             Random.Range(0, validDecorations.Count);
 

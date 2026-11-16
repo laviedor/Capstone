@@ -2,30 +2,30 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-// ½ºÅ©¸³Æ® ¼³¸í: ¸¶¿ì½º¸¦ µû¶ó´Ù´Ï´Â °Ç¼³¡¤Ã¶°Å µµ±¸ ¾ÆÀÌÄÜÀ» Ç¥½ÃÇÑ´Ù.
+// ìŠ¤í¬ë¦½íŠ¸ ì„¤ëª…: ë§ˆìš°ìŠ¤ë¥¼ ë”°ë¼ë‹¤ë‹ˆëŠ” ê±´ì„¤Â·ì² ê±° ë„êµ¬ ì•„ì´ì½˜ì„ í‘œì‹œí•œë‹¤.
 public class MouseToolIcon : MonoBehaviour
 {
     [Header("References")]
-    // º¯¼ö ¼³¸í: ¸¶¿ì½º¸¦ µû¶ó ¿òÁ÷ÀÌ´Â µµ±¸ ¾ÆÀÌÄÜÀÇ RectTransform
+    // ë³€ìˆ˜ ì„¤ëª…: ë§ˆìš°ìŠ¤ë¥¼ ë”°ë¼ ì›€ì§ì´ëŠ” ë„êµ¬ ì•„ì´ì½˜ì˜ RectTransform
     [SerializeField] private RectTransform iconRect;
-    // º¯¼ö ¼³¸í: µµ±¸ ÀÌ¹ÌÁö¸¦ È­¸é¿¡ ±×¸®´Â UI Image
+    // ë³€ìˆ˜ ì„¤ëª…: ë„êµ¬ ì´ë¯¸ì§€ë¥¼ í™”ë©´ì— ê·¸ë¦¬ëŠ” UI Image
     [SerializeField] private Image iconImage;
-    // º¯¼ö ¼³¸í: ÇöÀç °Ç¼³ ¸ğµå ¹× ¼±ÅÃ µµ±¸¸¦ °ü¸®ÇÏ´Â ÄÄÆ÷³ÍÆ®
+    // ë³€ìˆ˜ ì„¤ëª…: í˜„ì¬ ê±´ì„¤ ëª¨ë“œ ë° ì„ íƒ ë„êµ¬ë¥¼ ê´€ë¦¬í•˜ëŠ” ì»´í¬ë„ŒíŠ¸
     [SerializeField] private BuildingModeManager buildingModeManager;
 
     [Header("Tool Icons")]
-    // º¯¼ö ¼³¸í: °Ç¼³ µµ±¸ ¼±ÅÃ ½Ã Ç¥½ÃÇÒ ¸ÁÄ¡ ½ºÇÁ¶óÀÌÆ®
+    // ë³€ìˆ˜ ì„¤ëª…: ê±´ì„¤ ë„êµ¬ ì„ íƒ ì‹œ í‘œì‹œí•  ë§ì¹˜ ìŠ¤í”„ë¼ì´íŠ¸
     [SerializeField] private Sprite hammerIcon;
-    // º¯¼ö ¼³¸í: Ã¶°Å µµ±¸ ¼±ÅÃ ½Ã Ç¥½ÃÇÒ °î±ªÀÌ ½ºÇÁ¶óÀÌÆ®
+    // ë³€ìˆ˜ ì„¤ëª…: ì² ê±° ë„êµ¬ ì„ íƒ ì‹œ í‘œì‹œí•  ê³¡ê´­ì´ ìŠ¤í”„ë¼ì´íŠ¸
     [SerializeField] private Sprite pickaxeIcon;
 
     [Header("Position")]
     [SerializeField]
-    // º¯¼ö ¼³¸í: ¸¶¿ì½º Ä¿¼­¿¡¼­ ¾ÆÀÌÄÜÀ» ¶ç¿ö Ç¥½ÃÇÒ È­¸é ÁÂÇ¥ ¿ÀÇÁ¼Â
+    // ë³€ìˆ˜ ì„¤ëª…: ë§ˆìš°ìŠ¤ ì»¤ì„œì—ì„œ ì•„ì´ì½˜ì„ ë„ì›Œ í‘œì‹œí•  í™”ë©´ ì¢Œí‘œ ì˜¤í”„ì…‹
     private Vector2 offset =
         new Vector2(20f, -20f);
 
-    // ÇÔ¼ö ¼³¸í: ¸¶¿ì½º À§Ä¡¸¦ µû¶ó ¾ÆÀÌÄÜÀ» ÀÌµ¿½ÃÅ°°í ¼±ÅÃ µµ±¸¿¡ ¸Â´Â ÀÌ¹ÌÁö¸¦ °»½ÅÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ë§ˆìš°ìŠ¤ ìœ„ì¹˜ë¥¼ ë”°ë¼ ì•„ì´ì½˜ì„ ì´ë™ì‹œí‚¤ê³  ì„ íƒ ë„êµ¬ì— ë§ëŠ” ì´ë¯¸ì§€ë¥¼ ê°±ì‹ í•œë‹¤.
     private void Update()
     {
         if (Mouse.current == null)
@@ -35,7 +35,7 @@ public class MouseToolIcon : MonoBehaviour
         UpdateToolIcon();
     }
 
-    // ÇÔ¼ö ¼³¸í: ÇöÀç ¸¶¿ì½º È­¸é ÁÂÇ¥¿¡ ¿ÀÇÁ¼ÂÀ» ´õÇØ ¾ÆÀÌÄÜÀÇ UI À§Ä¡¸¦ ÁöÁ¤ÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: í˜„ì¬ ë§ˆìš°ìŠ¤ í™”ë©´ ì¢Œí‘œì— ì˜¤í”„ì…‹ì„ ë”í•´ ì•„ì´ì½˜ì˜ UI ìœ„ì¹˜ë¥¼ ì§€ì •í•œë‹¤.
     private void UpdatePosition()
     {
         Vector2 mousePosition =
@@ -45,7 +45,7 @@ public class MouseToolIcon : MonoBehaviour
             mousePosition + offset;
     }
 
-    // ÇÔ¼ö ¼³¸í: °Ç¼³/Ã¶°Å ¸ğµå¿¡ µû¶ó ¸ÁÄ¡¡¤°î±ªÀÌ ¾ÆÀÌÄÜÀÇ Ç¥½Ã ¿©ºÎ¿Í ½ºÇÁ¶óÀÌÆ®¸¦ ¹Ù²Û´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ê±´ì„¤/ì² ê±° ëª¨ë“œì— ë”°ë¼ ë§ì¹˜Â·ê³¡ê´­ì´ ì•„ì´ì½˜ì˜ í‘œì‹œ ì—¬ë¶€ì™€ ìŠ¤í”„ë¼ì´íŠ¸ë¥¼ ë°”ê¾¼ë‹¤.
     private void UpdateToolIcon()
     {
         if (buildingModeManager == null)
@@ -54,14 +54,14 @@ public class MouseToolIcon : MonoBehaviour
             return;
         }
 
-        // °Ç¼³ ¸ğµå°¡ ¾Æ´Ï¸é ¾ÆÀÌÄÜ ¼û±è
+        // ê±´ì„¤ ëª¨ë“œê°€ ì•„ë‹ˆë©´ ì•„ì´ì½˜ ìˆ¨ê¹€
         if (!buildingModeManager.IsBuildMode)
         {
             iconImage.enabled = false;
             return;
         }
 
-        // °Ç¼³ ¸ğµå
+        // ê±´ì„¤ ëª¨ë“œ
         if (buildingModeManager.CurrentTool ==
             BuildingTool.Build)
         {
@@ -69,7 +69,7 @@ public class MouseToolIcon : MonoBehaviour
             iconImage.enabled = true;
         }
 
-        // Ã¶°Å ¸ğµå
+        // ì² ê±° ëª¨ë“œ
         else if (buildingModeManager.CurrentTool ==
                  BuildingTool.Demolish)
         {

@@ -1,20 +1,20 @@
 using UnityEngine;
 
-// ½ºÅ©¸³Æ® ¼³¸í: ¸¶¿ì½º·Î Å¬¸¯ÇÑ À§Ä¡±îÁö ¿ÀºêÁ§Æ®¸¦ Á÷Á¢ ÀÌµ¿½ÃÅ²´Ù.
+// ìŠ¤í¬ë¦½íŠ¸ ì„¤ëª…: ë§ˆìš°ìŠ¤ë¡œ í´ë¦­í•œ ìœ„ì¹˜ê¹Œì§€ ì˜¤ë¸Œì íŠ¸ë¥¼ ì§ì ‘ ì´ë™ì‹œí‚¨ë‹¤.
 public class MoveTarget : MonoBehaviour
 {
-    // º¯¼ö ¼³¸í: ¸ñÇ¥ ÁöÁ¡À¸·Î ÀÌµ¿ÇÏ´Â ¼Óµµ
+    // ë³€ìˆ˜ ì„¤ëª…: ëª©í‘œ ì§€ì ìœ¼ë¡œ ì´ë™í•˜ëŠ” ì†ë„
     public float moveSpeed = 5f;
 
-    // º¯¼ö ¼³¸í: ¸¶¿ì½º·Î ÁöÁ¤ÇÑ ÀÌµ¿ ¸ñÇ¥ ¿ùµå ÁÂÇ¥
+    // ë³€ìˆ˜ ì„¤ëª…: ë§ˆìš°ìŠ¤ë¡œ ì§€ì •í•œ ì´ë™ ëª©í‘œ ì›”ë“œ ì¢Œí‘œ
     private Vector3 targetPosition;
-    // º¯¼ö ¼³¸í: ÇöÀç ¸ñÇ¥ À§Ä¡·Î ÀÌµ¿ ÁßÀÎÁö ³ªÅ¸³»´Â °ª
+    // ë³€ìˆ˜ ì„¤ëª…: í˜„ì¬ ëª©í‘œ ìœ„ì¹˜ë¡œ ì´ë™ ì¤‘ì¸ì§€ ë‚˜íƒ€ë‚´ëŠ” ê°’
     private bool isMoving = false;
 
-    // ÇÔ¼ö ¼³¸í: ¸¶¿ì½º Å¬¸¯ ÁÂÇ¥¸¦ ¿ùµå ÁÂÇ¥·Î ¹Ù²Ù°í ¸ñÇ¥ À§Ä¡±îÁö ¸Å ÇÁ·¹ÀÓ ÀÌµ¿ÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ë§ˆìš°ìŠ¤ í´ë¦­ ì¢Œí‘œë¥¼ ì›”ë“œ ì¢Œí‘œë¡œ ë°”ê¾¸ê³  ëª©í‘œ ìœ„ì¹˜ê¹Œì§€ ë§¤ í”„ë ˆì„ ì´ë™í•œë‹¤.
     void Update()
     {
-        // ¸¶¿ì½º ¿ŞÂÊ Å¬¸¯
+        // ë§ˆìš°ìŠ¤ ì™¼ìª½ í´ë¦­
         if (Input.GetMouseButtonDown(0))
         {
             Vector3 mousePosition = Input.mousePosition;
@@ -25,13 +25,13 @@ public class MoveTarget : MonoBehaviour
             targetPosition =
                 Camera.main.ScreenToWorldPoint(mousePosition);
 
-            // 2DÀÌ¹Ç·Î Z ÁÂÇ¥ À¯Áö
+            // 2Dì´ë¯€ë¡œ Z ì¢Œí‘œ ìœ ì§€
             targetPosition.z = transform.position.z;
 
             isMoving = true;
         }
 
-        // ¸ñÇ¥ À§Ä¡·Î ÀÌµ¿
+        // ëª©í‘œ ìœ„ì¹˜ë¡œ ì´ë™
         if (isMoving)
         {
             transform.position = Vector3.MoveTowards(
@@ -40,7 +40,7 @@ public class MoveTarget : MonoBehaviour
                 moveSpeed * Time.deltaTime
             );
 
-            // ¸ñÇ¥ À§Ä¡ µµÂø
+            // ëª©í‘œ ìœ„ì¹˜ ë„ì°©
             if (Vector3.Distance(
                 transform.position,
                 targetPosition) < 0.01f)

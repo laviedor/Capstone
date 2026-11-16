@@ -4,27 +4,27 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>±×¸®µå °æ·Î¸¦ µû¶ó ÇÃ·¹ÀÌ¾î¸¦ ½ÇÁ¦·Î ÀÌµ¿½ÃÅ°´Â ÄÄÆ÷³ÍÆ®.</summary>
+/// <summary>ê·¸ë¦¬ë“œ ê²½ë¡œë¥¼ ë”°ë¼ í”Œë ˆì´ì–´ë¥¼ ì‹¤ì œë¡œ ì´ë™ì‹œí‚¤ëŠ” ì»´í¬ë„ŒíŠ¸.</summary>
 public class PlayerPathMovement : MonoBehaviour
 {
-    // °æ·Î ³ëµåÀÇ ¼¿ ÁÂÇ¥¸¦ ¿ùµå ÁÂÇ¥·Î º¯È¯ÇÏ´Â ±×¸®µå
+    // ê²½ë¡œ ë…¸ë“œì˜ ì…€ ì¢Œí‘œë¥¼ ì›”ë“œ ì¢Œí‘œë¡œ ë³€í™˜í•˜ëŠ” ê·¸ë¦¬ë“œ
     [SerializeField] private Grid grid;
-    // ÃÊ´ç ÀÌµ¿ °Å¸®
+    // ì´ˆë‹¹ ì´ë™ ê±°ë¦¬
     [SerializeField] private float moveSpeed = 3f;
 
-    // ÇöÀç ÁøÇà ÁßÀÎ ÀÌµ¿ ÄÚ·çÆ¾ ÂüÁ¶
+    // í˜„ì¬ ì§„í–‰ ì¤‘ì¸ ì´ë™ ì½”ë£¨í‹´ ì°¸ì¡°
     private Coroutine moveCoroutine;
 
-    // ¸ñÀûÁö¿¡ µµÂøÇßÀ» ¶§ ½ÇÇàµÇ´Â ÀÌº¥Æ®
+    // ëª©ì ì§€ì— ë„ì°©í–ˆì„ ë•Œ ì‹¤í–‰ë˜ëŠ” ì´ë²¤íŠ¸
     public event Action OnDestinationReached;
 
-    /// <summary>Àü´Ş¹ŞÀº A* °æ·Î¸¦ µû¶ó ÀÌµ¿À» ½ÃÀÛÇÑ´Ù. ±âÁ¸ ÀÌµ¿Àº ¸ÕÀú Áß´ÜÇÑ´Ù.</summary>
+    /// <summary>ì „ë‹¬ë°›ì€ A* ê²½ë¡œë¥¼ ë”°ë¼ ì´ë™ì„ ì‹œì‘í•œë‹¤. ê¸°ì¡´ ì´ë™ì€ ë¨¼ì € ì¤‘ë‹¨í•œë‹¤.</summary>
     public void MoveAlongPath(List<GridNode> path)
     {
-        // ±âÁ¸ ÀÌµ¿ÀÌ ÀÖ´Ù¸é ¸ÕÀú Áß´Ü
+        // ê¸°ì¡´ ì´ë™ì´ ìˆë‹¤ë©´ ë¨¼ì € ì¤‘ë‹¨
         StopMovement();
 
-        // °æ·Î°¡ ¾ø°Å³ª ÇöÀç À§Ä¡°¡ ¸ñÀûÁöÀÎ °æ¿ì
+        // ê²½ë¡œê°€ ì—†ê±°ë‚˜ í˜„ì¬ ìœ„ì¹˜ê°€ ëª©ì ì§€ì¸ ê²½ìš°
         if (path == null || path.Count == 0)
         {
             OnDestinationReached?.Invoke();
@@ -34,31 +34,31 @@ public class PlayerPathMovement : MonoBehaviour
         moveCoroutine = StartCoroutine(FollowPath(path));
     }
 
-    /// <summary>ÇöÀç ½ÇÇà ÁßÀÎ ÀÌµ¿ ÄÚ·çÆ¾ÀÌ ÀÖ´Ù¸é ÁßÁöÇÑ´Ù.</summary>
+    /// <summary>í˜„ì¬ ì‹¤í–‰ ì¤‘ì¸ ì´ë™ ì½”ë£¨í‹´ì´ ìˆë‹¤ë©´ ì¤‘ì§€í•œë‹¤.</summary>
     public void StopMovement()
     {
         if (moveCoroutine != null)
         {
             StopCoroutine(moveCoroutine);
-            // ¿Ï·á ¶Ç´Â Áß´Ü ÈÄ ÄÚ·çÆ¾ ÂüÁ¶¸¦ ºñ¿ö µĞ´Ù
+            // ì™„ë£Œ ë˜ëŠ” ì¤‘ë‹¨ í›„ ì½”ë£¨í‹´ ì°¸ì¡°ë¥¼ ë¹„ì›Œ ë‘”ë‹¤
             moveCoroutine = null;
 
-            Debug.Log("ÇÃ·¹ÀÌ¾î ÀÌµ¿ ÁßÁö");
+            Debug.Log("í”Œë ˆì´ì–´ ì´ë™ ì¤‘ì§€");
         }
     }
 
-    /// <summary>°¢ °æ·Î ³ëµåÀÇ Áß¾ÓÀ¸·Î ¼øÂ÷ ÀÌµ¿ÇÏ°í ¸¶Áö¸·¿¡ µµÂø ÀÌº¥Æ®¸¦ ¹ß»ı½ÃÅ²´Ù.</summary>
+    /// <summary>ê° ê²½ë¡œ ë…¸ë“œì˜ ì¤‘ì•™ìœ¼ë¡œ ìˆœì°¨ ì´ë™í•˜ê³  ë§ˆì§€ë§‰ì— ë„ì°© ì´ë²¤íŠ¸ë¥¼ ë°œìƒì‹œí‚¨ë‹¤.</summary>
     private IEnumerator FollowPath(List<GridNode> path)
     {
         foreach (GridNode node in path)
         {
-            // ³ëµåÀÇ ¼¿ ÁÂÇ¥¸¦ ½ÇÁ¦ ÀÌµ¿ÇÒ ¿ùµå À§Ä¡·Î º¯È¯
+            // ë…¸ë“œì˜ ì…€ ì¢Œí‘œë¥¼ ì‹¤ì œ ì´ë™í•  ì›”ë“œ ìœ„ì¹˜ë¡œ ë³€í™˜
             Vector3 targetPosition =
                 grid.GetCellCenterWorld(node.cellPosition);
 
             targetPosition.z = transform.position.z;
 
-            // ¸ñÇ¥ À§Ä¡¿¡ ÃæºĞÈ÷ °¡±î¿öÁú ¶§±îÁö ÇÁ·¹ÀÓ¸¶´Ù ÀÌµ¿
+            // ëª©í‘œ ìœ„ì¹˜ì— ì¶©ë¶„íˆ ê°€ê¹Œì›Œì§ˆ ë•Œê¹Œì§€ í”„ë ˆì„ë§ˆë‹¤ ì´ë™
             while (Vector3.Distance(
                 transform.position,
                 targetPosition) > 0.01f)
@@ -77,7 +77,7 @@ public class PlayerPathMovement : MonoBehaviour
 
         moveCoroutine = null;
 
-        // ÀÌµ¿ ¿Ï·á ¾Ë¸²
+        // ì´ë™ ì™„ë£Œ ì•Œë¦¼
         OnDestinationReached?.Invoke();
     }
 }

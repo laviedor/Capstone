@@ -4,87 +4,87 @@ using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 
 
-// ½ºÅ©¸³Æ® ¼³¸í: °Ç¹° ¹èÄ¡, ¹Ì¸®º¸±â, °İÀÚ Á¡À¯, °Ç¼³ ºñ¿ëÀ» °ü¸®ÇÑ´Ù.
+// ìŠ¤í¬ë¦½íŠ¸ ì„¤ëª…: ê±´ë¬¼ ë°°ì¹˜, ë¯¸ë¦¬ë³´ê¸°, ê²©ì ì ìœ , ê±´ì„¤ ë¹„ìš©ì„ ê´€ë¦¬í•œë‹¤.
 public class BuildingPlacement : MonoBehaviour
 {
-    // º¯¼ö ¼³¸í: ¿ùµå ÁÂÇ¥¿Í ¼¿ ÁÂÇ¥¸¦ º¯È¯ÇÏ´Â Unity Grid ÂüÁ¶
+    // ë³€ìˆ˜ ì„¤ëª…: ì›”ë“œ ì¢Œí‘œì™€ ì…€ ì¢Œí‘œë¥¼ ë³€í™˜í•˜ëŠ” Unity Grid ì°¸ì¡°
     [SerializeField] private Grid grid;
-    // º¯¼ö ¼³¸í: ¼±ÅÃ ¹öÆ°ÀÌ °¡¸®Å°´Â °Ç¹° ÇÁ¸®ÆÕ
+    // ë³€ìˆ˜ ì„¤ëª…: ì„ íƒ ë²„íŠ¼ì´ ê°€ë¦¬í‚¤ëŠ” ê±´ë¬¼ í”„ë¦¬íŒ¹
     [SerializeField] private GameObject buildingPrefab;
-    // º¯¼ö ¼³¸í: °Ç¹° ½ÇÁ¦ Á¡À¯ ¿µ¿ªÀ» Ç¥½ÃÇÒ °İÀÚ ÇÁ¸®ÆÕ
+    // ë³€ìˆ˜ ì„¤ëª…: ê±´ë¬¼ ì‹¤ì œ ì ìœ  ì˜ì—­ì„ í‘œì‹œí•  ê²©ì í”„ë¦¬íŒ¹
     [SerializeField] private GameObject gridPreviewCellPrefab;
 
     ///
-    /////°Ç¼³¸ğµå 
+    /////ê±´ì„¤ëª¨ë“œ 
     ///
-    [Header("Build Grid")] // ¸¶¿ì½º¿ë ±×¸®µå 
-    // º¯¼ö ¼³¸í: ¸¶¿ì½º ÁÖº¯ °İÀÚ¸¦ Ç¥½ÃÇÒ ÇÁ¸®ÆÕ
+    [Header("Build Grid")] // ë§ˆìš°ìŠ¤ìš© ê·¸ë¦¬ë“œ 
+    // ë³€ìˆ˜ ì„¤ëª…: ë§ˆìš°ìŠ¤ ì£¼ë³€ ê²©ìë¥¼ í‘œì‹œí•  í”„ë¦¬íŒ¹
     [SerializeField] private GameObject buildGridCellPrefab;
 
-    // º¯¼ö ¼³¸í: °Ç¹° Å©±â ÁÖº¯¿¡ Ãß°¡·Î Ç¥½ÃÇÒ °İÀÚ ¿©¹é Ä­ ¼ö
+    // ë³€ìˆ˜ ì„¤ëª…: ê±´ë¬¼ í¬ê¸° ì£¼ë³€ì— ì¶”ê°€ë¡œ í‘œì‹œí•  ê²©ì ì—¬ë°± ì¹¸ ìˆ˜
     [SerializeField] private int gridPadding = 2;
 
-    // º¯¼ö ¼³¸í: ¸¶¿ì½º ÁÖº¯¿¡ »ı¼ºµÈ °İÀÚ ¿ÀºêÁ§Æ® ¸ñ·Ï
+    // ë³€ìˆ˜ ì„¤ëª…: ë§ˆìš°ìŠ¤ ì£¼ë³€ì— ìƒì„±ëœ ê²©ì ì˜¤ë¸Œì íŠ¸ ëª©ë¡
     private List<GameObject> buildGridCells = new List<GameObject>();
     ///
     ///
     ///
     [Header("Map Grid")]
-    // º¯¼ö ¼³¸í: ¸Ê ÀüÃ¼ °İÀÚ¸¦ Ç¥½ÃÇÒ ÇÁ¸®ÆÕ
+    // ë³€ìˆ˜ ì„¤ëª…: ë§µ ì „ì²´ ê²©ìë¥¼ í‘œì‹œí•  í”„ë¦¬íŒ¹
     [SerializeField] private GameObject mapGridCellPrefab;
-    // º¯¼ö ¼³¸í: °Ç¹° ¼³Ä¡¿Í °İÀÚ Ç¥½Ã¿¡ »ç¿ëÇÒ ¸Ê °æ°è
+    // ë³€ìˆ˜ ì„¤ëª…: ê±´ë¬¼ ì„¤ì¹˜ì™€ ê²©ì í‘œì‹œì— ì‚¬ìš©í•  ë§µ ê²½ê³„
     [SerializeField] private MapBounds mapBounds;
 
-    // º¯¼ö ¼³¸í: ÀüÃ¼ ¸Ê¿¡ »ı¼ºµÈ °İÀÚ ¿ÀºêÁ§Æ® ¸ñ·Ï
+    // ë³€ìˆ˜ ì„¤ëª…: ì „ì²´ ë§µì— ìƒì„±ëœ ê²©ì ì˜¤ë¸Œì íŠ¸ ëª©ë¡
     private List<GameObject> mapGridCells = new List<GameObject>();
 
 
 
 
     [Header("Player Resources")]
-    // º¯¼ö ¼³¸í: °Ç¼³ ºñ¿ëÀ» °Ë»çÇÏ°í ÀÚ¿øÀ» Â÷°¨ÇÏ°Å³ª È¯±ŞÇÒ ´ë»ó
+    // ë³€ìˆ˜ ì„¤ëª…: ê±´ì„¤ ë¹„ìš©ì„ ê²€ì‚¬í•˜ê³  ìì›ì„ ì°¨ê°í•˜ê±°ë‚˜ í™˜ê¸‰í•  ëŒ€ìƒ
     [SerializeField] private PlayerResources playerResources;
 
-    [Header("Building Mode")] //B ¸ğµå °Ç¼³
-    // º¯¼ö ¼³¸í: ÇöÀç °Ç¼³ ¸ğµå ¹× ¼±ÅÃ µµ±¸¸¦ °ü¸®ÇÏ´Â ÄÄÆ÷³ÍÆ®
+    [Header("Building Mode")] //B ëª¨ë“œ ê±´ì„¤
+    // ë³€ìˆ˜ ì„¤ëª…: í˜„ì¬ ê±´ì„¤ ëª¨ë“œ ë° ì„ íƒ ë„êµ¬ë¥¼ ê´€ë¦¬í•˜ëŠ” ì»´í¬ë„ŒíŠ¸
     [SerializeField] private BuildingModeManager buildingModeManager;
 
 
-    [Header("¼³Ä¡µÈ °Ç¹° °ü¸®")]
-    // º¯¼ö ¼³¸í: ½ÇÁ¦·Î ¼³Ä¡ÇÑ °Ç¹°µéÀ» ¹­¾î µÑ ºÎ¸ğ Transform
+    [Header("ì„¤ì¹˜ëœ ê±´ë¬¼ ê´€ë¦¬")]
+    // ë³€ìˆ˜ ì„¤ëª…: ì‹¤ì œë¡œ ì„¤ì¹˜í•œ ê±´ë¬¼ë“¤ì„ ë¬¶ì–´ ë‘˜ ë¶€ëª¨ Transform
     [SerializeField] private Transform placedBuildingsParent;
 
 
-    // ¼³Ä¡ Àü ¹Ì¸® º¸¿©ÁÙ °Ç¹°
-    // º¯¼ö ¼³¸í: ¼³Ä¡ Àü¿¡ À§Ä¡¿Í ¸ğ¾çÀ» º¸¿©ÁÖ´Â ÀÓ½Ã ¿ÀºêÁ§Æ®
+    // ì„¤ì¹˜ ì „ ë¯¸ë¦¬ ë³´ì—¬ì¤„ ê±´ë¬¼
+    // ë³€ìˆ˜ ì„¤ëª…: ì„¤ì¹˜ ì „ì— ìœ„ì¹˜ì™€ ëª¨ì–‘ì„ ë³´ì—¬ì£¼ëŠ” ì„ì‹œ ì˜¤ë¸Œì íŠ¸
     private GameObject previewObject;
 
-    // PreviewÀÇ SpriteRenderer
-    // º¯¼ö ¼³¸í: ¹Ì¸®º¸±âÀÇ »ö»ó°ú Åõ¸íµµ¸¦ º¯°æÇÏ´Â ·»´õ·¯
+    // Previewì˜ SpriteRenderer
+    // ë³€ìˆ˜ ì„¤ëª…: ë¯¸ë¦¬ë³´ê¸°ì˜ ìƒ‰ìƒê³¼ íˆ¬ëª…ë„ë¥¼ ë³€ê²½í•˜ëŠ” ë Œë”ëŸ¬
     private SpriteRenderer previewRenderer;
 
-    // ÇöÀç Preview°¡ À§Ä¡ÇÑ Grid Ä­
-    // º¯¼ö ¼³¸í: ¸¶¿ì½º°¡ °¡¸®Å°´Â ÇöÀç ±âÁØ °İÀÚ ÁÂÇ¥
+    // í˜„ì¬ Previewê°€ ìœ„ì¹˜í•œ Grid ì¹¸
+    // ë³€ìˆ˜ ì„¤ëª…: ë§ˆìš°ìŠ¤ê°€ ê°€ë¦¬í‚¤ëŠ” í˜„ì¬ ê¸°ì¤€ ê²©ì ì¢Œí‘œ
     private Vector3Int currentCellPosition;
 
-    // ÇöÀç ¼³Ä¡°¡ °¡´ÉÇÑ°¡?
-    // º¯¼ö ¼³¸í: ÇöÀç À§Ä¡¿¡ °Ç¹°À» ¼³Ä¡ÇÒ ¼ö ÀÖ´ÂÁö ³ªÅ¸³»´Â °ª
+    // í˜„ì¬ ì„¤ì¹˜ê°€ ê°€ëŠ¥í•œê°€?
+    // ë³€ìˆ˜ ì„¤ëª…: í˜„ì¬ ìœ„ì¹˜ì— ê±´ë¬¼ì„ ì„¤ì¹˜í•  ìˆ˜ ìˆëŠ”ì§€ ë‚˜íƒ€ë‚´ëŠ” ê°’
     private bool canPlace;
 
-    // ÀÌ¹Ì °Ç¹°ÀÌ ¼³Ä¡µÈ Grid Ä­µé
-    // º¯¼ö ¼³¸í: °Ç¹°ÀÌ ÀÌ¹Ì Á¡À¯ÇÑ ¼¿ ÁÂÇ¥¸¦ Áßº¹ ¾øÀÌ ÀúÀåÇÏ´Â ÁıÇÕ
+    // ì´ë¯¸ ê±´ë¬¼ì´ ì„¤ì¹˜ëœ Grid ì¹¸ë“¤
+    // ë³€ìˆ˜ ì„¤ëª…: ê±´ë¬¼ì´ ì´ë¯¸ ì ìœ í•œ ì…€ ì¢Œí‘œë¥¼ ì¤‘ë³µ ì—†ì´ ì €ì¥í•˜ëŠ” ì§‘í•©
     private HashSet<Vector3Int> occupiedCells = new HashSet<Vector3Int>();
-    // °Ç¹° Á¾·ùº° ¸¶Áö¸·À¸·Î »ç¿ëÇÑ ¹øÈ£
-    // º¯¼ö ¼³¸í: °Ç¹° IDº° ¸¶Áö¸· ¼³Ä¡ ¹øÈ£¸¦ ÀúÀåÇÏ´Â »çÀü
+    // ê±´ë¬¼ ì¢…ë¥˜ë³„ ë§ˆì§€ë§‰ìœ¼ë¡œ ì‚¬ìš©í•œ ë²ˆí˜¸
+    // ë³€ìˆ˜ ì„¤ëª…: ê±´ë¬¼ IDë³„ ë§ˆì§€ë§‰ ì„¤ì¹˜ ë²ˆí˜¸ë¥¼ ì €ì¥í•˜ëŠ” ì‚¬ì „
     private Dictionary<string, int> buildingNumberCounters =
         new Dictionary<string, int>();
 
-    // ÇÔ¼ö ¼³¸í: °Ç¹° IDº° ¼³Ä¡ ¼ø¹øÀ» Áõ°¡½ÃÄÑ ´ÙÀ½ °Ç¹° ¹øÈ£¸¦ ¹İÈ¯ÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ê±´ë¬¼ IDë³„ ì„¤ì¹˜ ìˆœë²ˆì„ ì¦ê°€ì‹œì¼œ ë‹¤ìŒ ê±´ë¬¼ ë²ˆí˜¸ë¥¼ ë°˜í™˜í•œë‹¤.
     private int GetNextBuildingNumber(string buildingID)
     {
         if (string.IsNullOrEmpty(buildingID))
         {
-            Debug.LogError("BuildingID°¡ ºñ¾î ÀÖ½À´Ï´Ù.");
+            Debug.LogError("BuildingIDê°€ ë¹„ì–´ ìˆìŠµë‹ˆë‹¤.");
             return 0;
         }
 
@@ -98,20 +98,20 @@ public class BuildingPlacement : MonoBehaviour
         return buildingNumberCounters[buildingID];
     }
 
-    //Grid Preview CellÀ» ÀúÀåÇÒ º¯¼ö
-    // º¯¼ö ¼³¸í: ÇöÀç °Ç¹°ÀÌ Â÷ÁöÇÒ ¼¿À» Ç¥½ÃÇÏ´Â ¹Ì¸®º¸±â ¸ñ·Ï
+    //Grid Preview Cellì„ ì €ì¥í•  ë³€ìˆ˜
+    // ë³€ìˆ˜ ì„¤ëª…: í˜„ì¬ ê±´ë¬¼ì´ ì°¨ì§€í•  ì…€ì„ í‘œì‹œí•˜ëŠ” ë¯¸ë¦¬ë³´ê¸° ëª©ë¡
     private List<GameObject> gridPreviewCells = new List<GameObject>();
 
-    //BuildingData¸¦ ÀúÀåÇÒ º¯¼ö ¹× °¢±â ´Ù¸¥ °Ç¹°µéÀÇ Å©±â ÀúÀå
-    //ÇöÀç °Ç¹°ÀÇ µ¥ÀÌÅÍ
-    // º¯¼ö ¼³¸í: ÇöÀç ¼±ÅÃµÈ °Ç¹°ÀÇ Å©±â¡¤ºñ¿ë¡¤Á¾·ù µ¥ÀÌÅÍ
+    //BuildingDataë¥¼ ì €ì¥í•  ë³€ìˆ˜ ë° ê°ê¸° ë‹¤ë¥¸ ê±´ë¬¼ë“¤ì˜ í¬ê¸° ì €ì¥
+    //í˜„ì¬ ê±´ë¬¼ì˜ ë°ì´í„°
+    // ë³€ìˆ˜ ì„¤ëª…: í˜„ì¬ ì„ íƒëœ ê±´ë¬¼ì˜ í¬ê¸°Â·ë¹„ìš©Â·ì¢…ë¥˜ ë°ì´í„°
     private BuildingData currentBuildingData;
-    // ÇöÀç °Ç¹° Component
-    // º¯¼ö ¼³¸í: ÇöÀç ¹Ì¸®º¸±â ¿ÀºêÁ§Æ®ÀÇ Building ÄÄÆ÷³ÍÆ®
+    // í˜„ì¬ ê±´ë¬¼ Component
+    // ë³€ìˆ˜ ì„¤ëª…: í˜„ì¬ ë¯¸ë¦¬ë³´ê¸° ì˜¤ë¸Œì íŠ¸ì˜ Building ì»´í¬ë„ŒíŠ¸
     private Building currentBuilding;
 
 
-    // ÇÔ¼ö ¼³¸í: °Ç¹° ¹Ì¸®º¸±â¿Í ¿©·¯ Á¾·ùÀÇ °İÀÚ Ç¥½Ã ¿ÀºêÁ§Æ®¸¦ »ı¼ºÇÏ°í ÃÊ±â¿¡´Â ¼û±ä´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ê±´ë¬¼ ë¯¸ë¦¬ë³´ê¸°ì™€ ì—¬ëŸ¬ ì¢…ë¥˜ì˜ ê²©ì í‘œì‹œ ì˜¤ë¸Œì íŠ¸ë¥¼ ìƒì„±í•˜ê³  ì´ˆê¸°ì—ëŠ” ìˆ¨ê¸´ë‹¤.
     void Start()
     {
         CreatePreview();
@@ -125,14 +125,14 @@ public class BuildingPlacement : MonoBehaviour
         SetBuildModeVisuals(false);
     }
 
-    // ÇÔ¼ö ¼³¸í: °Ç¼³ µµ±¸ »ç¿ë Áß ¹Ì¸®º¸±â¿Í °İÀÚ¸¦ °»½ÅÇÏ°í ¿ìÅ¬¸¯ ¼³Ä¡¸¦ Ã³¸®ÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ê±´ì„¤ ë„êµ¬ ì‚¬ìš© ì¤‘ ë¯¸ë¦¬ë³´ê¸°ì™€ ê²©ìë¥¼ ê°±ì‹ í•˜ê³  ìš°í´ë¦­ ì„¤ì¹˜ë¥¼ ì²˜ë¦¬í•œë‹¤.
     void Update()
     {
         if (buildingModeManager == null)
             return;
 
 
-        // °Ç¼³ ¸ğµå°¡ ¾Æ´Ï¸é Preview ¼û±è
+        // ê±´ì„¤ ëª¨ë“œê°€ ì•„ë‹ˆë©´ Preview ìˆ¨ê¹€
         if (!buildingModeManager.IsBuildMode)
         {
             SetBuildModeVisuals(false);
@@ -140,8 +140,8 @@ public class BuildingPlacement : MonoBehaviour
         }
 
 
-        // Ã¶°Å µµ±¸¸¦ »ç¿ë ÁßÀÌ¸é
-        // BuildingPlacement´Â ¾Æ¹«°Íµµ ÇÏÁö ¾ÊÀ½
+        // ì² ê±° ë„êµ¬ë¥¼ ì‚¬ìš© ì¤‘ì´ë©´
+        // BuildingPlacementëŠ” ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•ŠìŒ
         if (buildingModeManager.CurrentTool != BuildingTool.Build)
         {
             SetBuildModeVisuals(false);
@@ -149,7 +149,7 @@ public class BuildingPlacement : MonoBehaviour
         }
 
 
-        // Build µµ±¸ÀÏ ¶§¸¸ Preview Ç¥½Ã
+        // Build ë„êµ¬ì¼ ë•Œë§Œ Preview í‘œì‹œ
         SetBuildModeVisuals(true);
 
 
@@ -164,15 +164,15 @@ public class BuildingPlacement : MonoBehaviour
         UpdateGridPreviewColor();
 
 
-        // ¿ìÅ¬¸¯ = °Ç¹° ¼³Ä¡
+        // ìš°í´ë¦­ = ê±´ë¬¼ ì„¤ì¹˜
         if (Mouse.current.rightButton.wasPressedThisFrame)
         {
             PlaceBuilding();
         }
     }
 
-    // Preview »ı¼º
-    // ÇÔ¼ö ¼³¸í: ÇöÀç °Ç¹° ÇÁ¸®ÆÕÀ» ¹Ì¸®º¸±â·Î »ı¼ºÇÏ°í ¹İÅõ¸íÇÏ°Ô ¸¸µç´Ù.
+    // Preview ìƒì„±
+    // í•¨ìˆ˜ ì„¤ëª…: í˜„ì¬ ê±´ë¬¼ í”„ë¦¬íŒ¹ì„ ë¯¸ë¦¬ë³´ê¸°ë¡œ ìƒì„±í•˜ê³  ë°˜íˆ¬ëª…í•˜ê²Œ ë§Œë“ ë‹¤.
     void CreatePreview()
     {
         previewObject = Instantiate(buildingPrefab);
@@ -181,7 +181,7 @@ public class BuildingPlacement : MonoBehaviour
             previewObject.GetComponent<SpriteRenderer>();
 
 
-        // Building Component °¡Á®¿À±â
+        // Building Component ê°€ì ¸ì˜¤ê¸°
         currentBuilding =
             previewObject.GetComponent<Building>();
 
@@ -189,14 +189,14 @@ public class BuildingPlacement : MonoBehaviour
         if (currentBuilding == null)
         {
             Debug.LogError(
-                "Building Component°¡ ¾ø½À´Ï´Ù."
+                "Building Componentê°€ ì—†ìŠµë‹ˆë‹¤."
             );
 
             return;
         }
 
 
-        // BuildingÀÌ °¡Áö°í ÀÖ´Â BuildingData °¡Á®¿À±â
+        // Buildingì´ ê°€ì§€ê³  ìˆëŠ” BuildingData ê°€ì ¸ì˜¤ê¸°
         currentBuildingData =
             currentBuilding.Data;
 
@@ -204,7 +204,7 @@ public class BuildingPlacement : MonoBehaviour
         if (currentBuildingData == null)
         {
             Debug.LogError(
-                "BuildingData°¡ ¿¬°áµÇ¾î ÀÖÁö ¾Ê½À´Ï´Ù."
+                "BuildingDataê°€ ì—°ê²°ë˜ì–´ ìˆì§€ ì•ŠìŠµë‹ˆë‹¤."
             );
 
             return;
@@ -220,8 +220,8 @@ public class BuildingPlacement : MonoBehaviour
             previewRenderer.color = color;
         }
     }
-    // ¸¶¿ì½º¸¦ µû¶ó Preview ÀÌµ¿
-    // ÇÔ¼ö ¼³¸í: ¸¶¿ì½º ÁÂÇ¥¸¦ °İÀÚ¿¡ ¸ÂÃß°í °Ç¹° Å©±â¸¦ º¸Á¤ÇØ ¹Ì¸®º¸±â¸¦ ÀÌµ¿ÇÑ´Ù.
+    // ë§ˆìš°ìŠ¤ë¥¼ ë”°ë¼ Preview ì´ë™
+    // í•¨ìˆ˜ ì„¤ëª…: ë§ˆìš°ìŠ¤ ì¢Œí‘œë¥¼ ê²©ìì— ë§ì¶”ê³  ê±´ë¬¼ í¬ê¸°ë¥¼ ë³´ì •í•´ ë¯¸ë¦¬ë³´ê¸°ë¥¼ ì´ë™í•œë‹¤.
     void UpdatePreviewPosition()
     {
         Vector2 mouseScreenPosition =
@@ -232,13 +232,13 @@ public class BuildingPlacement : MonoBehaviour
 
         mouseWorldPosition.z = 0;
 
-        // ¸¶¿ì½º À§Ä¡¸¦ Grid ÁÂÇ¥·Î º¯È¯
+        // ë§ˆìš°ìŠ¤ ìœ„ì¹˜ë¥¼ Grid ì¢Œí‘œë¡œ ë³€í™˜
         currentCellPosition = grid.WorldToCell(mouseWorldPosition);
 
-        // ÇöÀç Ä­ÀÇ Áß¾Ó À§Ä¡
+        // í˜„ì¬ ì¹¸ì˜ ì¤‘ì•™ ìœ„ì¹˜
         Vector3 cellCenterPosition = grid.GetCellCenterWorld(currentCellPosition);
 
-        // °Ç¹° Å©±â¿¡ µû¸¥ À§Ä¡ º¸Á¤
+        // ê±´ë¬¼ í¬ê¸°ì— ë”°ë¥¸ ìœ„ì¹˜ ë³´ì •
         float offsetX = (currentBuildingData.width - 1) * grid.cellSize.x / 2f;
 
         float offsetY = (currentBuildingData.height - 1) * grid.cellSize.y / 2f;
@@ -247,12 +247,12 @@ public class BuildingPlacement : MonoBehaviour
 
         previewObject.transform.position = buildingPosition;
 
-        // ÇØ´ç Ä­ÀÌ ºñ¾î ÀÖ´ÂÁö È®ÀÎ
+        // í•´ë‹¹ ì¹¸ì´ ë¹„ì–´ ìˆëŠ”ì§€ í™•ì¸
         canPlace = CanPlaceBuilding();
     }
 
-    // Preview »ö»ó º¯°æ
-    // ÇÔ¼ö ¼³¸í: ¼³Ä¡ °¡´É ¿©ºÎ¿¡ µû¶ó ¹Ì¸®º¸±â »öÀ» ÃÊ·Ï»ö ¶Ç´Â »¡°£»öÀ¸·Î ¹Ù²Û´Ù.
+    // Preview ìƒ‰ìƒ ë³€ê²½
+    // í•¨ìˆ˜ ì„¤ëª…: ì„¤ì¹˜ ê°€ëŠ¥ ì—¬ë¶€ì— ë”°ë¼ ë¯¸ë¦¬ë³´ê¸° ìƒ‰ì„ ì´ˆë¡ìƒ‰ ë˜ëŠ” ë¹¨ê°„ìƒ‰ìœ¼ë¡œ ë°”ê¾¼ë‹¤.
     void UpdatePreviewColor()
     {
         if (previewRenderer == null)
@@ -262,20 +262,20 @@ public class BuildingPlacement : MonoBehaviour
 
         if (canPlace)
         {
-            // ¼³Ä¡ °¡´É = ÃÊ·Ï»ö
+            // ì„¤ì¹˜ ê°€ëŠ¥ = ì´ˆë¡ìƒ‰
             color = new Color(0f, 1f, 0f, 0.5f);
         }
         else
         {
-            // ¼³Ä¡ ºÒ°¡´É = »¡°£»ö
+            // ì„¤ì¹˜ ë¶ˆê°€ëŠ¥ = ë¹¨ê°„ìƒ‰
             color = new Color(1f, 0f, 0f, 0.5f);
         }
 
         previewRenderer.color = color;
     }
 
-    //¿©·¯ Ä­ °Ë»ç
-    // ÇÔ¼ö ¼³¸í: °Ç¹°ÀÌ Â÷ÁöÇÒ ¸ğµç ¼¿ÀÌ ºñ¾î ÀÖ°í ¸Ê °æ°è ¾È¿¡ ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
+    //ì—¬ëŸ¬ ì¹¸ ê²€ì‚¬
+    // í•¨ìˆ˜ ì„¤ëª…: ê±´ë¬¼ì´ ì°¨ì§€í•  ëª¨ë“  ì…€ì´ ë¹„ì–´ ìˆê³  ë§µ ê²½ê³„ ì•ˆì— ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
     bool CanPlaceBuilding()
     {
         if (currentBuildingData == null)
@@ -292,17 +292,17 @@ public class BuildingPlacement : MonoBehaviour
                     currentCellPosition +
                     new Vector3Int(x, y, 0);
 
-                // ÀÌ¹Ì °Ç¹°ÀÌ ÀÖ´Â CellÀÎÁö °Ë»ç
+                // ì´ë¯¸ ê±´ë¬¼ì´ ìˆëŠ” Cellì¸ì§€ ê²€ì‚¬
                 if (occupiedCells.Contains(cell))
                 {
                     return false;
                 }
 
-                // CellÀÇ Áß¾Ó ¿ùµå ÁÂÇ¥
+                // Cellì˜ ì¤‘ì•™ ì›”ë“œ ì¢Œí‘œ
                 Vector3 cellWorldPosition =
                     grid.GetCellCenterWorld(cell);
 
-                // MapBounds ¹ÛÀÎÁö °Ë»ç
+                // MapBounds ë°–ì¸ì§€ ê²€ì‚¬
                 if (!mapBounds.IsInside(cellWorldPosition))
                 {
                     return false;
@@ -313,14 +313,14 @@ public class BuildingPlacement : MonoBehaviour
         return true;
     }
 
-    // °Ç¹° ¸ñ·Ï ¹× ¸ñ·Ï¿¡¼­ °Ç¹° ¼±ÅÃ ¹× ¼³Ä¡
-    // ÇÔ¼ö ¼³¸í: °Ç¹° ¸ñ·Ï¿¡¼­ ¼±ÅÃÇÑ ÇÁ¸®ÆÕÀ» ÇöÀç ¼³Ä¡ ´ë»óÀ¸·Î ÁöÁ¤ÇÏ°í ¹Ì¸®º¸±â¸¦ ´Ù½Ã ¸¸µç´Ù.
+    // ê±´ë¬¼ ëª©ë¡ ë° ëª©ë¡ì—ì„œ ê±´ë¬¼ ì„ íƒ ë° ì„¤ì¹˜
+    // í•¨ìˆ˜ ì„¤ëª…: ê±´ë¬¼ ëª©ë¡ì—ì„œ ì„ íƒí•œ í”„ë¦¬íŒ¹ì„ í˜„ì¬ ì„¤ì¹˜ ëŒ€ìƒìœ¼ë¡œ ì§€ì •í•˜ê³  ë¯¸ë¦¬ë³´ê¸°ë¥¼ ë‹¤ì‹œ ë§Œë“ ë‹¤.
     public void SelectBuilding(GameObject newBuildingPrefab)
     {
         if (newBuildingPrefab == null)
         {
             Debug.LogError(
-                "¼±ÅÃÇÒ Building PrefabÀÌ ¾ø½À´Ï´Ù."
+                "ì„ íƒí•  Building Prefabì´ ì—†ìŠµë‹ˆë‹¤."
             );
 
             return;
@@ -332,7 +332,7 @@ public class BuildingPlacement : MonoBehaviour
         if (building == null)
         {
             Debug.LogError(
-                "¼±ÅÃÇÑ Prefab¿¡ Building ÄÄÆ÷³ÍÆ®°¡ ¾ø½À´Ï´Ù."
+                "ì„ íƒí•œ Prefabì— Building ì»´í¬ë„ŒíŠ¸ê°€ ì—†ìŠµë‹ˆë‹¤."
             );
 
             return;
@@ -341,7 +341,7 @@ public class BuildingPlacement : MonoBehaviour
         if (building.Data == null)
         {
             Debug.LogError(
-                "¼±ÅÃÇÑ Prefab¿¡ BuildingData°¡ ¿¬°áµÇ¾î ÀÖÁö ¾Ê½À´Ï´Ù."
+                "ì„ íƒí•œ Prefabì— BuildingDataê°€ ì—°ê²°ë˜ì–´ ìˆì§€ ì•ŠìŠµë‹ˆë‹¤."
             );
 
             return;
@@ -351,7 +351,7 @@ public class BuildingPlacement : MonoBehaviour
         currentBuildingData = building.Data;
 
         Debug.Log(
-            "°Ç¹° ¼±ÅÃ : " +
+            "ê±´ë¬¼ ì„ íƒ : " +
             currentBuildingData.buildingName
         );
 
@@ -367,59 +367,59 @@ public class BuildingPlacement : MonoBehaviour
     }
 
 
-    // ½ÇÁ¦ °Ç¹° ¼³Ä¡
-    // ÇÔ¼ö ¼³¸í: ¼³Ä¡ Á¶°Ç°ú ºñ¿ëÀ» È®ÀÎÇÏ°í ½ÇÁ¦ °Ç¹°À» »ı¼º¡¤ÃÊ±âÈ­ÇÑ µÚ ÀÚ¿ø°ú Á¡À¯ Á¤º¸¸¦ °»½ÅÇÑ´Ù.
+    // ì‹¤ì œ ê±´ë¬¼ ì„¤ì¹˜
+    // í•¨ìˆ˜ ì„¤ëª…: ì„¤ì¹˜ ì¡°ê±´ê³¼ ë¹„ìš©ì„ í™•ì¸í•˜ê³  ì‹¤ì œ ê±´ë¬¼ì„ ìƒì„±Â·ì´ˆê¸°í™”í•œ ë’¤ ìì›ê³¼ ì ìœ  ì •ë³´ë¥¼ ê°±ì‹ í•œë‹¤.
     void PlaceBuilding()
     {
-        // ¼³Ä¡ÇÒ ¼ö ¾ø´Â À§Ä¡¶ó¸é °Ç¼³ Áß´Ü
+        // ì„¤ì¹˜í•  ìˆ˜ ì—†ëŠ” ìœ„ì¹˜ë¼ë©´ ê±´ì„¤ ì¤‘ë‹¨
         if (!canPlace)
         {
-            Debug.Log("ÀÌ À§Ä¡¿¡´Â °Ç¹°À» ¼³Ä¡ÇÒ ¼ö ¾ø½À´Ï´Ù.");
+            Debug.Log("ì´ ìœ„ì¹˜ì—ëŠ” ê±´ë¬¼ì„ ì„¤ì¹˜í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // °Ç¼³¿¡ ÇÊ¿äÇÑ Á¤º¸ È®ÀÎ
+        // ê±´ì„¤ì— í•„ìš”í•œ ì •ë³´ í™•ì¸
         if (buildingPrefab == null ||
             currentBuildingData == null ||
             previewObject == null)
         {
-            Debug.LogError("°Ç¹° ¼³Ä¡¿¡ ÇÊ¿äÇÑ Á¤º¸°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogError("ê±´ë¬¼ ì„¤ì¹˜ì— í•„ìš”í•œ ì •ë³´ê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // °Ç¹° ID È®ÀÎ
+        // ê±´ë¬¼ ID í™•ì¸
         if (string.IsNullOrEmpty(currentBuildingData.buildingID))
         {
-            Debug.LogError("BuildingID°¡ ¼³Á¤µÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            Debug.LogError("BuildingIDê°€ ì„¤ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // °Ç¹° Prefab È®ÀÎ
+        // ê±´ë¬¼ Prefab í™•ì¸
         Building prefabBuilding =
             buildingPrefab.GetComponent<Building>();
 
         if (prefabBuilding == null || prefabBuilding.Data == null)
         {
-            Debug.LogError("°Ç¹° Prefab ¼³Á¤ÀÌ ¿Ã¹Ù¸£Áö ¾Ê½À´Ï´Ù.");
+            Debug.LogError("ê±´ë¬¼ Prefab ì„¤ì •ì´ ì˜¬ë°”ë¥´ì§€ ì•ŠìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // ¼³Ä¡µÈ °Ç¹°À» º¸°üÇÒ ºÎ¸ğ È®ÀÎ
+        // ì„¤ì¹˜ëœ ê±´ë¬¼ì„ ë³´ê´€í•  ë¶€ëª¨ í™•ì¸
         if (placedBuildingsParent == null)
         {
-            Debug.LogError("PlacedBuildings Parent°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            Debug.LogError("PlacedBuildings Parentê°€ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // °Ç¼³ ºñ¿ë ¶Ç´Â µ¥ÄÚ·¹ÀÌ¼Ç º¸À¯ ¼ö·® È®ÀÎ
+        // ê±´ì„¤ ë¹„ìš© ë˜ëŠ” ë°ì½”ë ˆì´ì…˜ ë³´ìœ  ìˆ˜ëŸ‰ í™•ì¸
         if (!CanAffordBuilding())
         {
-            Debug.Log("°Ç¹°À» ¼³Ä¡ÇÏ±â À§ÇÑ ÀÚ¿øÀÌ ºÎÁ·ÇÕ´Ï´Ù.");
+            Debug.Log("ê±´ë¬¼ì„ ì„¤ì¹˜í•˜ê¸° ìœ„í•œ ìì›ì´ ë¶€ì¡±í•©ë‹ˆë‹¤.");
             return;
         }
 
-        // °Ç¹° »ı¼º
-        // ±âÁ¸°ú ´Ş¸® placedBuildingsParent¸¦ ºÎ¸ğ·Î ÁöÁ¤ÇÑ´Ù.
+        // ê±´ë¬¼ ìƒì„±
+        // ê¸°ì¡´ê³¼ ë‹¬ë¦¬ placedBuildingsParentë¥¼ ë¶€ëª¨ë¡œ ì§€ì •í•œë‹¤.
         GameObject placedObject = Instantiate(
             buildingPrefab,
             previewObject.transform.position,
@@ -432,12 +432,12 @@ public class BuildingPlacement : MonoBehaviour
 
         if (placedBuilding == null)
         {
-            Debug.LogError("»ı¼ºµÈ °Ç¹°¿¡ Building ÄÄÆ÷³ÍÆ®°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogError("ìƒì„±ëœ ê±´ë¬¼ì— Building ì»´í¬ë„ŒíŠ¸ê°€ ì—†ìŠµë‹ˆë‹¤.");
             Destroy(placedObject);
             return;
         }
 
-        // °Ç¹° °íÀ¯ ¹øÈ£ ºÎ¿©
+        // ê±´ë¬¼ ê³ ìœ  ë²ˆí˜¸ ë¶€ì—¬
         int newNumber = GetNextBuildingNumber(
             placedBuilding.BuildingID
         );
@@ -450,28 +450,28 @@ public class BuildingPlacement : MonoBehaviour
 
         placedBuilding.SetBuildingNumber(newNumber);
 
-        // ½ÇÁ¦ ¼³Ä¡ ¿Ï·á Ã³¸®
+        // ì‹¤ì œ ì„¤ì¹˜ ì™„ë£Œ ì²˜ë¦¬
         placedBuilding.Initialize(currentCellPosition);
 
-        // °Ç¼³ ºñ¿ë ¶Ç´Â µ¥ÄÚ·¹ÀÌ¼Ç ¼ö·® Â÷°¨
+        // ê±´ì„¤ ë¹„ìš© ë˜ëŠ” ë°ì½”ë ˆì´ì…˜ ìˆ˜ëŸ‰ ì°¨ê°
         PayBuildingCost();
 
-        // °Ç¹°ÀÌ Â÷ÁöÇÏ´Â Grid µî·Ï
+        // ê±´ë¬¼ì´ ì°¨ì§€í•˜ëŠ” Grid ë“±ë¡
         OccupyBuildingCells();
 
         Debug.Log(
-            "°Ç¹° ¼³Ä¡ ¿Ï·á : " +
+            "ê±´ë¬¼ ì„¤ì¹˜ ì™„ë£Œ : " +
             placedBuilding.Data.buildingName +
             " #" + placedBuilding.BuildingNumber +
-            " / À§Ä¡ : " + currentCellPosition
+            " / ìœ„ì¹˜ : " + currentCellPosition
         );
     }
 
-    //GridpreviewCellÀ» »ı¼ºÇÏ´Â ÇÔ¼ö
-    // ÇÔ¼ö ¼³¸í: °Ç¹° °¡·Î¡¤¼¼·Î Å©±â¸¸Å­ ¼³Ä¡ ¿µ¿ª Ç¥½Ã ¼¿À» »ı¼ºÇÑ´Ù.
+    //GridpreviewCellì„ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
+    // í•¨ìˆ˜ ì„¤ëª…: ê±´ë¬¼ ê°€ë¡œÂ·ì„¸ë¡œ í¬ê¸°ë§Œí¼ ì„¤ì¹˜ ì˜ì—­ í‘œì‹œ ì…€ì„ ìƒì„±í•œë‹¤.
     void CreateGridPreview()
     {
-        // ±âÁ¸ Preview Cell »èÁ¦
+        // ê¸°ì¡´ Preview Cell ì‚­ì œ
         foreach (GameObject cell in gridPreviewCells)
         {
             Destroy(cell);
@@ -480,7 +480,7 @@ public class BuildingPlacement : MonoBehaviour
         gridPreviewCells.Clear();
 
 
-        // °Ç¹° Å©±â¸¸Å­ Preview Cell »ı¼º
+        // ê±´ë¬¼ í¬ê¸°ë§Œí¼ Preview Cell ìƒì„±
         for (int x = 0; x < currentBuildingData.width; x++)
         {
             for (int y = 0; y < currentBuildingData.height; y++)
@@ -492,8 +492,8 @@ public class BuildingPlacement : MonoBehaviour
             }
         }
     }
-    //girdPreviewCellÀÇ À§Ä¡ , °¢ square¸¦ grid cellÀÇ Áß¾Ó¿¡ À§Ä¡ÇÏµµ·Ï ¼³Á¤
-    // ÇÔ¼ö ¼³¸í: ¼³Ä¡ ¿µ¿ª Ç¥½Ã ¼¿µéÀ» ÇöÀç °İÀÚ À§Ä¡¿¡ ¹èÄ¡ÇÑ´Ù.
+    //girdPreviewCellì˜ ìœ„ì¹˜ , ê° squareë¥¼ grid cellì˜ ì¤‘ì•™ì— ìœ„ì¹˜í•˜ë„ë¡ ì„¤ì •
+    // í•¨ìˆ˜ ì„¤ëª…: ì„¤ì¹˜ ì˜ì—­ í‘œì‹œ ì…€ë“¤ì„ í˜„ì¬ ê²©ì ìœ„ì¹˜ì— ë°°ì¹˜í•œë‹¤.
     void UpdateGridPreviewPosition()
     {
         int index = 0;
@@ -516,8 +516,8 @@ public class BuildingPlacement : MonoBehaviour
             }
         }
     }
-    //GirdpreviewCellÀÇ »ö»óÀ» º¯°æÇÏ´Â ÇÔ¼ö , ÃÊ·Ï °ú »¡°­
-    // ÇÔ¼ö ¼³¸í: ¼³Ä¡ °¡´É ¿©ºÎ¿¡ µû¶ó ¼³Ä¡ ¿µ¿ª ¼¿µéÀÇ »ö»óÀ» º¯°æÇÑ´Ù.
+    //GirdpreviewCellì˜ ìƒ‰ìƒì„ ë³€ê²½í•˜ëŠ” í•¨ìˆ˜ , ì´ˆë¡ ê³¼ ë¹¨ê°•
+    // í•¨ìˆ˜ ì„¤ëª…: ì„¤ì¹˜ ê°€ëŠ¥ ì—¬ë¶€ì— ë”°ë¼ ì„¤ì¹˜ ì˜ì—­ ì…€ë“¤ì˜ ìƒ‰ìƒì„ ë³€ê²½í•œë‹¤.
     void UpdateGridPreviewColor()
     {
         Color color;
@@ -544,8 +544,8 @@ public class BuildingPlacement : MonoBehaviour
         }
     }
 
-    // Cell ÇØÁ¦ ±â´É Ãß°¡ -> Ã¶°ÅÇÏ¸é occupiedCells ¿¡¼­ ÇØ´ç °Ç¹° ¿µ¿ª grid cell À» Á¦°ÅÇÒ ¼ö ÀÖÀ½
-    // ÇÔ¼ö ¼³¸í: Ã¶°ÅµÈ °Ç¹°ÀÌ Â÷ÁöÇß´ø ¸ğµç ¼¿À» Á¡À¯ ÁıÇÕ¿¡¼­ Á¦°ÅÇÑ´Ù.
+    // Cell í•´ì œ ê¸°ëŠ¥ ì¶”ê°€ -> ì² ê±°í•˜ë©´ occupiedCells ì—ì„œ í•´ë‹¹ ê±´ë¬¼ ì˜ì—­ grid cell ì„ ì œê±°í•  ìˆ˜ ìˆìŒ
+    // í•¨ìˆ˜ ì„¤ëª…: ì² ê±°ëœ ê±´ë¬¼ì´ ì°¨ì§€í–ˆë˜ ëª¨ë“  ì…€ì„ ì ìœ  ì§‘í•©ì—ì„œ ì œê±°í•œë‹¤.
     public void ReleaseBuildingCells(Building building)
     {
         if (building == null)
@@ -567,18 +567,18 @@ public class BuildingPlacement : MonoBehaviour
         }
 
         Debug.Log(
-            "°Ç¹° Á¡À¯ Cell ÇØÁ¦ : " +
+            "ê±´ë¬¼ ì ìœ  Cell í•´ì œ : " +
             originCell
         );
     }
 
     ///
-    /// °Ç¼³ ¸ğµå
+    /// ê±´ì„¤ ëª¨ë“œ
     /// 
-    // ÇÔ¼ö ¼³¸í: °Ç¹° Å©±â¿Í ÁÖº¯ ¿©¹éÀ» °í·ÁÇÑ ¸¶¿ì½º ÁÖº¯ °İÀÚ ¼¿À» »ı¼ºÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ê±´ë¬¼ í¬ê¸°ì™€ ì£¼ë³€ ì—¬ë°±ì„ ê³ ë ¤í•œ ë§ˆìš°ìŠ¤ ì£¼ë³€ ê²©ì ì…€ì„ ìƒì„±í•œë‹¤.
     void CreateBuildGrid()
     {
-        // ±âÁ¸ °İÀÚ »èÁ¦
+        // ê¸°ì¡´ ê²©ì ì‚­ì œ
         foreach (GameObject cell in buildGridCells)
         {
             Destroy(cell);
@@ -591,7 +591,7 @@ public class BuildingPlacement : MonoBehaviour
             return;
 
 
-        // °Ç¹° Å©±â + ÁÖº¯ ¿©¹é
+        // ê±´ë¬¼ í¬ê¸° + ì£¼ë³€ ì—¬ë°±
         int gridWidth =
             currentBuildingData.width +
             gridPadding * 2;
@@ -613,8 +613,8 @@ public class BuildingPlacement : MonoBehaviour
             buildGridCells.Add(cell);
         }
     }
-    //¸Ê ±×¸®µå ¸¸µé±â
-    // ÇÔ¼ö ¼³¸í: MapBounds ¹üÀ§¿¡ ÇØ´çÇÏ´Â ÀüÃ¼ ¸Ê °İÀÚ¸¦ »ı¼ºÇÑ´Ù.
+    //ë§µ ê·¸ë¦¬ë“œ ë§Œë“¤ê¸°
+    // í•¨ìˆ˜ ì„¤ëª…: MapBounds ë²”ìœ„ì— í•´ë‹¹í•˜ëŠ” ì „ì²´ ë§µ ê²©ìë¥¼ ìƒì„±í•œë‹¤.
     void CreateMapGrid()
     {
         foreach (GameObject cell in mapGridCells)
@@ -626,7 +626,7 @@ public class BuildingPlacement : MonoBehaviour
 
         if (mapBounds == null)
         {
-            Debug.LogError("MapBounds°¡ ¿¬°áµÇ¾î ÀÖÁö ¾Ê½À´Ï´Ù.");
+            Debug.LogError("MapBoundsê°€ ì—°ê²°ë˜ì–´ ìˆì§€ ì•ŠìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -658,7 +658,7 @@ public class BuildingPlacement : MonoBehaviour
         }
 
         Debug.Log(
-            "Map Grid »ı¼º ¿Ï·á : " +
+            "Map Grid ìƒì„± ì™„ë£Œ : " +
             minCell + " ~ " + maxCell
         );
     }
@@ -666,7 +666,7 @@ public class BuildingPlacement : MonoBehaviour
 
 
 
-    // ÇÔ¼ö ¼³¸í: ¹Ì¸®º¸±â¿Í ¸ğµç °İÀÚ ½Ã°¢ ¿ä¼ÒÀÇ Ç¥½Ã ¿©ºÎ¸¦ ÀÏ°ı º¯°æÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ë¯¸ë¦¬ë³´ê¸°ì™€ ëª¨ë“  ê²©ì ì‹œê° ìš”ì†Œì˜ í‘œì‹œ ì—¬ë¶€ë¥¼ ì¼ê´„ ë³€ê²½í•œë‹¤.
     void SetBuildModeVisuals(bool active)
     {
         if (previewObject != null)
@@ -675,25 +675,25 @@ public class BuildingPlacement : MonoBehaviour
         }
 
 
-        // °Ç¹°ÀÌ ½ÇÁ¦ Â÷ÁöÇÏ´Â ¿µ¿ª
+        // ê±´ë¬¼ì´ ì‹¤ì œ ì°¨ì§€í•˜ëŠ” ì˜ì—­
         foreach (GameObject cell in gridPreviewCells)
         {
             cell.SetActive(active);
         }
 
 
-        // ¸¶¿ì½º ÁÖº¯ °İÀÚ
+        // ë§ˆìš°ìŠ¤ ì£¼ë³€ ê²©ì
         foreach (GameObject cell in buildGridCells)
         {
             cell.SetActive(active);
         }
-        // ¸Ê ÀüÃ¼ °İÀÚ
+        // ë§µ ì „ì²´ ê²©ì
         foreach (GameObject cell in mapGridCells)
         {
             cell.SetActive(active);
         }
     }
-    // ÇÔ¼ö ¼³¸í: ¸¶¿ì½º ÁÖº¯ °İÀÚ ¼¿À» ÇöÀç ¼³Ä¡ À§Ä¡ ±âÁØÀ¸·Î Àç¹èÄ¡ÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ë§ˆìš°ìŠ¤ ì£¼ë³€ ê²©ì ì…€ì„ í˜„ì¬ ì„¤ì¹˜ ìœ„ì¹˜ ê¸°ì¤€ìœ¼ë¡œ ì¬ë°°ì¹˜í•œë‹¤.
     void UpdateBuildGridPosition()
     {
         if (currentBuildingData == null)
@@ -734,8 +734,8 @@ public class BuildingPlacement : MonoBehaviour
 
 
 
-    //¿©·¯ Ä­À» Â÷ÁöÇÏ´Â °Ç¹°µéµµ ¼³Ä¡ÇÒ ¼ö ÀÖ°Ô ÇØÁÜ
-    // ÇÔ¼ö ¼³¸í: ¼³Ä¡µÈ °Ç¹°ÀÌ Â÷ÁöÇÏ´Â ¼¿µéÀ» Á¡À¯ ÁıÇÕ¿¡ µî·ÏÇÑ´Ù.
+    //ì—¬ëŸ¬ ì¹¸ì„ ì°¨ì§€í•˜ëŠ” ê±´ë¬¼ë“¤ë„ ì„¤ì¹˜í•  ìˆ˜ ìˆê²Œ í•´ì¤Œ
+    // í•¨ìˆ˜ ì„¤ëª…: ì„¤ì¹˜ëœ ê±´ë¬¼ì´ ì°¨ì§€í•˜ëŠ” ì…€ë“¤ì„ ì ìœ  ì§‘í•©ì— ë“±ë¡í•œë‹¤.
     void OccupyBuildingCells()
     {
         for (int x = 0; x < currentBuildingData.width; x++)
@@ -747,34 +747,34 @@ public class BuildingPlacement : MonoBehaviour
 
                 occupiedCells.Add(cell);
 
-                Debug.Log("°Ç¹° Á¡À¯ Cell : " + cell);
+                Debug.Log("ê±´ë¬¼ ì ìœ  Cell : " + cell);
             }
         }
     }
 
-    //°Ç¹° °Ç¼³À» ÇÏ±â Àü¿¡ ÀÚ¿ø °Ë»ç
-    // ÇÔ¼ö ¼³¸í: µ¥ÄÚ·¹ÀÌ¼Ç ¼ö·® ¶Ç´Â ÀÏ¹İ °Ç¹° °Ç¼³ ÀÚ¿øÀÌ ÃæºĞÇÑÁö °Ë»çÇÑ´Ù.
+    //ê±´ë¬¼ ê±´ì„¤ì„ í•˜ê¸° ì „ì— ìì› ê²€ì‚¬
+    // í•¨ìˆ˜ ì„¤ëª…: ë°ì½”ë ˆì´ì…˜ ìˆ˜ëŸ‰ ë˜ëŠ” ì¼ë°˜ ê±´ë¬¼ ê±´ì„¤ ìì›ì´ ì¶©ë¶„í•œì§€ ê²€ì‚¬í•œë‹¤.
     bool CanAffordBuilding()
     {
         if (currentBuildingData == null)
             return false;
 
-        // µ¥ÄÚ·¹ÀÌ¼ÇÀº º¸À¯ ¼ö·®À» °Ë»ç
+        // ë°ì½”ë ˆì´ì…˜ì€ ë³´ìœ  ìˆ˜ëŸ‰ì„ ê²€ì‚¬
         if (currentBuildingData.buildingType == BuildingType.Decoration)
         {
             if (DecorationInventory.Instance == null)
             {
-                Debug.LogError("DecorationInventory°¡ ¾ø½À´Ï´Ù.");
+                Debug.LogError("DecorationInventoryê°€ ì—†ìŠµë‹ˆë‹¤.");
                 return false;
             }
 
             return DecorationInventory.Instance.GetCount(currentBuildingData) > 0;
         }
 
-        // ÀÏ¹İ °Ç¹°Àº ±âÁ¸ ÀÚ¿ø °Ë»ç
+        // ì¼ë°˜ ê±´ë¬¼ì€ ê¸°ì¡´ ìì› ê²€ì‚¬
         if (playerResources == null)
         {
-            Debug.LogError("PlayerResources°¡ ¿¬°áµÇ¾î ÀÖÁö ¾Ê½À´Ï´Ù.");
+            Debug.LogError("PlayerResourcesê°€ ì—°ê²°ë˜ì–´ ìˆì§€ ì•ŠìŠµë‹ˆë‹¤.");
             return false;
         }
 
@@ -790,26 +790,26 @@ public class BuildingPlacement : MonoBehaviour
         return true;
     }
 
-    //°Ç¼³ ºñ¿ë¿¡ ÀÇÇÑ ÀÚ¿ø Â÷°¨
-    // ÇÔ¼ö ¼³¸í: µ¥ÄÚ·¹ÀÌ¼Ç ÇÑ °³ ¶Ç´Â °Ç¼³¿¡ ÇÊ¿äÇÑ ÀÚ¿øÀ» Â÷°¨ÇÑ´Ù.
+    //ê±´ì„¤ ë¹„ìš©ì— ì˜í•œ ìì› ì°¨ê°
+    // í•¨ìˆ˜ ì„¤ëª…: ë°ì½”ë ˆì´ì…˜ í•œ ê°œ ë˜ëŠ” ê±´ì„¤ì— í•„ìš”í•œ ìì›ì„ ì°¨ê°í•œë‹¤.
     void PayBuildingCost()
     {
         if (currentBuildingData == null)
             return;
 
-        // µ¥ÄÚ·¹ÀÌ¼ÇÀº ¾ÆÀÌÅÛ 1°³ ¼Òºñ
+        // ë°ì½”ë ˆì´ì…˜ì€ ì•„ì´í…œ 1ê°œ ì†Œë¹„
         if (currentBuildingData.buildingType == BuildingType.Decoration)
         {
             if (DecorationInventory.Instance == null ||
                 !DecorationInventory.Instance.TryConsumeDecoration(currentBuildingData))
             {
-                Debug.LogError("µ¥ÄÚ·¹ÀÌ¼Ç ¼Òºñ¿¡ ½ÇÆĞÇß½À´Ï´Ù.");
+                Debug.LogError("ë°ì½”ë ˆì´ì…˜ ì†Œë¹„ì— ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤.");
             }
 
             return;
         }
 
-        // ÀÏ¹İ °Ç¹°Àº ±âÁ¸ ÀÚ¿ø Â÷°¨
+        // ì¼ë°˜ ê±´ë¬¼ì€ ê¸°ì¡´ ìì› ì°¨ê°
         if (playerResources == null ||
             currentBuildingData.constructionCosts == null)
             return;
@@ -821,8 +821,8 @@ public class BuildingPlacement : MonoBehaviour
     }
 
 
-    //´Ù¸¥ ¹®¼­¿¡¼­µµ private ¸¦ ÀĞÀ» ¼ö ÀÖ°Ô ÇØÁÜ
-    // ÇÔ¼ö ¼³¸í: Æ¯Á¤ °İÀÚ ¼¿¿¡ ÀÌ¹Ì °Ç¹°ÀÌ ¼³Ä¡µÇ¾î ÀÖ´ÂÁö ¹İÈ¯ÇÑ´Ù.
+    //ë‹¤ë¥¸ ë¬¸ì„œì—ì„œë„ private ë¥¼ ì½ì„ ìˆ˜ ìˆê²Œ í•´ì¤Œ
+    // í•¨ìˆ˜ ì„¤ëª…: íŠ¹ì • ê²©ì ì…€ì— ì´ë¯¸ ê±´ë¬¼ì´ ì„¤ì¹˜ë˜ì–´ ìˆëŠ”ì§€ ë°˜í™˜í•œë‹¤.
     public bool IsCellOccupied(Vector3Int cellPosition)
     {
         bool occupied =
@@ -831,7 +831,7 @@ public class BuildingPlacement : MonoBehaviour
         if (occupied)
         {
             Debug.Log(
-            "[°Ç¹°] Àå¾Ö¹° È®ÀÎµÊ : " + cellPosition
+            "[ê±´ë¬¼] ì¥ì• ë¬¼ í™•ì¸ë¨ : " + cellPosition
             );
         }
 

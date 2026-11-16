@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// °³¹ß Áß µ¥ÄÚ·¹ÀÌ¼Ç Áö±Ş ±â´ÉÀ» Å×½ºÆ®ÇÏ±â À§ÇÑ ÄÄÆ÷³ÍÆ®.
+// ê°œë°œ ì¤‘ ë°ì½”ë ˆì´ì…˜ ì§€ê¸‰ ê¸°ëŠ¥ì„ í…ŒìŠ¤íŠ¸í•˜ê¸° ìœ„í•œ ì»´í¬ë„ŒíŠ¸.
 public class DecorationInventoryTester : MonoBehaviour
 {
     [Header("Test Decoration")]
@@ -10,46 +10,46 @@ public class DecorationInventoryTester : MonoBehaviour
     [Header("Test Amount")]
     [SerializeField] private int testAmount = 3;
 
-    // ¸Å ÇÁ·¹ÀÓ TÅ° ÀÔ·ÂÀ» È®ÀÎÇÑ´Ù.
+    // ë§¤ í”„ë ˆì„ Tí‚¤ ì…ë ¥ì„ í™•ì¸í•œë‹¤.
     private void Update()
     {
-        // Å°º¸µå ÀåÄ¡°¡ ¾øÀ¸¸é ÀÔ·Â °Ë»ç¸¦ ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+        // í‚¤ë³´ë“œ ì¥ì¹˜ê°€ ì—†ìœ¼ë©´ ì…ë ¥ ê²€ì‚¬ë¥¼ ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
         if (Keyboard.current == null)
             return;
 
-        // TÅ°¸¦ ´©¸£¸é Å×½ºÆ®¿ë µ¥ÄÚ·¹ÀÌ¼Ç Áö±Ş
-        // TÅ°¸¦ ´©¸¥ ÇÁ·¹ÀÓ¿¡¸¸ Å×½ºÆ® Áö±Ş ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+        // Tí‚¤ë¥¼ ëˆ„ë¥´ë©´ í…ŒìŠ¤íŠ¸ìš© ë°ì½”ë ˆì´ì…˜ ì§€ê¸‰
+        // Tí‚¤ë¥¼ ëˆ„ë¥¸ í”„ë ˆì„ì—ë§Œ í…ŒìŠ¤íŠ¸ ì§€ê¸‰ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
         if (Keyboard.current.tKey.wasPressedThisFrame)
         {
             GiveTestDecoration();
         }
     }
 
-    // ÀÎº¥Åä¸®¿Í Å×½ºÆ® µ¥ÀÌÅÍ°¡ ÁØºñµÇ¾úÀ» ¶§ ¾ÆÀÌÅÛÀ» Áö±ŞÇÑ´Ù.
+    // ì¸ë²¤í† ë¦¬ì™€ í…ŒìŠ¤íŠ¸ ë°ì´í„°ê°€ ì¤€ë¹„ë˜ì—ˆì„ ë•Œ ì•„ì´í…œì„ ì§€ê¸‰í•œë‹¤.
     private void GiveTestDecoration()
     {
-        // ÀÎº¥Åä¸® ½Ì±ÛÅÏÀÌ ¾øÀ¸¸é Áö±ŞÇÒ ¼ö ¾ø´Ù.
+        // ì¸ë²¤í† ë¦¬ ì‹±ê¸€í„´ì´ ì—†ìœ¼ë©´ ì§€ê¸‰í•  ìˆ˜ ì—†ë‹¤.
         if (DecorationInventory.Instance == null)
         {
-            Debug.LogError("DecorationInventory°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogError("DecorationInventoryê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // Áö±ŞÇÒ µ¥ÄÚ·¹ÀÌ¼Ç µ¥ÀÌÅÍ°¡ ¿¬°áµÇ¾î ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
+        // ì§€ê¸‰í•  ë°ì½”ë ˆì´ì…˜ ë°ì´í„°ê°€ ì—°ê²°ë˜ì–´ ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
         if (testDecoration == null)
         {
-            Debug.LogError("Test DecorationÀÌ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            Debug.LogError("Test Decorationì´ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // ÀÎº¥Åä¸®¿¡ ÁöÁ¤µÈ µ¥ÄÚ·¹ÀÌ¼ÇÀ» ÁöÁ¤µÈ ¼ö·®¸¸Å­ Ãß°¡ÇÑ´Ù.
+        // ì¸ë²¤í† ë¦¬ì— ì§€ì •ëœ ë°ì½”ë ˆì´ì…˜ì„ ì§€ì •ëœ ìˆ˜ëŸ‰ë§Œí¼ ì¶”ê°€í•œë‹¤.
         DecorationInventory.Instance.AddDecoration(
             testDecoration,
             testAmount
         );
 
         Debug.Log(
-            $"Å×½ºÆ® Áö±Ş ¿Ï·á: {testDecoration.buildingName} x{testAmount}"
+            $"í…ŒìŠ¤íŠ¸ ì§€ê¸‰ ì™„ë£Œ: {testDecoration.buildingName} x{testAmount}"
         );
     }
 }
