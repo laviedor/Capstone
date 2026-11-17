@@ -1,41 +1,41 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// UnityÀÇ Create ¸Ş´º¿¡¼­ µ¥ÄÚ·¹ÀÌ¼Ç µ¥ÀÌÅÍº£ÀÌ½º ¿¡¼ÂÀ» »ı¼ºÇÒ ¼ö ÀÖ°Ô ÇÑ´Ù.
+// Unityì˜ Create ë©”ë‰´ì—ì„œ ë°ì½”ë ˆì´ì…˜ ë°ì´í„°ë² ì´ìŠ¤ ì—ì…‹ì„ ìƒì„±í•  ìˆ˜ ìˆê²Œ í•œë‹¤.
 [CreateAssetMenu(
     fileName = "DecorationDatabase",
     menuName = "Building/Decoration Database"
 )]
-// µ¥ÄÚ·¹ÀÌ¼Ç µ¥ÀÌÅÍ¿Í ½ÇÁ¦ ¹èÄ¡ÇÒ ÇÁ¸®ÆÕÀÇ ´ëÀÀ °ü°è¸¦ ÀúÀåÇÏ´Â ScriptableObject.
+// ë°ì½”ë ˆì´ì…˜ ë°ì´í„°ì™€ ì‹¤ì œ ë°°ì¹˜í•  í”„ë¦¬íŒ¹ì˜ ëŒ€ì‘ ê´€ê³„ë¥¼ ì €ì¥í•˜ëŠ” ScriptableObject.
 public class DecorationDatabase : ScriptableObject
 {
-    // ³»ºÎ Ç×¸ñÀ» Inspector¿¡¼­ ÆíÁıÇÒ ¼ö ÀÖµµ·Ï Á÷·ÄÈ­ÇÑ´Ù.
+    // ë‚´ë¶€ í•­ëª©ì„ Inspectorì—ì„œ í¸ì§‘í•  ìˆ˜ ìˆë„ë¡ ì§ë ¬í™”í•œë‹¤.
     [System.Serializable]
-    // µ¥ÄÚ·¹ÀÌ¼Ç µ¥ÀÌÅÍ ÇÏ³ª¿Í ´ëÀÀ ÇÁ¸®ÆÕ ÇÏ³ª¸¦ ¹­´Â Ç×¸ñ.
+    // ë°ì½”ë ˆì´ì…˜ ë°ì´í„° í•˜ë‚˜ì™€ ëŒ€ì‘ í”„ë¦¬íŒ¹ í•˜ë‚˜ë¥¼ ë¬¶ëŠ” í•­ëª©.
     public class DecorationEntry
     {
-        // µ¥ÄÚ·¹ÀÌ¼ÇÀ» ½Äº°ÇÏ´Â BuildingData ¿¡¼Â.
+        // ë°ì½”ë ˆì´ì…˜ì„ ì‹ë³„í•˜ëŠ” BuildingData ì—ì…‹.
         public BuildingData buildingData;
-        // ÇØ´ç µ¥ÄÚ·¹ÀÌ¼ÇÀ» ¼³Ä¡ÇÒ ¶§ »ç¿ëÇÒ ÇÁ¸®ÆÕ.
+        // í•´ë‹¹ ë°ì½”ë ˆì´ì…˜ì„ ì„¤ì¹˜í•  ë•Œ ì‚¬ìš©í•  í”„ë¦¬íŒ¹.
         public GameObject buildingPrefab;
     }
 
     [Header("Registered Decorations")]
-    // Inspector¿¡ µî·ÏÇÑ ¸ğµç µ¥ÄÚ·¹ÀÌ¼Ç Ç×¸ñ ¸ñ·Ï.
+    // Inspectorì— ë“±ë¡í•œ ëª¨ë“  ë°ì½”ë ˆì´ì…˜ í•­ëª© ëª©ë¡.
     public List<DecorationEntry> decorations =
         new List<DecorationEntry>();
 
-    // ÁÖ¾îÁø BuildingData¿¡ ¿¬°áµÈ ÇÁ¸®ÆÕÀ» °Ë»öÇÑ´Ù.
+    // ì£¼ì–´ì§„ BuildingDataì— ì—°ê²°ëœ í”„ë¦¬íŒ¹ì„ ê²€ìƒ‰í•œë‹¤.
     public GameObject GetPrefab(BuildingData data)
     {
-        // °Ë»ö ´ë»ó µ¥ÀÌÅÍ°¡ ¾øÀ¸¸é °á°úµµ ¾ø´Ù.
+        // ê²€ìƒ‰ ëŒ€ìƒ ë°ì´í„°ê°€ ì—†ìœ¼ë©´ ê²°ê³¼ë„ ì—†ë‹¤.
         if (data == null)
             return null;
 
-        // µî·ÏµÈ Ç×¸ñÀ» ¼ø¼­´ë·Î È®ÀÎÇÑ´Ù.
+        // ë“±ë¡ëœ í•­ëª©ì„ ìˆœì„œëŒ€ë¡œ í™•ì¸í•œë‹¤.
         foreach (DecorationEntry entry in decorations)
         {
-            // µ¿ÀÏÇÑ BuildingData ÂüÁ¶¸¦ °¡Áø Ç×¸ñÀÇ ÇÁ¸®ÆÕÀ» ¹İÈ¯ÇÑ´Ù.
+            // ë™ì¼í•œ BuildingData ì°¸ì¡°ë¥¼ ê°€ì§„ í•­ëª©ì˜ í”„ë¦¬íŒ¹ì„ ë°˜í™˜í•œë‹¤.
             if (entry.buildingData == data)
                 return entry.buildingPrefab;
         }

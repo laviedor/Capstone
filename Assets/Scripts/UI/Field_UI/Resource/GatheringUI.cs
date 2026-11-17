@@ -1,21 +1,21 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-// ÇÊµå¿¡ ÀÖÀ» ¶§¸¸ Ã¤Áı UI ÁøÀÔ ¹öÆ°À» º¸¿© ÁÖ°í ÆĞ³Î ¿­±â¸¦ Á¦¾îÇÑ´Ù.
+// í•„ë“œì— ìˆì„ ë•Œë§Œ ì±„ì§‘ UI ì§„ì… ë²„íŠ¼ì„ ë³´ì—¬ ì£¼ê³  íŒ¨ë„ ì—´ê¸°ë¥¼ ì œì–´í•œë‹¤.
 public class GatheringUI : MonoBehaviour
 {
-    [Header("Ã¤Áı UI")]
-    // Ã¤Áı ¸Ş´º¸¦ ¿©´Â ¹öÆ° ¿ÀºêÁ§Æ®.
+    [Header("ì±„ì§‘ UI")]
+    // ì±„ì§‘ ë©”ë‰´ë¥¼ ì—¬ëŠ” ë²„íŠ¼ ì˜¤ë¸Œì íŠ¸.
     [SerializeField] private GameObject gatheringButton;
-    // ½ÇÁ¦ Ã¤Áı Àå¼Ò ¼±ÅÃ È­¸éÀ» ´ã´Â ÆĞ³Î.
+    // ì‹¤ì œ ì±„ì§‘ ì¥ì†Œ ì„ íƒ í™”ë©´ì„ ë‹´ëŠ” íŒ¨ë„.
     [SerializeField] private GameObject gatheringPanel;
 
-    [Header("¹öÆ°")]
-    // Ã¤Áı ¸Ş´º ¿­±â ¹× µÚ·Î °¡±â ¹öÆ°.
+    [Header("ë²„íŠ¼")]
+    // ì±„ì§‘ ë©”ë‰´ ì—´ê¸° ë° ë’¤ë¡œ ê°€ê¸° ë²„íŠ¼.
     [SerializeField] private Button openButton;
     [SerializeField] private Button backButton;
 
-    // ½ÃÀÛ ½Ã ÆĞ³ÎÀ» ´İ°í ¹öÆ° Å¬¸¯ ÀÌº¥Æ®¸¦ ¿¬°áÇÑ´Ù.
+    // ì‹œì‘ ì‹œ íŒ¨ë„ì„ ë‹«ê³  ë²„íŠ¼ í´ë¦­ ì´ë²¤íŠ¸ë¥¼ ì—°ê²°í•œë‹¤.
     private void Awake()
     {
         gatheringPanel.SetActive(false);
@@ -24,18 +24,18 @@ public class GatheringUI : MonoBehaviour
         backButton.onClick.AddListener(CloseGathering);
     }
 
-    // UI°¡ È°¼ºÈ­µÉ ¶§ ÇöÀç ÇÊµå ÁøÀÔ ¿©ºÎ¸¦ ´Ù½Ã È®ÀÎÇÑ´Ù.
+    // UIê°€ í™œì„±í™”ë  ë•Œ í˜„ì¬ í•„ë“œ ì§„ì… ì—¬ë¶€ë¥¼ ë‹¤ì‹œ í™•ì¸í•œë‹¤.
     private void OnEnable()
     {
         RefreshUI();
     }
 
-    // ÇÊµå ¹Û¿¡¼­´Â Ã¤Áı ¹öÆ°À» ¼û±â°í ¿­·Á ÀÖ´Â ÆĞ³Îµµ ´İ´Â´Ù.
+    // í•„ë“œ ë°–ì—ì„œëŠ” ì±„ì§‘ ë²„íŠ¼ì„ ìˆ¨ê¸°ê³  ì—´ë ¤ ìˆëŠ” íŒ¨ë„ë„ ë‹«ëŠ”ë‹¤.
     private void RefreshUI()
     {
         FieldSceneManager manager = FieldSceneManager.Instance;
 
-        // FieldSceneManagerÀÇ ÇöÀç ÇÊµå ÁøÀÔ »óÅÂ¸¦ ±âÁØÀ¸·Î ÆÇ´ÜÇÑ´Ù.
+        // FieldSceneManagerì˜ í˜„ì¬ í•„ë“œ ì§„ì… ìƒíƒœë¥¼ ê¸°ì¤€ìœ¼ë¡œ íŒë‹¨í•œë‹¤.
         bool isInField = manager != null && manager.IsInField;
 
         gatheringButton.SetActive(isInField);
@@ -44,13 +44,13 @@ public class GatheringUI : MonoBehaviour
             gatheringPanel.SetActive(false);
     }
 
-    // Ã¤Áı ¼±ÅÃ ÆĞ³ÎÀ» ¿¬´Ù.
+    // ì±„ì§‘ ì„ íƒ íŒ¨ë„ì„ ì—°ë‹¤.
     private void OpenGathering()
     {
         gatheringPanel.SetActive(true);
     }
 
-    // Ã¤Áı ¼±ÅÃ ÆĞ³ÎÀ» ´İ´Â´Ù.
+    // ì±„ì§‘ ì„ íƒ íŒ¨ë„ì„ ë‹«ëŠ”ë‹¤.
     private void CloseGathering()
     {
         gatheringPanel.SetActive(false);

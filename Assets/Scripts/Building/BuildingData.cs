@@ -1,11 +1,11 @@
 using UnityEngine;
 
-// ½ºÅ©¸³Æ® ¼³¸í: °Ç¹° Á¾·ùº° ¼³Á¤À» ScriptableObject ¿¡¼ÂÀ¸·Î ÀúÀåÇÑ´Ù.
+// ìŠ¤í¬ë¦½íŠ¸ ì„¤ëª…: ê±´ë¬¼ ì¢…ë¥˜ë³„ ì„¤ì •ì„ ScriptableObject ì—ì…‹ìœ¼ë¡œ ì €ì¥í•œë‹¤.
 public enum BuildingType
 {
-    Production,     // ÀÚµ¿ »ı»ê °Ç¹°
-    Special,        // Æ¯¼ö ±â´É °Ç¹°
-    Decoration      // Àå½Ä °Ç¹°
+    Production,     // ìë™ ìƒì‚° ê±´ë¬¼
+    Special,        // íŠ¹ìˆ˜ ê¸°ëŠ¥ ê±´ë¬¼
+    Decoration      // ì¥ì‹ ê±´ë¬¼
 }
 
 
@@ -14,41 +14,41 @@ public enum BuildingType
     menuName = "Building/Building Data"
 )]
 
-// ½ºÅ©¸³Æ® ¼³¸í: °Ç¹° Á¾·ùº° ¼³Á¤À» ScriptableObject ¿¡¼ÂÀ¸·Î ÀúÀåÇÑ´Ù.
+// ìŠ¤í¬ë¦½íŠ¸ ì„¤ëª…: ê±´ë¬¼ ì¢…ë¥˜ë³„ ì„¤ì •ì„ ScriptableObject ì—ì…‹ìœ¼ë¡œ ì €ì¥í•œë‹¤.
 public class BuildingData : ScriptableObject
 {
     [Header("Identity")]
-    // º¯¼ö ¼³¸í: °Ç¹° Á¾·ù¸¦ ½Äº°ÇÏ´Â °íÀ¯ ¹®ÀÚ¿­
+    // ë³€ìˆ˜ ì„¤ëª…: ê±´ë¬¼ ì¢…ë¥˜ë¥¼ ì‹ë³„í•˜ëŠ” ê³ ìœ  ë¬¸ìì—´
     public string buildingID;
-    // º¯¼ö ¼³¸í: »óÈ£ÀÛ¿ë ·Î±×¿¡ Ç¥½ÃÇÒ °Ç¹° ÀÌ¸§
+    // ë³€ìˆ˜ ì„¤ëª…: ìƒí˜¸ì‘ìš© ë¡œê·¸ì— í‘œì‹œí•  ê±´ë¬¼ ì´ë¦„
     public string buildingName;
 
     [Header("UI")]
-    // º¯¼ö ¼³¸í: °Ç¹° ¸ñ·Ï UI¿¡ Ç¥½ÃÇÒ ¾ÆÀÌÄÜ
+    // ë³€ìˆ˜ ì„¤ëª…: ê±´ë¬¼ ëª©ë¡ UIì— í‘œì‹œí•  ì•„ì´ì½˜
     public Sprite buildingIcon;
 
     [Header("Type")]
-    // º¯¼ö ¼³¸í: »ı»ê¡¤Æ¯¼ö¡¤Àå½Ä Áß °Ç¹° ºĞ·ù
+    // ë³€ìˆ˜ ì„¤ëª…: ìƒì‚°Â·íŠ¹ìˆ˜Â·ì¥ì‹ ì¤‘ ê±´ë¬¼ ë¶„ë¥˜
     public BuildingType buildingType;
 
     [Header("Grid Size")]
-    // º¯¼ö ¼³¸í: °Ç¹°ÀÌ °¡·Î·Î Â÷ÁöÇÏ´Â °İÀÚ Ä­ ¼ö
+    // ë³€ìˆ˜ ì„¤ëª…: ê±´ë¬¼ì´ ê°€ë¡œë¡œ ì°¨ì§€í•˜ëŠ” ê²©ì ì¹¸ ìˆ˜
     public int width = 1;
-    // º¯¼ö ¼³¸í: °Ç¹°ÀÌ ¼¼·Î·Î Â÷ÁöÇÏ´Â °İÀÚ Ä­ ¼ö
+    // ë³€ìˆ˜ ì„¤ëª…: ê±´ë¬¼ì´ ì„¸ë¡œë¡œ ì°¨ì§€í•˜ëŠ” ê²©ì ì¹¸ ìˆ˜
     public int height = 1;
 
     [Header("Construction Cost")]
-    // º¯¼ö ¼³¸í: °Ç¼³ ½Ã ÇÊ¿äÇÑ ÀÚ¿ø Á¾·ù¿Í ¼ö·® ¸ñ·Ï
+    // ë³€ìˆ˜ ì„¤ëª…: ê±´ì„¤ ì‹œ í•„ìš”í•œ ìì› ì¢…ë¥˜ì™€ ìˆ˜ëŸ‰ ëª©ë¡
     public ResourceAmount[] constructionCosts;
 
     [Header("Interaction")]
-    // º¯¼ö ¼³¸í: »óÈ£ÀÛ¿ë °¡´ÉÇÑ °Ç¹°ÀÎÁö ³ªÅ¸³»´Â ¼³Á¤°ª
+    // ë³€ìˆ˜ ì„¤ëª…: ìƒí˜¸ì‘ìš© ê°€ëŠ¥í•œ ê±´ë¬¼ì¸ì§€ ë‚˜íƒ€ë‚´ëŠ” ì„¤ì •ê°’
     public bool canInteract;
 
     [Header("Production")]
-    // º¯¼ö ¼³¸í: ÀÚµ¿ »ı»êÇÒ ÀÚ¿ø Á¤º¸ ¸ñ·Ï
+    // ë³€ìˆ˜ ì„¤ëª…: ìë™ ìƒì‚°í•  ìì› ì •ë³´ ëª©ë¡
     public ResourceProduction[] productions;
 
-    // º¯¼ö ¼³¸í: ÀÚµ¿ »ı»ê Ã³¸® »çÀÌÀÇ ½Ã°£ °£°İ
+    // ë³€ìˆ˜ ì„¤ëª…: ìë™ ìƒì‚° ì²˜ë¦¬ ì‚¬ì´ì˜ ì‹œê°„ ê°„ê²©
     public float productionInterval = 10f;
 }

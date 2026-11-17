@@ -2,22 +2,22 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-// µ¥ÄÚ·¹ÀÌ¼ÇÀÇ º¸À¯ ¼ö·®À» °ü¸®ÇÏ°í UI °»½Å ÀÌº¥Æ®¸¦ ¾Ë¸®´Â ÄÄÆ÷³ÍÆ®.
+// ë°ì½”ë ˆì´ì…˜ì˜ ë³´ìœ  ìˆ˜ëŸ‰ì„ ê´€ë¦¬í•˜ê³  UI ê°±ì‹  ì´ë²¤íŠ¸ë¥¼ ì•Œë¦¬ëŠ” ì»´í¬ë„ŒíŠ¸.
 public class DecorationInventory : MonoBehaviour
 {
-    // ´Ù¸¥ ½ºÅ©¸³Æ®¿¡¼­ Á¢±ÙÇÏ´Â ÀÎº¥Åä¸® ½Ì±ÛÅÏ ÂüÁ¶.
+    // ë‹¤ë¥¸ ìŠ¤í¬ë¦½íŠ¸ì—ì„œ ì ‘ê·¼í•˜ëŠ” ì¸ë²¤í† ë¦¬ ì‹±ê¸€í„´ ì°¸ì¡°.
     public static DecorationInventory Instance { get; private set; }
 
-    // µ¥ÄÚ·¹ÀÌ¼Ç µ¥ÀÌÅÍ¿Í º¸À¯ ¼ö·®
-    // BuildingData¸¦ Å°·Î »ç¿ëÇØ µ¥ÄÚ·¹ÀÌ¼Çº° º¸À¯ ¼ö·®À» ÀúÀåÇÑ´Ù.
+    // ë°ì½”ë ˆì´ì…˜ ë°ì´í„°ì™€ ë³´ìœ  ìˆ˜ëŸ‰
+    // BuildingDataë¥¼ í‚¤ë¡œ ì‚¬ìš©í•´ ë°ì½”ë ˆì´ì…˜ë³„ ë³´ìœ  ìˆ˜ëŸ‰ì„ ì €ì¥í•œë‹¤.
     private Dictionary<BuildingData, int> decorations
         = new Dictionary<BuildingData, int>();
 
-    // °Ç¼³ ÅÇ °»½ÅÀ» À§ÇÑ ÀÌº¥Æ®
-    // ¾ÆÀÌÅÛÀ» ¾ò°Å³ª »ç¿ëÇÒ ¶§ ±¸µ¶ ÁßÀÎ UI¿¡ º¯°æ »ç½ÇÀ» ¾Ë¸°´Ù.
+    // ê±´ì„¤ íƒ­ ê°±ì‹ ì„ ìœ„í•œ ì´ë²¤íŠ¸
+    // ì•„ì´í…œì„ ì–»ê±°ë‚˜ ì‚¬ìš©í•  ë•Œ êµ¬ë… ì¤‘ì¸ UIì— ë³€ê²½ ì‚¬ì‹¤ì„ ì•Œë¦°ë‹¤.
     public event Action OnInventoryChanged;
 
-    // Áßº¹ ÀÎ½ºÅÏ½º¸¦ Á¦°ÅÇÏ°í ÇöÀç ÀÎ½ºÅÏ½º¸¦ µî·ÏÇÑ´Ù.
+    // ì¤‘ë³µ ì¸ìŠ¤í„´ìŠ¤ë¥¼ ì œê±°í•˜ê³  í˜„ì¬ ì¸ìŠ¤í„´ìŠ¤ë¥¼ ë“±ë¡í•œë‹¤.
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -29,78 +29,78 @@ public class DecorationInventory : MonoBehaviour
         Instance = this;
     }
 
-    // µ¥ÄÚ·¹ÀÌ¼Ç È¹µæ
-    // À¯È¿ÇÑ µ¥ÄÚ·¹ÀÌ¼ÇÀ» ÁöÁ¤µÈ ¼ö·®¸¸Å­ ÀÎº¥Åä¸®¿¡ Ãß°¡ÇÑ´Ù.
+    // ë°ì½”ë ˆì´ì…˜ íšë“
+    // ìœ íš¨í•œ ë°ì½”ë ˆì´ì…˜ì„ ì§€ì •ëœ ìˆ˜ëŸ‰ë§Œí¼ ì¸ë²¤í† ë¦¬ì— ì¶”ê°€í•œë‹¤.
     public void AddDecoration(BuildingData data, int amount = 1)
     {
-        // µ¥ÄÚ·¹ÀÌ¼Ç Å¸ÀÔÀÌ ¾Æ´Ï°Å³ª Áö±Ş ¼ö·®ÀÌ 0 ÀÌÇÏ¶ó¸é Áß´ÜÇÑ´Ù.
+        // ë°ì½”ë ˆì´ì…˜ íƒ€ì…ì´ ì•„ë‹ˆê±°ë‚˜ ì§€ê¸‰ ìˆ˜ëŸ‰ì´ 0 ì´í•˜ë¼ë©´ ì¤‘ë‹¨í•œë‹¤.
         if (!IsValidDecoration(data) || amount <= 0)
             return;
 
-        // Ã³À½ È¹µæÇÏ´Â Á¾·ù¶ó¸é ¼ö·®À» 0À¸·Î ÃÊ±âÈ­ÇÑ´Ù.
+        // ì²˜ìŒ íšë“í•˜ëŠ” ì¢…ë¥˜ë¼ë©´ ìˆ˜ëŸ‰ì„ 0ìœ¼ë¡œ ì´ˆê¸°í™”í•œë‹¤.
         if (!decorations.ContainsKey(data))
             decorations[data] = 0;
 
-        // ±âÁ¸ º¸À¯ ¼ö·®¿¡ Áö±Ş ¼ö·®À» ´õÇÑ´Ù.
+        // ê¸°ì¡´ ë³´ìœ  ìˆ˜ëŸ‰ì— ì§€ê¸‰ ìˆ˜ëŸ‰ì„ ë”í•œë‹¤.
         decorations[data] += amount;
 
         Debug.Log(
-            $"µ¥ÄÚ·¹ÀÌ¼Ç È¹µæ: {data.buildingName} x{amount}"
+            $"ë°ì½”ë ˆì´ì…˜ íšë“: {data.buildingName} x{amount}"
         );
 
-        // ÀÌº¥Æ® ±¸µ¶ÀÚ°¡ ÀÖÀ» ¶§¸¸ ÀÎº¥Åä¸® º¯°æ ÀÌº¥Æ®¸¦ È£ÃâÇÑ´Ù.
+        // ì´ë²¤íŠ¸ êµ¬ë…ìê°€ ìˆì„ ë•Œë§Œ ì¸ë²¤í† ë¦¬ ë³€ê²½ ì´ë²¤íŠ¸ë¥¼ í˜¸ì¶œí•œë‹¤.
         OnInventoryChanged?.Invoke();
     }
 
-    // ÇöÀç º¸À¯ ¼ö·®
-    // ÇØ´ç µ¥ÀÌÅÍÀÇ º¸À¯ ¼ö·®À» ¹İÈ¯ÇÏ¸ç, ¾øÀ¸¸é 0À» ¹İÈ¯ÇÑ´Ù.
+    // í˜„ì¬ ë³´ìœ  ìˆ˜ëŸ‰
+    // í•´ë‹¹ ë°ì´í„°ì˜ ë³´ìœ  ìˆ˜ëŸ‰ì„ ë°˜í™˜í•˜ë©°, ì—†ìœ¼ë©´ 0ì„ ë°˜í™˜í•œë‹¤.
     public int GetCount(BuildingData data)
     {
         if (data == null)
             return 0;
 
-        // µñ¼Å³Ê¸®¿¡¼­ µ¥ÀÌÅÍ¸¦ Ã£À¸¸é ÀúÀåµÈ ¼ö·®À» ¹İÈ¯ÇÑ´Ù.
+        // ë”•ì…”ë„ˆë¦¬ì—ì„œ ë°ì´í„°ë¥¼ ì°¾ìœ¼ë©´ ì €ì¥ëœ ìˆ˜ëŸ‰ì„ ë°˜í™˜í•œë‹¤.
         if (decorations.TryGetValue(data, out int count))
             return count;
 
         return 0;
     }
 
-    // µ¥ÄÚ·¹ÀÌ¼Ç »ç¿ë
-    // µ¥ÄÚ·¹ÀÌ¼ÇÀ» 1°³ ¼ÒºñÇÏ°í ¼º°ø ¿©ºÎ¸¦ ¹İÈ¯ÇÑ´Ù.
+    // ë°ì½”ë ˆì´ì…˜ ì‚¬ìš©
+    // ë°ì½”ë ˆì´ì…˜ì„ 1ê°œ ì†Œë¹„í•˜ê³  ì„±ê³µ ì—¬ë¶€ë¥¼ ë°˜í™˜í•œë‹¤.
     public bool TryConsumeDecoration(BuildingData data)
     {
         if (!IsValidDecoration(data))
             return false;
 
-        // º¸À¯ ¼ö·®ÀÌ ¾øÀ¸¸é ¼Òºñ¿¡ ½ÇÆĞÇÑ´Ù.
+        // ë³´ìœ  ìˆ˜ëŸ‰ì´ ì—†ìœ¼ë©´ ì†Œë¹„ì— ì‹¤íŒ¨í•œë‹¤.
         if (GetCount(data) <= 0)
             return false;
 
-        // º¸À¯ ¼ö·®À» 1 °¨¼Ò½ÃÅ²´Ù.
+        // ë³´ìœ  ìˆ˜ëŸ‰ì„ 1 ê°ì†Œì‹œí‚¨ë‹¤.
         decorations[data]--;
 
-        // ³²Àº ¼ö·®ÀÌ ¾ø´Ù¸é ¸ñ·Ï¿¡¼­ Ç×¸ñ ÀÚÃ¼¸¦ Á¦°ÅÇÑ´Ù.
+        // ë‚¨ì€ ìˆ˜ëŸ‰ì´ ì—†ë‹¤ë©´ ëª©ë¡ì—ì„œ í•­ëª© ìì²´ë¥¼ ì œê±°í•œë‹¤.
         if (decorations[data] <= 0)
             decorations.Remove(data);
 
         Debug.Log(
-            $"µ¥ÄÚ·¹ÀÌ¼Ç »ç¿ë: {data.buildingName}"
+            $"ë°ì½”ë ˆì´ì…˜ ì‚¬ìš©: {data.buildingName}"
         );
 
-        // ÀÌº¥Æ® ±¸µ¶ÀÚ°¡ ÀÖÀ» ¶§¸¸ ÀÎº¥Åä¸® º¯°æ ÀÌº¥Æ®¸¦ È£ÃâÇÑ´Ù.
+        // ì´ë²¤íŠ¸ êµ¬ë…ìê°€ ìˆì„ ë•Œë§Œ ì¸ë²¤í† ë¦¬ ë³€ê²½ ì´ë²¤íŠ¸ë¥¼ í˜¸ì¶œí•œë‹¤.
         OnInventoryChanged?.Invoke();
 
         return true;
     }
 
-    // º¸À¯ ÁßÀÎ µ¥ÄÚ·¹ÀÌ¼Ç ¸ñ·Ï
-    // ÇöÀç 1°³ ÀÌ»ó º¸À¯ ÁßÀÎ µ¥ÄÚ·¹ÀÌ¼Ç µ¥ÀÌÅÍ ¸ñ·ÏÀ» ¸¸µç´Ù.
+    // ë³´ìœ  ì¤‘ì¸ ë°ì½”ë ˆì´ì…˜ ëª©ë¡
+    // í˜„ì¬ 1ê°œ ì´ìƒ ë³´ìœ  ì¤‘ì¸ ë°ì½”ë ˆì´ì…˜ ë°ì´í„° ëª©ë¡ì„ ë§Œë“ ë‹¤.
     public List<BuildingData> GetOwnedDecorations()
     {
         List<BuildingData> result = new List<BuildingData>();
 
-        // µî·ÏµÈ ¸ğµç µ¥ÄÚ·¹ÀÌ¼Ç°ú ¼ö·®À» ¼øÈ¸ÇÑ´Ù.
+        // ë“±ë¡ëœ ëª¨ë“  ë°ì½”ë ˆì´ì…˜ê³¼ ìˆ˜ëŸ‰ì„ ìˆœíšŒí•œë‹¤.
         foreach (var pair in decorations)
         {
             if (pair.Value > 0)
@@ -110,7 +110,7 @@ public class DecorationInventory : MonoBehaviour
         return result;
     }
 
-    // µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏ¸ç Decoration Å¸ÀÔÀÎÁö °Ë»çÇÑ´Ù.
+    // ë°ì´í„°ê°€ ì¡´ì¬í•˜ë©° Decoration íƒ€ì…ì¸ì§€ ê²€ì‚¬í•œë‹¤.
     private bool IsValidDecoration(BuildingData data)
     {
         if (data == null)
@@ -119,7 +119,7 @@ public class DecorationInventory : MonoBehaviour
         if (data.buildingType != BuildingType.Decoration)
         {
             Debug.LogWarning(
-                $"{data.buildingName}Àº µ¥ÄÚ·¹ÀÌ¼ÇÀÌ ¾Æ´Õ´Ï´Ù."
+                $"{data.buildingName}ì€ ë°ì½”ë ˆì´ì…˜ì´ ì•„ë‹™ë‹ˆë‹¤."
             );
 
             return false;

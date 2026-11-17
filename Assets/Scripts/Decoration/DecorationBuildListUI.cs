@@ -1,61 +1,61 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// º¸À¯ ÁßÀÎ µ¥ÄÚ·¹ÀÌ¼ÇÀ» °Ç¼³ ¸ñ·Ï Ä«µå·Î Ç¥½ÃÇÏ´Â UI °ü¸®ÀÚ.
+// ë³´ìœ  ì¤‘ì¸ ë°ì½”ë ˆì´ì…˜ì„ ê±´ì„¤ ëª©ë¡ ì¹´ë“œë¡œ í‘œì‹œí•˜ëŠ” UI ê´€ë¦¬ì.
 public class DecorationBuildListUI : MonoBehaviour
 {
     [Header("Decoration Database")]
     [SerializeField]
-    // µ¥ÄÚ·¹ÀÌ¼Ç µ¥ÀÌÅÍ¿¡ ´ëÀÀÇÏ´Â ¼³Ä¡ ÇÁ¸®ÆÕÀ» Ã£´Â µ¥ÀÌÅÍº£ÀÌ½º.
+    // ë°ì½”ë ˆì´ì…˜ ë°ì´í„°ì— ëŒ€ì‘í•˜ëŠ” ì„¤ì¹˜ í”„ë¦¬íŒ¹ì„ ì°¾ëŠ” ë°ì´í„°ë² ì´ìŠ¤.
     private DecorationDatabase decorationDatabase;
 
     [Header("UI")]
     [SerializeField]
-    // »ı¼ºµÈ Ä«µå UI¸¦ ÀÚ½ÄÀ¸·Î ¹èÄ¡ÇÒ ÄÜÅÙÃ÷ ¿µ¿ª.
+    // ìƒì„±ëœ ì¹´ë“œ UIë¥¼ ìì‹ìœ¼ë¡œ ë°°ì¹˜í•  ì½˜í…ì¸  ì˜ì—­.
     private Transform contentParent;
 
     [SerializeField]
-    // µ¥ÄÚ·¹ÀÌ¼Ç¸¶´Ù »ı¼ºÇÒ Ä«µå UI ÇÁ¸®ÆÕ.
+    // ë°ì½”ë ˆì´ì…˜ë§ˆë‹¤ ìƒì„±í•  ì¹´ë“œ UI í”„ë¦¬íŒ¹.
     private BuildingCardUI cardPrefab;
 
     [Header("References")]
     [SerializeField]
-    // Ä«µå ¼±ÅÃ ½Ã ¼³Ä¡ÇÒ ÇÁ¸®ÆÕÀ» Àü´Ş¹Ş´Â °Ç¹° ¹èÄ¡ ½Ã½ºÅÛ.
+    // ì¹´ë“œ ì„ íƒ ì‹œ ì„¤ì¹˜í•  í”„ë¦¬íŒ¹ì„ ì „ë‹¬ë°›ëŠ” ê±´ë¬¼ ë°°ì¹˜ ì‹œìŠ¤í…œ.
     private BuildingPlacement buildingPlacement;
 
     [SerializeField]
-    // Ä«µå UI ¼³Á¤¿¡ Àü´ŞÇÏ´Â ÀÎº¥Åä¸® UI ÂüÁ¶.
+    // ì¹´ë“œ UI ì„¤ì •ì— ì „ë‹¬í•˜ëŠ” ì¸ë²¤í† ë¦¬ UI ì°¸ì¡°.
     private InventoryUI inventoryUI;
 
     [SerializeField]
-    // Ä«µå UI ¼³Á¤¿¡ Àü´ŞÇÏ´Â °Ç¼³ ¸ğµå °ü¸®ÀÚ.
+    // ì¹´ë“œ UI ì„¤ì •ì— ì „ë‹¬í•˜ëŠ” ê±´ì„¤ ëª¨ë“œ ê´€ë¦¬ì.
     private BuildingModeManager buildingModeManager;
 
-    // °°Àº µ¥ÄÚ·¹ÀÌ¼Ç Ä«µå°¡ Áßº¹ »ı¼ºµÇÁö ¾Êµµ·Ï »ı¼ºµÈ Ä«µå¸¦ º¸°üÇÑ´Ù.
+    // ê°™ì€ ë°ì½”ë ˆì´ì…˜ ì¹´ë“œê°€ ì¤‘ë³µ ìƒì„±ë˜ì§€ ì•Šë„ë¡ ìƒì„±ëœ ì¹´ë“œë¥¼ ë³´ê´€í•œë‹¤.
     private Dictionary<BuildingData, BuildingCardUI> cards =
         new Dictionary<BuildingData, BuildingCardUI>();
 
-    // ÀÌº¥Æ® Áßº¹ ±¸µ¶À» ¹æÁöÇÏ±â À§ÇØ ÇöÀç ±¸µ¶ÇÑ ÀÎº¥Åä¸®¸¦ ±â·ÏÇÑ´Ù.
+    // ì´ë²¤íŠ¸ ì¤‘ë³µ êµ¬ë…ì„ ë°©ì§€í•˜ê¸° ìœ„í•´ í˜„ì¬ êµ¬ë…í•œ ì¸ë²¤í† ë¦¬ë¥¼ ê¸°ë¡í•œë‹¤.
     private DecorationInventory subscribedInventory;
 
-    // UI°¡ È°¼ºÈ­µÇ¸é ÀÌº¥Æ®¸¦ ±¸µ¶ÇÏ°í º¸À¯ ¸ñ·ÏÀ» ´Ù½Ã Ç¥½ÃÇÑ´Ù.
+    // UIê°€ í™œì„±í™”ë˜ë©´ ì´ë²¤íŠ¸ë¥¼ êµ¬ë…í•˜ê³  ë³´ìœ  ëª©ë¡ì„ ë‹¤ì‹œ í‘œì‹œí•œë‹¤.
     private void OnEnable()
     {
         SubscribeInventory();
         RefreshList();
     }
 
-    // ÃÊ±â ½ÇÇà ½ÃÁ¡¿¡µµ ÀÎº¥Åä¸® ±¸µ¶°ú ¸ñ·Ï °»½ÅÀ» ½ÃµµÇÑ´Ù.
+    // ì´ˆê¸° ì‹¤í–‰ ì‹œì ì—ë„ ì¸ë²¤í† ë¦¬ êµ¬ë…ê³¼ ëª©ë¡ ê°±ì‹ ì„ ì‹œë„í•œë‹¤.
     private void Start()
     {
         SubscribeInventory();
         RefreshList();
     }
 
-    // UI°¡ ºñÈ°¼ºÈ­µÇ¸é ÀÌº¥Æ® ±¸µ¶À» ÇØÁ¦ÇØ ºÒÇÊ¿äÇÑ È£ÃâÀ» ¸·´Â´Ù.
+    // UIê°€ ë¹„í™œì„±í™”ë˜ë©´ ì´ë²¤íŠ¸ êµ¬ë…ì„ í•´ì œí•´ ë¶ˆí•„ìš”í•œ í˜¸ì¶œì„ ë§‰ëŠ”ë‹¤.
     private void OnDisable()
     {
-        // ÀÌÀü ÀÎº¥Åä¸® ±¸µ¶ÀÌ ³²¾Æ ÀÖ´Ù¸é ¸ÕÀú ÇØÁ¦ÇÑ´Ù.
+        // ì´ì „ ì¸ë²¤í† ë¦¬ êµ¬ë…ì´ ë‚¨ì•„ ìˆë‹¤ë©´ ë¨¼ì € í•´ì œí•œë‹¤.
         if (subscribedInventory != null)
         {
             subscribedInventory.OnInventoryChanged -= RefreshList;
@@ -63,17 +63,17 @@ public class DecorationBuildListUI : MonoBehaviour
         }
     }
 
-    // ÇöÀç ÀÎº¥Åä¸®ÀÇ º¯°æ ÀÌº¥Æ®¿¡ RefreshList¸¦ ¿¬°áÇÑ´Ù.
+    // í˜„ì¬ ì¸ë²¤í† ë¦¬ì˜ ë³€ê²½ ì´ë²¤íŠ¸ì— RefreshListë¥¼ ì—°ê²°í•œë‹¤.
     private void SubscribeInventory()
     {
         DecorationInventory inventory = DecorationInventory.Instance;
 
-        // ÀÎº¥Åä¸®°¡ ¾ø°Å³ª ÀÌ¹Ì °°Àº ÀÎº¥Åä¸®¸¦ ±¸µ¶ ÁßÀÌ¸é Á¾·áÇÑ´Ù.
+        // ì¸ë²¤í† ë¦¬ê°€ ì—†ê±°ë‚˜ ì´ë¯¸ ê°™ì€ ì¸ë²¤í† ë¦¬ë¥¼ êµ¬ë… ì¤‘ì´ë©´ ì¢…ë£Œí•œë‹¤.
         if (inventory == null ||
             subscribedInventory == inventory)
             return;
 
-        // ÀÌÀü ÀÎº¥Åä¸® ±¸µ¶ÀÌ ³²¾Æ ÀÖ´Ù¸é ¸ÕÀú ÇØÁ¦ÇÑ´Ù.
+        // ì´ì „ ì¸ë²¤í† ë¦¬ êµ¬ë…ì´ ë‚¨ì•„ ìˆë‹¤ë©´ ë¨¼ì € í•´ì œí•œë‹¤.
         if (subscribedInventory != null)
             subscribedInventory.OnInventoryChanged -= RefreshList;
 
@@ -81,7 +81,7 @@ public class DecorationBuildListUI : MonoBehaviour
         subscribedInventory.OnInventoryChanged += RefreshList;
     }
 
-    // ÇöÀç º¸À¯ÇÑ µ¥ÄÚ·¹ÀÌ¼Ç¿¡ ¸ÂÃç Ä«µå UI¸¦ Ãß°¡ÇÏ°Å³ª Á¦°ÅÇÑ´Ù.
+    // í˜„ì¬ ë³´ìœ í•œ ë°ì½”ë ˆì´ì…˜ì— ë§ì¶° ì¹´ë“œ UIë¥¼ ì¶”ê°€í•˜ê±°ë‚˜ ì œê±°í•œë‹¤.
     public void RefreshList()
     {
         if (DecorationInventory.Instance == null ||
@@ -90,19 +90,19 @@ public class DecorationBuildListUI : MonoBehaviour
             cardPrefab == null)
             return;
 
-        // ÀÎº¥Åä¸®¿¡¼­ º¸À¯ ¼ö·®ÀÌ 1°³ ÀÌ»óÀÎ µ¥ÄÚ·¹ÀÌ¼ÇÀ» °¡Á®¿Â´Ù.
+        // ì¸ë²¤í† ë¦¬ì—ì„œ ë³´ìœ  ìˆ˜ëŸ‰ì´ 1ê°œ ì´ìƒì¸ ë°ì½”ë ˆì´ì…˜ì„ ê°€ì ¸ì˜¨ë‹¤.
         List<BuildingData> ownedDecorations =
             DecorationInventory.Instance.GetOwnedDecorations();
 
-        // Ä«µå Á¦°Å ¿©ºÎ¸¦ ºü¸£°Ô ÆÇ´ÜÇÏ±â À§ÇØ º¸À¯ ¸ñ·ÏÀ» ÁıÇÕÀ¸·Î º¯È¯ÇÑ´Ù.
+        // ì¹´ë“œ ì œê±° ì—¬ë¶€ë¥¼ ë¹ ë¥´ê²Œ íŒë‹¨í•˜ê¸° ìœ„í•´ ë³´ìœ  ëª©ë¡ì„ ì§‘í•©ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
         HashSet<BuildingData> ownedSet =
             new HashSet<BuildingData>(ownedDecorations);
 
-        // º¸À¯ ¼ö·®ÀÌ 0°³°¡ µÈ Ä«µå Á¦°Å
-        // ¼øÈ¸ Áß µñ¼Å³Ê¸®¸¦ ¼öÁ¤ÇÏÁö ¾Êµµ·Ï Á¦°ÅÇÒ Å°¸¦ µû·Î ¸ğÀº´Ù.
+        // ë³´ìœ  ìˆ˜ëŸ‰ì´ 0ê°œê°€ ëœ ì¹´ë“œ ì œê±°
+        // ìˆœíšŒ ì¤‘ ë”•ì…”ë„ˆë¦¬ë¥¼ ìˆ˜ì •í•˜ì§€ ì•Šë„ë¡ ì œê±°í•  í‚¤ë¥¼ ë”°ë¡œ ëª¨ì€ë‹¤.
         List<BuildingData> toRemove = new List<BuildingData>();
 
-        // ±âÁ¸ Ä«µå Áß ´õ ÀÌ»ó º¸À¯ÇÏÁö ¾Ê´Â Á¾·ù¸¦ Ã£¾Æ Á¦°ÅÇÑ´Ù.
+        // ê¸°ì¡´ ì¹´ë“œ ì¤‘ ë” ì´ìƒ ë³´ìœ í•˜ì§€ ì•ŠëŠ” ì¢…ë¥˜ë¥¼ ì°¾ì•„ ì œê±°í•œë‹¤.
         foreach (var pair in cards)
         {
             if (!ownedSet.Contains(pair.Key))
@@ -112,38 +112,38 @@ public class DecorationBuildListUI : MonoBehaviour
             }
         }
 
-        // »èÁ¦ ¿¹¾àµÈ Ä«µå Á¤º¸¸¦ µñ¼Å³Ê¸®¿¡¼­µµ Á¦°ÅÇÑ´Ù.
+        // ì‚­ì œ ì˜ˆì•½ëœ ì¹´ë“œ ì •ë³´ë¥¼ ë”•ì…”ë„ˆë¦¬ì—ì„œë„ ì œê±°í•œë‹¤.
         foreach (BuildingData data in toRemove)
         {
             cards.Remove(data);
         }
 
-        // º¸À¯ ÁßÀÎ µ¥ÄÚ·¹ÀÌ¼Ç Ä«µå »ı¼º
-        // º¸À¯ ÁßÀÌÁö¸¸ ¾ÆÁ÷ Ä«µå°¡ ¾ø´Â Á¾·ù¸¸ »õ Ä«µå¸¦ ¸¸µç´Ù.
+        // ë³´ìœ  ì¤‘ì¸ ë°ì½”ë ˆì´ì…˜ ì¹´ë“œ ìƒì„±
+        // ë³´ìœ  ì¤‘ì´ì§€ë§Œ ì•„ì§ ì¹´ë“œê°€ ì—†ëŠ” ì¢…ë¥˜ë§Œ ìƒˆ ì¹´ë“œë¥¼ ë§Œë“ ë‹¤.
         foreach (BuildingData data in ownedDecorations)
         {
-            // ÀÌ¹Ì È­¸é¿¡ µî·ÏµÈ Ä«µå´Â Áßº¹ »ı¼ºÇÏÁö ¾Ê´Â´Ù.
+            // ì´ë¯¸ í™”ë©´ì— ë“±ë¡ëœ ì¹´ë“œëŠ” ì¤‘ë³µ ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤.
             if (cards.ContainsKey(data))
                 continue;
 
-            // µ¥ÀÌÅÍº£ÀÌ½º¿¡¼­ ¼±ÅÃÇÑ µ¥ÄÚ·¹ÀÌ¼ÇÀÇ ¼³Ä¡ ÇÁ¸®ÆÕÀ» Ã£´Â´Ù.
+            // ë°ì´í„°ë² ì´ìŠ¤ì—ì„œ ì„ íƒí•œ ë°ì½”ë ˆì´ì…˜ì˜ ì„¤ì¹˜ í”„ë¦¬íŒ¹ì„ ì°¾ëŠ”ë‹¤.
             GameObject prefab =
                 decorationDatabase.GetPrefab(data);
 
             if (prefab == null)
             {
                 Debug.LogWarning(
-                    "µ¥ÄÚ·¹ÀÌ¼Ç PrefabÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù: " +
+                    "ë°ì½”ë ˆì´ì…˜ Prefabì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤: " +
                     data.buildingName
                 );
                 continue;
             }
 
-            // Ä«µå ÇÁ¸®ÆÕÀ» ÄÜÅÙÃ÷ ¿µ¿ª ¾Æ·¡¿¡ »ı¼ºÇÑ´Ù.
+            // ì¹´ë“œ í”„ë¦¬íŒ¹ì„ ì½˜í…ì¸  ì˜ì—­ ì•„ë˜ì— ìƒì„±í•œë‹¤.
             BuildingCardUI newCard =
                 Instantiate(cardPrefab, contentParent);
 
-            // Ä«µå¿¡ °Ç¹° µ¥ÀÌÅÍ, ÇÁ¸®ÆÕ, UI ¹× °Ç¼³ ½Ã½ºÅÛ ÂüÁ¶¸¦ Àü´ŞÇÑ´Ù.
+            // ì¹´ë“œì— ê±´ë¬¼ ë°ì´í„°, í”„ë¦¬íŒ¹, UI ë° ê±´ì„¤ ì‹œìŠ¤í…œ ì°¸ì¡°ë¥¼ ì „ë‹¬í•œë‹¤.
             newCard.Setup(
                 data,
                 prefab,
@@ -152,7 +152,7 @@ public class DecorationBuildListUI : MonoBehaviour
                 buildingModeManager
             );
 
-            // »õ Ä«µå¸¦ µñ¼Å³Ê¸®¿¡ µî·ÏÇØ ÀÌÈÄ Áßº¹ »ı¼ºÀ» ¸·´Â´Ù.
+            // ìƒˆ ì¹´ë“œë¥¼ ë”•ì…”ë„ˆë¦¬ì— ë“±ë¡í•´ ì´í›„ ì¤‘ë³µ ìƒì„±ì„ ë§‰ëŠ”ë‹¤.
             cards.Add(data, newCard);
         }
     }

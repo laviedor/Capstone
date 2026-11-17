@@ -1,35 +1,35 @@
 using UnityEngine;
 
 
-// ¸Ê ¿µ¿ªÀ» ÆÇÁ¤ÇÏ´Â µ¥ ÇÊ¿äÇÑ BoxCollider2D¸¦ ÀÚµ¿À¸·Î ¿ä±¸ÇÔ
+// ë§µ ì˜ì—­ì„ íŒì •í•˜ëŠ” ë° í•„ìš”í•œ BoxCollider2Dë¥¼ ìë™ìœ¼ë¡œ ìš”êµ¬í•¨
 [RequireComponent(typeof(BoxCollider2D))]
 public class MapBounds : MonoBehaviour
 {
-    // ÇöÀç ¿ÀºêÁ§Æ®¿¡ ºÎÂøµÈ ¿µ¿ª ÆÇÁ¤¿ë Äİ¶óÀÌ´õ
+    // í˜„ì¬ ì˜¤ë¸Œì íŠ¸ì— ë¶€ì°©ëœ ì˜ì—­ íŒì •ìš© ì½œë¼ì´ë”
     private BoxCollider2D boxCollider;
 
-    // ¿ÀºêÁ§Æ® ÃÊ±âÈ­ ½Ã BoxCollider2D ÂüÁ¶¸¦ ÀúÀå
+    // ì˜¤ë¸Œì íŠ¸ ì´ˆê¸°í™” ì‹œ BoxCollider2D ì°¸ì¡°ë¥¼ ì €ì¥
     private void Awake()
     {
         boxCollider = GetComponent<BoxCollider2D>();
     }
 
-    // ¸ÊÀÇ ½ÇÁ¦ ¿ùµå ¿µ¿ª
+    // ë§µì˜ ì‹¤ì œ ì›”ë“œ ì˜ì—­
     public Bounds Bounds
     {
         get
         {
-            // ÃÊ±âÈ­µÇÁö ¾Ê¾Ò´Ù¸é ÄÄÆ÷³ÍÆ®¸¦ ´Ù½Ã °¡Á®¿È
+            // ì´ˆê¸°í™”ë˜ì§€ ì•Šì•˜ë‹¤ë©´ ì»´í¬ë„ŒíŠ¸ë¥¼ ë‹¤ì‹œ ê°€ì ¸ì˜´
             if (boxCollider == null)
                 boxCollider = GetComponent<BoxCollider2D>();
 
-            // ¿ùµå ÁÂÇ¥ ±âÁØÀÇ Äİ¶óÀÌ´õ °æ°è¸¦ ¹İÈ¯
+            // ì›”ë“œ ì¢Œí‘œ ê¸°ì¤€ì˜ ì½œë¼ì´ë” ê²½ê³„ë¥¼ ë°˜í™˜
             return boxCollider.bounds;
         }
     }
 
-    // ¸ÊÀÇ ¿ŞÂÊ ¾Æ·¡
-    // Bounds.min¿¡¼­ X, Y °ªÀ» »ç¿ë
+    // ë§µì˜ ì™¼ìª½ ì•„ë˜
+    // Bounds.minì—ì„œ X, Y ê°’ì„ ì‚¬ìš©
     public Vector2 Min
     {
         get
@@ -38,8 +38,8 @@ public class MapBounds : MonoBehaviour
         }
     }
 
-    // ¸ÊÀÇ ¿À¸¥ÂÊ À§
-    // Bounds.max¿¡¼­ X, Y °ªÀ» »ç¿ë
+    // ë§µì˜ ì˜¤ë¥¸ìª½ ìœ„
+    // Bounds.maxì—ì„œ X, Y ê°’ì„ ì‚¬ìš©
     public Vector2 Max
     {
         get
@@ -48,8 +48,8 @@ public class MapBounds : MonoBehaviour
         }
     }
 
-    // Æ¯Á¤ ¿ùµå ÁÂÇ¥°¡ ¸Ê ¾È¿¡ ÀÖ´ÂÁö °Ë»ç
-    // ZÃà Â÷ÀÌ·Î ÀÎÇØ 2D ¿µ¿ª °Ë»ç°¡ ½ÇÆĞÇÏÁö ¾Êµµ·Ï Áß½É Z¸¦ »ç¿ë
+    // íŠ¹ì • ì›”ë“œ ì¢Œí‘œê°€ ë§µ ì•ˆì— ìˆëŠ”ì§€ ê²€ì‚¬
+    // Zì¶• ì°¨ì´ë¡œ ì¸í•´ 2D ì˜ì—­ ê²€ì‚¬ê°€ ì‹¤íŒ¨í•˜ì§€ ì•Šë„ë¡ ì¤‘ì‹¬ Zë¥¼ ì‚¬ìš©
     public bool IsInside(Vector3 worldPosition)
     {
         return Bounds.Contains(

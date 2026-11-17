@@ -4,37 +4,46 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 
-/// <summary>¸¶¿ì½º Å¬¸¯ ¸ñÀûÁöÀÇ A* °æ·Î Å½»ö, ÀÌµ¿ Ç¥½Ã, ÀÚ¿ø Á¢±Ù°ú Ã¤ÁıÀ» °ü¸®ÇÑ´Ù.</summary>
+/// <summary>ë§ˆìš°ìŠ¤ í´ë¦­ ëª©ì ì§€ì˜ A* ê²½ë¡œ íƒìƒ‰, ì´ë™ í‘œì‹œ, ìì› ì ‘ê·¼ê³¼ ì±„ì§‘ì„ ê´€ë¦¬í•œë‹¤.</summary>
 public class MousePathfinding : MonoBehaviour
 {
 
-    // ¼¿ ÁÂÇ¥¿Í ¿ùµå ÁÂÇ¥¸¦ º¯È¯ÇÒ ±âÁØ ±×¸®µå
+    // ì…€ ì¢Œí‘œì™€ ì›”ë“œ ì¢Œí‘œë¥¼ ë³€í™˜í•  ê¸°ì¤€ ê·¸ë¦¬ë“œ
     [SerializeField] private Grid grid;
 
-    // ÀÌµ¿ ½ÃÀÛÁ¡ ¹× ÀÚ¿ø Á¢±Ù °Å¸® °è»ê¿¡ »ç¿ëÇÒ ÇÃ·¹ÀÌ¾î
+    // ì´ë™ ì‹œì‘ì  ë° ìì› ì ‘ê·¼ ê±°ë¦¬ ê³„ì‚°ì— ì‚¬ìš©í•  í”Œë ˆì´ì–´
     [SerializeField] private Transform player;
 
     [SerializeField]
     private GameObject destinationMarkerPrefab;
 
-    // ÇöÀç È­¸é¿¡ »ı¼ºµÈ ¸ñÀûÁö Ç¥½Ã ¿ÀºêÁ§Æ®
+    // í˜„ì¬ í™”ë©´ì— ìƒì„±ëœ ëª©ì ì§€ í‘œì‹œ ì˜¤ë¸Œì íŠ¸
     private GameObject destinationMarker;
 
-    // °Ç¹° Á¡À¯ ¼¿À» ÀÌµ¿ Àå¾Ö¹°·Î ÆÇÁ¤ÇÏ±â À§ÇÑ ÂüÁ¶
+    // ê±´ë¬¼ ì ìœ  ì…€ì„ ì´ë™ ì¥ì• ë¬¼ë¡œ íŒì •í•˜ê¸° ìœ„í•œ ì°¸ì¡°
     [SerializeField] private BuildingPlacement buildingPlacement;
 
-    // Å½»öµÈ ÀÌµ¿ °æ·Î¸¦ ¼±À¸·Î Ç¥½Ã
+    // íƒìƒ‰ëœ ì´ë™ ê²½ë¡œë¥¼ ì„ ìœ¼ë¡œ í‘œì‹œ
     [SerializeField] private LineRenderer lineRenderer;
 
-    // ½ÇÁ¦ °æ·Î ÀÌµ¿À» ¼öÇàÇÏ´Â ÄÄÆ÷³ÍÆ®
+    // ê²½ë¡œ ì„ ì´ í”Œë ˆì´ì–´ ë°œë°‘ìœ¼ë¡œ íŒì •ë˜ëŠ” ê±°ë¦¬ (ì´ ì•ˆì— ë“¤ì–´ì˜¨ ê¼­ì§“ì ì€ ì§€ìš´ë‹¤)
+    [SerializeField] private float pathPointReachDistance = 0.05f;
+
+    // ì•„ì§ ì§€ë‚˜ê°€ì§€ ì•Šì€ ê²½ë¡œ ì„  ê¼­ì§“ì  (í”Œë ˆì´ì–´ ìœ„ì¹˜ëŠ” ì œì™¸)
+    private readonly List<Vector3> remainingPathPoints = new List<Vector3>();
+
+    // ê²½ë¡œ ì„ ì´ ê·¸ë ¤ì§€ëŠ” z ìœ„ì¹˜
+    private const float PathLineZ = -1f;
+
+    // ì‹¤ì œ ê²½ë¡œ ì´ë™ì„ ìˆ˜í–‰í•˜ëŠ” ì»´í¬ë„ŒíŠ¸
     [SerializeField] private PlayerPathMovement playerMovement;
 
-    // A* Å½»ö ½ÃÀÛ ¼¿
+    // A* íƒìƒ‰ ì‹œì‘ ì…€
     private Vector3Int startCell;
-    // A* Å½»ö ¸ñÇ¥ ¼¿
+    // A* íƒìƒ‰ ëª©í‘œ ì…€
     private Vector3Int targetCell;
 
-    // ¼¿º° Å½»ö ³ëµå¸¦ º¸°üÇÏ´Â Ä³½Ã
+    // ì…€ë³„ íƒìƒ‰ ë…¸ë“œë¥¼ ë³´ê´€í•˜ëŠ” ìºì‹œ
     private Dictionary<Vector3Int, GridNode> nodes = new Dictionary<Vector3Int, GridNode>();
 
     [Header("UI")]
@@ -42,10 +51,10 @@ public class MousePathfinding : MonoBehaviour
     private DemolitionConfirmUI demolitionConfirmUI;
 
     [Header("Map Bounds")]
-    // ÇöÀç Scene¿¡¼­ ÀÌµ¿ °¡´ÉÇÑ ¸Ê °æ°è
+    // í˜„ì¬ Sceneì—ì„œ ì´ë™ ê°€ëŠ¥í•œ ë§µ ê²½ê³„
     [SerializeField] private MapBounds mapBounds;
 
-    // Áı µî ´Ù¸¥ Scene¿¡¼­ µ¹¾Æ¿Ã ¶§ º¹±¸ÇÒ ¸¶À» °æ°è
+    // ì§‘ ë“± ë‹¤ë¥¸ Sceneì—ì„œ ëŒì•„ì˜¬ ë•Œ ë³µêµ¬í•  ë§ˆì„ ê²½ê³„
     private MapBounds villageMapBounds;
 
     [Header("Inventory UI")]
@@ -54,51 +63,108 @@ public class MousePathfinding : MonoBehaviour
     [Header("Camera")]
     [SerializeField] private CameraFollow cameraFollow;
 
-    [Header("ÀÚ¿ø Á¢±Ù")]
-    // ÀÚ¿ø¿¡ Á¢±ÙÇÑ °ÍÀ¸·Î ÆÇÁ¤ÇÏ´Â °Å¸®
+    [Header("Building Mode")]
+    // ê±´ì„¤ ëª¨ë“œ ì¤‘ì—ëŠ” ì¢Œí´ë¦­ì´ ê±´ë¬¼ ì„¤ì¹˜ì— ì“°ì´ë¯€ë¡œ ì´ë™ì„ ë§‰ëŠ”ë‹¤ (ë¹„ì–´ ìˆìœ¼ë©´ ìë™ ê²€ìƒ‰)
+    [SerializeField] private BuildingModeManager buildingModeManager;
+
+    [Header("ìì› ì ‘ê·¼")]
+    // ìì›ì— ì ‘ê·¼í•œ ê²ƒìœ¼ë¡œ íŒì •í•˜ëŠ” ê±°ë¦¬
     [SerializeField] private float resourceInteractionDistance = 1.5f;
 
-    // ÀÌµ¿ ¿Ï·á ÈÄ Ã¤ÁıÇÒ ¸ñÇ¥ ÀÚ¿ø
+    // ì´ë™ ì™„ë£Œ í›„ ì±„ì§‘í•  ëª©í‘œ ìì›
     private ResourceNode targetResource;
-    // ÁøÇà ÁßÀÎ ÀÚ¿ø Ã¤Áı ÄÚ·çÆ¾
+    // ì§„í–‰ ì¤‘ì¸ ìì› ì±„ì§‘ ì½”ë£¨í‹´
     private Coroutine gatheringCoroutine;
 
 
-    // ÇöÀç Ç¥½Ã ÁßÀÎ Ã¤Áı ÁøÇà·ü UI
+    // í˜„ì¬ í‘œì‹œ ì¤‘ì¸ ì±„ì§‘ ì§„í–‰ë¥  UI
     private GatheringProgressUI activeProgressUI;
 
+    // ì¢Œí´ë¦­ì„ ëˆŒë €ê³  ì•„ì§ ë“œë˜ê·¸ë¡œ ë°”ë€Œì§€ ì•Šì•„ í´ë¦­ìœ¼ë¡œ ì²˜ë¦¬ë  ì˜ˆì •ì¸ì§€ ì—¬ë¶€
+    private bool isLeftClickPending = false;
+    // ì¢Œí´ë¦­ì„ ëˆ„ë¥¸ í™”ë©´ ì¢Œí‘œ (í´ë¦­ê³¼ ë“œë˜ê·¸ êµ¬ë¶„ìš©)
+    private Vector2 leftPressScreenPosition;
 
-    /// <summary>ÃÖÃÊ ÁöÁ¤µÈ ¸¶À» °æ°è¸¦ ÀúÀåÇÑ´Ù.</summary>
+
+    /// <summary>ìµœì´ˆ ì§€ì •ëœ ë§ˆì„ ê²½ê³„ë¥¼ ì €ì¥í•œë‹¤.</summary>
     private void Awake()
     {
-        // Ã³À½ ¿¬°áµÈ ¸¶À» MapBounds ÀúÀå
+        // ì²˜ìŒ ì—°ê²°ëœ ë§ˆì„ MapBounds ì €ì¥
         villageMapBounds = mapBounds;
+
+        if (buildingModeManager == null)
+            buildingModeManager = FindFirstObjectByType<BuildingModeManager>();
     }
 
-    /// <summary>UI »óÅÂ¸¦ È®ÀÎÇÑ µÚ ÁÂÅ¬¸¯ ÀÚ¿ø Å½»ö ¶Ç´Â ÀÏ¹İ ÀÌµ¿À» ½ÇÇàÇÑ´Ù.</summary>
+    /// <summary>UI ìƒíƒœë¥¼ í™•ì¸í•œ ë’¤ ì¢Œí´ë¦­ ìì› íƒìƒ‰ ë˜ëŠ” ì¼ë°˜ ì´ë™ì„ ì‹¤í–‰í•œë‹¤.</summary>
     private void Update()
     {
         if (Mouse.current == null)
             return;
 
-        // ÀÎº¥Åä¸®°¡ ¿­·Á ÀÖÀ¸¸é ÀÌµ¿ Â÷´Ü
+        // ì¸ë²¤í† ë¦¬ê°€ ì—´ë ¤ ìˆìœ¼ë©´ ì´ë™ ì°¨ë‹¨
         if (inventoryUI != null && inventoryUI.IsOpen)
+        {
+            isLeftClickPending = false;
             return;
+        }
 
-        // Ã¶°Å È®ÀÎÃ¢ÀÌ ¿­·Á ÀÖÀ¸¸é ÀÌµ¿ Â÷´Ü
+        // ì² ê±° í™•ì¸ì°½ì´ ì—´ë ¤ ìˆìœ¼ë©´ ì´ë™ ì°¨ë‹¨
         if (demolitionConfirmUI != null &&
             demolitionConfirmUI.IsOpen)
+        {
+            isLeftClickPending = false;
             return;
+        }
 
-        // °Ç¹° À§Ä¡ º¸±â Áß¿¡´Â ÀÌµ¿ Â÷´Ü
+        // ê±´ë¬¼ ìœ„ì¹˜ ë³´ê¸° ì¤‘ì—ëŠ” ì´ë™ ì°¨ë‹¨
         if (cameraFollow != null &&
             cameraFollow.IsViewingBuilding)
-            return;
-
-        // ¸¶¿ì½º ÁÂÅ¬¸¯ ÀÌµ¿ (UI À§¸¦ Å¬¸¯ÇÑ °æ¿ì´Â Á¦¿Ü)
-        if (Mouse.current.leftButton.wasPressedThisFrame && !UIInput.IsPointerOverUI())
         {
-            // ¸ÕÀú Å¬¸¯ÇÑ À§Ä¡¿¡ ÀÚ¿øÀÌ ÀÖ´ÂÁö È®ÀÎ
+            isLeftClickPending = false;
+            return;
+        }
+
+        // ê±´ì„¤ ëª¨ë“œ(ê±´ì„¤Â·ì² ê±° ë„êµ¬) ì¤‘ì—ëŠ” ì¢Œí´ë¦­ì´ ê±´ë¬¼ ì¡°ì‘ìš©ì´ë¯€ë¡œ ì´ë™ ì°¨ë‹¨
+        if (buildingModeManager != null &&
+            buildingModeManager.IsBuildMode)
+        {
+            isLeftClickPending = false;
+            return;
+        }
+
+        // ì¢Œí´ë¦­ì„ ëˆ„ë¥¸ ìœ„ì¹˜ë¥¼ ê¸°ë¡í•´ ë‘ê³ , ë—„ ë•Œ í´ë¦­ì¸ì§€ ë“œë˜ê·¸ì¸ì§€ íŒì •í•œë‹¤
+        if (Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            // ì±„íŒ…ì°½ ë“± UI ìœ„ë¥¼ ëˆ„ë¥¸ ê²½ìš°ëŠ” ì´ë™í•˜ì§€ ì•ŠëŠ”ë‹¤
+            isLeftClickPending = !UIInput.IsPointerOverUI();
+            leftPressScreenPosition = Mouse.current.position.ReadValue();
+        }
+
+        // ëˆ„ë¥¸ ì±„ë¡œ ì¼ì • ê±°ë¦¬ ì´ìƒ ì›€ì§ì˜€ë‹¤ë©´ í™”ë©´ ë“œë˜ê·¸(ë‘˜ëŸ¬ë³´ê¸°)ì´ë¯€ë¡œ ì´ë™í•˜ì§€ ì•ŠëŠ”ë‹¤
+        if (isLeftClickPending && Mouse.current.leftButton.isPressed)
+        {
+            float dragThreshold =
+                cameraFollow != null ? cameraFollow.DragThresholdPixels : 8f;
+
+            if (Vector2.Distance(
+                    Mouse.current.position.ReadValue(),
+                    leftPressScreenPosition) >= dragThreshold)
+            {
+                isLeftClickPending = false;
+            }
+        }
+
+        // ë§ˆìš°ìŠ¤ ì¢Œí´ë¦­ ì´ë™ (ë“œë˜ê·¸ ì—†ì´ ë²„íŠ¼ì„ ë—ì„ ë•Œ)
+        if (Mouse.current.leftButton.wasReleasedThisFrame && isLeftClickPending)
+        {
+            isLeftClickPending = false;
+
+            // ë‘˜ëŸ¬ë³´ë˜ ì¤‘ì´ì—ˆë‹¤ë©´ ë‹¤ì‹œ í”Œë ˆì´ì–´ë¥¼ ë”°ë¼ê°„ë‹¤
+            if (cameraFollow != null)
+                cameraFollow.ResumeFollow();
+
+            // ë¨¼ì € í´ë¦­í•œ ìœ„ì¹˜ì— ìì›ì´ ìˆëŠ”ì§€ í™•ì¸
             Vector2 mouseScreenPosition =
                 Mouse.current.position.ReadValue();
 
@@ -112,13 +178,26 @@ public class MousePathfinding : MonoBehaviour
                 mouseWorldPosition.y
             );
 
-            // Å¬¸¯ ÁöÁ¡°ú °ãÄ¡´Â ¸ğµç Äİ¶óÀÌ´õ¸¦ Á¶»çÇØ ÀÚ¿øÀ» ¿ì¼± Å½»ö
+            // í´ë¦­ ì§€ì ê³¼ ê²¹ì¹˜ëŠ” ëª¨ë“  ì½œë¼ì´ë”ë¥¼ ì¡°ì‚¬í•´ ìì›ì„ ìš°ì„  íƒìƒ‰
             Collider2D[] hitColliders =
                 Physics2D.OverlapPointAll(clickPosition);
 
+            // ê±´ë¬¼ ìˆ˜í™• ë²„íŠ¼ì„ ëˆŒë €ë‹¤ë©´ ìˆ˜í™•ë§Œ í•˜ê³  ì´ë™í•˜ì§€ ì•ŠëŠ”ë‹¤
             foreach (Collider2D hit in hitColliders)
             {
-                // ÀÚ½Ä Äİ¶óÀÌ´õ¸¦ Å¬¸¯ÇØµµ ºÎ¸ğÀÇ ResourceNode¸¦ Ã£´Â´Ù
+                BuildingHarvestButton harvestButton =
+                    hit.GetComponentInParent<BuildingHarvestButton>();
+
+                if (harvestButton != null)
+                {
+                    harvestButton.Click();
+                    return;
+                }
+            }
+
+            foreach (Collider2D hit in hitColliders)
+            {
+                // ìì‹ ì½œë¼ì´ë”ë¥¼ í´ë¦­í•´ë„ ë¶€ëª¨ì˜ ResourceNodeë¥¼ ì°¾ëŠ”ë‹¤
                 ResourceNode resource =
                     hit.GetComponentInParent<ResourceNode>();
 
@@ -126,7 +205,7 @@ public class MousePathfinding : MonoBehaviour
                 {
                     resource.OnResourceClicked();
 
-                    // ÀÌ¹Ì Ã¤ÁıµÈ ÀÚ¿øÀº Á¢±ÙÇÏÁö ¾ÊÀ½
+                    // ì´ë¯¸ ì±„ì§‘ëœ ìì›ì€ ì ‘ê·¼í•˜ì§€ ì•ŠìŒ
                     if (resource.IsDepleted)
                         return;
 
@@ -136,103 +215,105 @@ public class MousePathfinding : MonoBehaviour
             }
 
             CancelResourceTarget();
-            // ÀÚ¿øÀÌ ¾Æ´Ñ ¹Ù´ÚÀ» Å¬¸¯ÇÑ °æ¿ì ±âÁ¸ ÀÌµ¿ ½ÇÇà
+            // ìì›ì´ ì•„ë‹Œ ë°”ë‹¥ì„ í´ë¦­í•œ ê²½ìš° ê¸°ì¡´ ì´ë™ ì‹¤í–‰
             SetDestination();
         }
     }
 
-    /// <summary>°æ·Î ¼±°ú ¸ñÀûÁö ¸¶Ä¿¸¦ Á¦°ÅÇÑ´Ù.</summary>
+    /// <summary>ê²½ë¡œ ì„ ê³¼ ëª©ì ì§€ ë§ˆì»¤ë¥¼ ì œê±°í•œë‹¤.</summary>
     public void ClearMovementVisuals()
     {
-        // ÀÌµ¿ °æ·Î ¼± Á¦°Å
+        // ì´ë™ ê²½ë¡œ ì„  ì œê±°
+        remainingPathPoints.Clear();
+
         if (lineRenderer != null)
         {
             lineRenderer.positionCount = 0;
         }
 
-        // ¸ñÀûÁö ¸¶Ä¿ Á¦°Å
+        // ëª©ì ì§€ ë§ˆì»¤ ì œê±°
         if (destinationMarker != null)
         {
             Destroy(destinationMarker);
             destinationMarker = null;
         }
 
-        Debug.Log("ÀÌµ¿ °æ·Î ¹× ¸ñÀûÁö ¸¶Ä¿ Á¦°Å");
+        Debug.Log("ì´ë™ ê²½ë¡œ ë° ëª©ì ì§€ ë§ˆì»¤ ì œê±°");
     }
 
-    // ÇöÀç ÀÌµ¿ ¹üÀ§¸¦ ´Ù¸¥ MapBounds·Î º¯°æ
-    /// <summary>ÇöÀç ÀÌµ¿ °¡´É ¿µ¿ªÀ» »õ MapBounds·Î º¯°æÇÑ´Ù.</summary>
+    // í˜„ì¬ ì´ë™ ë²”ìœ„ë¥¼ ë‹¤ë¥¸ MapBoundsë¡œ ë³€ê²½
+    /// <summary>í˜„ì¬ ì´ë™ ê°€ëŠ¥ ì˜ì—­ì„ ìƒˆ MapBoundsë¡œ ë³€ê²½í•œë‹¤.</summary>
     public void SetMapBounds(MapBounds newBounds)
     {
         if (newBounds == null)
         {
-            Debug.LogWarning("º¯°æÇÒ MapBounds°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("ë³€ê²½í•  MapBoundsê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
         mapBounds = newBounds;
 
-        // ÀÌÀü °æ·Î Å½»ö µ¥ÀÌÅÍ ÃÊ±âÈ­
+        // ì´ì „ ê²½ë¡œ íƒìƒ‰ ë°ì´í„° ì´ˆê¸°í™”
         nodes.Clear();
 
-        Debug.Log("MapBounds º¯°æ ¿Ï·á: " + newBounds.name);
+        Debug.Log("MapBounds ë³€ê²½ ì™„ë£Œ: " + newBounds.name);
     }
 
-    // ¸¶À» MapBounds·Î º¹±¸
-    /// <summary>Ã³À½ ÀúÀåÇÑ ¸¶À» MapBounds·Î º¹±ÍÇÑ´Ù.</summary>
+    // ë§ˆì„ MapBoundsë¡œ ë³µêµ¬
+    /// <summary>ì²˜ìŒ ì €ì¥í•œ ë§ˆì„ MapBoundsë¡œ ë³µê·€í•œë‹¤.</summary>
     public void RestoreVillageMapBounds()
     {
         SetMapBounds(villageMapBounds);
     }
 
-    /// <summary>Scene ÀüÈ¯ Àü¿¡ Ã¤Áı, ÀÌµ¿, °æ·Î Ç¥½Ã ¹× Å½»ö µ¥ÀÌÅÍ¸¦ Á¤¸®ÇÑ´Ù.</summary>
+    /// <summary>Scene ì „í™˜ ì „ì— ì±„ì§‘, ì´ë™, ê²½ë¡œ í‘œì‹œ ë° íƒìƒ‰ ë°ì´í„°ë¥¼ ì •ë¦¬í•œë‹¤.</summary>
     public void PrepareForSceneTransition()
     {
-        // ÁøÇà ÁßÀÎ ÀÚ¿ø Ã¤Áı Ãë¼Ò
+        // ì§„í–‰ ì¤‘ì¸ ìì› ì±„ì§‘ ì·¨ì†Œ
         CancelResourceTarget();
 
-        // ÀÚ¿ø µµÂø ÀÌº¥Æ® ÇØÁ¦
+        // ìì› ë„ì°© ì´ë²¤íŠ¸ í•´ì œ
         if (playerMovement != null)
         {
             playerMovement.OnDestinationReached -=
                 OnResourceDestinationReached;
 
-            // ±âÁ¸ ÀÌµ¿ Áß´Ü
+            // ê¸°ì¡´ ì´ë™ ì¤‘ë‹¨
             playerMovement.StopMovement();
         }
 
         targetResource = null;
 
-        // °æ·Î ¹× ¸ñÀûÁö Ç¥½Ã Á¦°Å
+        // ê²½ë¡œ ë° ëª©ì ì§€ í‘œì‹œ ì œê±°
         ClearMovementVisuals();
 
-        // A* Å½»ö µ¥ÀÌÅÍ ÃÊ±âÈ­
+        // A* íƒìƒ‰ ë°ì´í„° ì´ˆê¸°í™”
         nodes.Clear();
 
-        Debug.Log("Scene ÀüÈ¯À» À§ÇÑ ÀÌµ¿ »óÅÂ ÃÊ±âÈ­ ¿Ï·á");
+        Debug.Log("Scene ì „í™˜ì„ ìœ„í•œ ì´ë™ ìƒíƒœ ì´ˆê¸°í™” ì™„ë£Œ");
     }
 
-    /// <summary>ÁöÁ¤ÇÑ ¼¿ÀÇ ÀÌµ¿ °¡´É ¿©ºÎ¸¦ °»½ÅÇÏ°í Å½»ö ³ëµå¸¦ ¹İÈ¯ÇÑ´Ù.</summary>
+    /// <summary>ì§€ì •í•œ ì…€ì˜ ì´ë™ ê°€ëŠ¥ ì—¬ë¶€ë¥¼ ê°±ì‹ í•˜ê³  íƒìƒ‰ ë…¸ë“œë¥¼ ë°˜í™˜í•œë‹¤.</summary>
     GridNode GetNode(Vector3Int cellPosition)
     {
-        // ±âº»ÀûÀ¸·Î ÀÌµ¿ °¡´ÉÇÑ Ä­
+        // ê¸°ë³¸ì ìœ¼ë¡œ ì´ë™ ê°€ëŠ¥í•œ ì¹¸
         bool isWalkable = true;
 
-        // °Ç¹° ¹èÄ¡ ½Ã½ºÅÛÀÌ Á¸ÀçÇÏ¸é Á¡À¯ ¿©ºÎ È®ÀÎ
+        // ê±´ë¬¼ ë°°ì¹˜ ì‹œìŠ¤í…œì´ ì¡´ì¬í•˜ë©´ ì ìœ  ì—¬ë¶€ í™•ì¸
         if (buildingPlacement != null)
         {
             isWalkable =
                 !buildingPlacement.IsCellOccupied(cellPosition);
         }
 
-        // ±âÁ¸ ³ëµå°¡ ÀÖ´Ù¸é »óÅÂ °»½Å
+        // ê¸°ì¡´ ë…¸ë“œê°€ ìˆë‹¤ë©´ ìƒíƒœ ê°±ì‹ 
         if (nodes.TryGetValue(cellPosition, out GridNode node))
         {
             node.walkable = isWalkable;
             return node;
         }
 
-        // »õ·Î¿î ³ëµå »ı¼º
+        // ìƒˆë¡œìš´ ë…¸ë“œ ìƒì„±
         GridNode newNode =
             new GridNode(cellPosition, isWalkable);
 
@@ -245,9 +326,9 @@ public class MousePathfinding : MonoBehaviour
 
 
     /// 
-    /// ±æÃ£±â 
+    /// ê¸¸ì°¾ê¸° 
     /// 
-    /// <summary>A* ¾Ë°í¸®ÁòÀ¸·Î ½ÃÀÛ ³ëµå¿¡¼­ ¸ñÇ¥ ³ëµå±îÁöÀÇ °æ·Î¸¦ °è»êÇÑ´Ù.</summary>
+    /// <summary>A* ì•Œê³ ë¦¬ì¦˜ìœ¼ë¡œ ì‹œì‘ ë…¸ë“œì—ì„œ ëª©í‘œ ë…¸ë“œê¹Œì§€ì˜ ê²½ë¡œë¥¼ ê³„ì‚°í•œë‹¤.</summary>
     List<GridNode> FindPath(GridNode startNode, GridNode targetNode)
     {
         List<GridNode> openList = new List<GridNode>();
@@ -255,7 +336,7 @@ public class MousePathfinding : MonoBehaviour
 
         openList.Add(startNode);
 
-        // ½ÃÀÛÁ¡ ¼³Á¤
+        // ì‹œì‘ì  ì„¤ì •
         startNode.gCost = 0;
         startNode.hCost =
             GetDistance(startNode, targetNode);
@@ -265,7 +346,7 @@ public class MousePathfinding : MonoBehaviour
 
         while (openList.Count > 0)
         {
-            // Open List¿¡¼­ F Cost°¡ °¡Àå ÀÛÀº Node Ã£±â
+            // Open Listì—ì„œ F Costê°€ ê°€ì¥ ì‘ì€ Node ì°¾ê¸°
             GridNode currentNode = openList[0];
 
             for (int i = 1; i < openList.Count; i++)
@@ -283,20 +364,20 @@ public class MousePathfinding : MonoBehaviour
             closedList.Add(currentNode);
 
 
-            // ¸ñÀûÁö µµÂø
+            // ëª©ì ì§€ ë„ì°©
             if (currentNode == targetNode)
             {
                 return RetracePath(startNode, targetNode);
             }
 
 
-            // ÁÖº¯ Node °Ë»ç
+            // ì£¼ë³€ Node ê²€ì‚¬
             foreach (GridNode neighbor in GetNeighbors(currentNode))
             {
                 if (!neighbor.walkable ||
                     closedList.Contains(neighbor))
                 {
-                    Debug.Log("[A*] Àå¾Ö¹°ÀÌ¶ó¼­ Åë°úÇÏÁö ¾ÊÀ½ : " + neighbor.cellPosition);
+                    Debug.Log("[A*] ì¥ì• ë¬¼ì´ë¼ì„œ í†µê³¼í•˜ì§€ ì•ŠìŒ : " + neighbor.cellPosition);
 
                     continue;
                 }
@@ -327,13 +408,13 @@ public class MousePathfinding : MonoBehaviour
         }
 
 
-        // °æ·Î¸¦ Ã£Áö ¸øÇÔ
+        // ê²½ë¡œë¥¼ ì°¾ì§€ ëª»í•¨
         return null;
     }
     /// 
-    /// ±æÃ£±â 
+    /// ê¸¸ì°¾ê¸° 
     /// 
-    /// <summary>ÇöÀç ³ëµåÀÇ »óÇÏÁÂ¿ì ÀÌ¿ôÀ» ¸Ê °æ°è ¾È¿¡¼­ ¼öÁıÇÑ´Ù.</summary>
+    /// <summary>í˜„ì¬ ë…¸ë“œì˜ ìƒí•˜ì¢Œìš° ì´ì›ƒì„ ë§µ ê²½ê³„ ì•ˆì—ì„œ ìˆ˜ì§‘í•œë‹¤.</summary>
     List<GridNode> GetNeighbors(GridNode node)
     {
         List<GridNode> neighbors =
@@ -342,10 +423,10 @@ public class MousePathfinding : MonoBehaviour
 
         Vector3Int[] directions =
         {
-        new Vector3Int(1, 0, 0),   // ¿À¸¥ÂÊ
-        new Vector3Int(-1, 0, 0),  // ¿ŞÂÊ
-        new Vector3Int(0, 1, 0),   // À§
-        new Vector3Int(0, -1, 0)   // ¾Æ·¡
+        new Vector3Int(1, 0, 0),   // ì˜¤ë¥¸ìª½
+        new Vector3Int(-1, 0, 0),  // ì™¼ìª½
+        new Vector3Int(0, 1, 0),   // ìœ„
+        new Vector3Int(0, -1, 0)   // ì•„ë˜
     };
 
 
@@ -353,11 +434,11 @@ public class MousePathfinding : MonoBehaviour
         {
             Vector3Int neighborPosition = node.cellPosition + direction;
 
-            // ÇØ´ç CellÀÇ Áß¾Ó ¿ùµå ÁÂÇ¥
+            // í•´ë‹¹ Cellì˜ ì¤‘ì•™ ì›”ë“œ ì¢Œí‘œ
             Vector3 neighborWorldPosition =
                 grid.GetCellCenterWorld(neighborPosition);
 
-            // MapBounds ¹ÛÀÇ CellÀº A* Å½»ö¿¡¼­ Á¦¿Ü
+            // MapBounds ë°–ì˜ Cellì€ A* íƒìƒ‰ì—ì„œ ì œì™¸
             if (mapBounds != null &&
                 !mapBounds.IsInside(neighborWorldPosition))
             {
@@ -373,9 +454,9 @@ public class MousePathfinding : MonoBehaviour
         return neighbors;
     }
     /// 
-    /// ±æÃ£±â 
+    /// ê¸¸ì°¾ê¸° 
     /// 
-    /// <summary>´ë°¢¼± ÀÌµ¿ÀÌ ¾ø´Â 4¹æÇâ °İÀÚ¿¡¼­ ¸ÇÇØÆ° °Å¸®¸¦ °è»êÇÑ´Ù.</summary>
+    /// <summary>ëŒ€ê°ì„  ì´ë™ì´ ì—†ëŠ” 4ë°©í–¥ ê²©ìì—ì„œ ë§¨í•´íŠ¼ ê±°ë¦¬ë¥¼ ê³„ì‚°í•œë‹¤.</summary>
     int GetDistance(GridNode nodeA, GridNode nodeB)
     {
         int distanceX =
@@ -394,9 +475,9 @@ public class MousePathfinding : MonoBehaviour
         return (distanceX + distanceY) * 10;
     }
     /// 
-    /// ±æÃ£±â 
+    /// ê¸¸ì°¾ê¸° 
     /// 
-    /// <summary>ºÎ¸ğ ³ëµå¸¦ ¿ªÃßÀûÇÏ¿© ½ÃÀÛÁ¡¿¡¼­ ¸ñÀûÁö ¼ø¼­ÀÇ °æ·Î¸¦ ¸¸µç´Ù.</summary>
+    /// <summary>ë¶€ëª¨ ë…¸ë“œë¥¼ ì—­ì¶”ì í•˜ì—¬ ì‹œì‘ì ì—ì„œ ëª©ì ì§€ ìˆœì„œì˜ ê²½ë¡œë¥¼ ë§Œë“ ë‹¤.</summary>
     List<GridNode> RetracePath(
     GridNode startNode,
     GridNode targetNode)
@@ -423,16 +504,18 @@ public class MousePathfinding : MonoBehaviour
         return path;
     }
     /// 
-    /// ±æÃ£±â 
+    /// ê¸¸ì°¾ê¸° 
     /// 
 
 
     ///
-    /// ±æ Ã£À¸¸é ¼± ±ß±â 
+    /// ê¸¸ ì°¾ìœ¼ë©´ ì„  ê¸‹ê¸° 
     ///
-    /// <summary>Ã£Àº °æ·Î¸¦ LineRendererÀÇ Á¡µé·Î ½Ã°¢È­ÇÑ´Ù.</summary>
+    /// <summary>ì°¾ì€ ê²½ë¡œë¥¼ LineRendererì˜ ì ë“¤ë¡œ ì‹œê°í™”í•œë‹¤.</summary>
     void DrawPath(List<GridNode> path)
     {
+        remainingPathPoints.Clear();
+
         if (lineRenderer == null)
             return;
 
@@ -442,19 +525,8 @@ public class MousePathfinding : MonoBehaviour
             return;
         }
 
-        lineRenderer.positionCount =
-            path.Count + 1;
-
-        Vector3 startPosition =
-            grid.GetCellCenterWorld(startCell);
-
-        startPosition.z = -1f;
-
-        lineRenderer.SetPosition(
-            0,
-            startPosition
-        );
-
+        // ì§€ë‚˜ê°€ì•¼ í•  ê° ì¹¸ì˜ ì¤‘ì•™ì„ ì €ì¥í•œë‹¤.
+        // ì‹œì‘ì ì€ ê³ ì •ëœ ì…€ ì¤‘ì•™ ëŒ€ì‹  ë§¤ í”„ë ˆì„ í”Œë ˆì´ì–´ ìœ„ì¹˜ë¥¼ ì‚¬ìš©í•œë‹¤.
         for (int i = 0; i < path.Count; i++)
         {
             Vector3 worldPosition =
@@ -462,25 +534,87 @@ public class MousePathfinding : MonoBehaviour
                     path[i].cellPosition
                 );
 
-            worldPosition.z = -1f;
+            worldPosition.z = PathLineZ;
 
-            lineRenderer.SetPosition(
-                i + 1,
-                worldPosition
-            );
+            remainingPathPoints.Add(worldPosition);
+        }
+
+        UpdatePathLine();
+    }
+
+    /// <summary>í”Œë ˆì´ì–´ ì´ë™ì´ ëë‚œ ë’¤ ë§¤ í”„ë ˆì„ ì§€ë‚˜ê°„ ê²½ë¡œ ì„ ì„ ì§€ìš´ë‹¤.</summary>
+    private void LateUpdate()
+    {
+        if (lineRenderer == null || remainingPathPoints.Count == 0)
+            return;
+
+        // ë‹¤ë¥¸ ê³³ì—ì„œ ì„ ì„ ì§€ì› ë‹¤ë©´ ë‚¨ì€ ê²½ë¡œë„ ë¹„ìš´ë‹¤.
+        if (lineRenderer.positionCount == 0)
+        {
+            remainingPathPoints.Clear();
+            return;
+        }
+
+        UpdatePathLine();
+    }
+
+    /// <summary>
+    /// í”Œë ˆì´ì–´ê°€ ì§€ë‚˜ê°„ ê¼­ì§“ì ì„ ì œê±°í•˜ê³ ,
+    /// ì„ ì˜ ì‹œì‘ì ì„ í”Œë ˆì´ì–´ í˜„ì¬ ìœ„ì¹˜ë¡œ ë§ì¶° ì„ ì´ ì ì  ì¤„ì–´ë“¤ê²Œ í•œë‹¤.
+    /// </summary>
+    private void UpdatePathLine()
+    {
+        if (player == null)
+            return;
+
+        Vector3 playerPosition = player.position;
+        playerPosition.z = PathLineZ;
+
+        while (remainingPathPoints.Count > 0)
+        {
+            Vector3 nextPoint = remainingPathPoints[0];
+
+            // ê¼­ì§“ì ì— ë„ì°©í–ˆìœ¼ë©´ ì œê±°
+            bool reached =
+                Vector2.Distance(playerPosition, nextPoint)
+                <= pathPointReachDistance;
+
+            // ì´ë¯¸ ê¼­ì§“ì ì„ ì§€ë‚˜ ë‹¤ìŒ êµ¬ê°„ìœ¼ë¡œ ë“¤ì–´ì„°ìœ¼ë©´ ì œê±°
+            bool passed = false;
+            if (remainingPathPoints.Count >= 2)
+            {
+                Vector2 toPlayer = playerPosition - nextPoint;
+                Vector2 nextSegment = remainingPathPoints[1] - nextPoint;
+                passed = Vector2.Dot(toPlayer, nextSegment) > 0f;
+            }
+
+            if (!reached && !passed)
+                break;
+
+            remainingPathPoints.RemoveAt(0);
+        }
+
+        // ëª¨ë“  ê¼­ì§“ì ì„ ì§€ë‚˜ë©´ ì„ ì„ ì™„ì „íˆ ì—†ì•¤ë‹¤.
+        if (remainingPathPoints.Count == 0)
+        {
+            lineRenderer.positionCount = 0;
+            return;
+        }
+
+        lineRenderer.positionCount = remainingPathPoints.Count + 1;
+        lineRenderer.SetPosition(0, playerPosition);
+
+        for (int i = 0; i < remainingPathPoints.Count; i++)
+        {
+            lineRenderer.SetPosition(i + 1, remainingPathPoints[i]);
         }
     }
 
-
-
-
-
-
-    /// <summary>Å¬¸¯ À§Ä¡¸¦ ¸ñÀûÁö·Î º¯È¯ÇÏ°í ÀÌµ¿ °¡´ÉÇÑ °æ·Î¸¦ °è»êÇÏ¿© ÀÌµ¿À» ¿äÃ»ÇÑ´Ù.</summary>
+    /// <summary>í´ë¦­ ìœ„ì¹˜ë¥¼ ëª©ì ì§€ë¡œ ë³€í™˜í•˜ê³  ì´ë™ ê°€ëŠ¥í•œ ê²½ë¡œë¥¼ ê³„ì‚°í•˜ì—¬ ì´ë™ì„ ìš”ì²­í•œë‹¤.</summary>
     void SetDestination()
     {
         // ---------------------------
-        // 1. PlayerÀÇ ½ÃÀÛ À§Ä¡
+        // 1. Playerì˜ ì‹œì‘ ìœ„ì¹˜
         // ---------------------------
 
         startCell =
@@ -488,7 +622,7 @@ public class MousePathfinding : MonoBehaviour
 
 
         // ---------------------------
-        // 2. ¸¶¿ì½º ¸ñÀûÁö
+        // 2. ë§ˆìš°ìŠ¤ ëª©ì ì§€
         // ---------------------------
 
         Vector2 mouseScreenPosition =
@@ -503,14 +637,14 @@ public class MousePathfinding : MonoBehaviour
 
 
         // ---------------------------
-        // ¸Ê ¹Û Å¬¸¯ ¹æÁö
+        // ë§µ ë°– í´ë¦­ ë°©ì§€
         // ---------------------------
 
         if (mapBounds != null &&
             !mapBounds.IsInside(mouseWorldPosition))
         {
             Debug.Log(
-                "¸Ê ¹ÛÀº ¸ñÀûÁö·Î ÁöÁ¤ÇÒ ¼ö ¾ø½À´Ï´Ù."
+                "ë§µ ë°–ì€ ëª©ì ì§€ë¡œ ì§€ì •í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤."
             );
 
             if (lineRenderer != null)
@@ -527,7 +661,7 @@ public class MousePathfinding : MonoBehaviour
 
 
         // ---------------------------
-        // 3. ¸ñÀûÁö Marker À§Ä¡
+        // 3. ëª©ì ì§€ Marker ìœ„ì¹˜
         // ---------------------------
 
         Vector3 destinationPosition =
@@ -548,7 +682,7 @@ public class MousePathfinding : MonoBehaviour
         if (!targetNode.walkable)
         {
             Debug.Log(
-                "°Ç¹°ÀÌ ÀÖ´Â À§Ä¡´Â ¸ñÀûÁö·Î ÁöÁ¤ÇÒ ¼ö ¾ø½À´Ï´Ù."
+                "ê±´ë¬¼ì´ ìˆëŠ” ìœ„ì¹˜ëŠ” ëª©ì ì§€ë¡œ ì§€ì •í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤."
             );
 
             if (lineRenderer != null)
@@ -565,21 +699,21 @@ public class MousePathfinding : MonoBehaviour
         );
 
         Debug.Log(
-            "[A* °Ë»ç] ½ÃÀÛ ¼¿: " + startCell +
-            " / ¸ñÀûÁö ¼¿: " + targetCell +
-            " / ½ÃÀÛ ÀÌµ¿ °¡´É: " + startNode.walkable +
-            " / ¸ñÀûÁö ÀÌµ¿ °¡´É: " + targetNode.walkable +
-            " / ÇÃ·¹ÀÌ¾î À§Ä¡: " + player.position +
-            " / ¸ñÀûÁö À§Ä¡: " + destinationPosition
+            "[A* ê²€ì‚¬] ì‹œì‘ ì…€: " + startCell +
+            " / ëª©ì ì§€ ì…€: " + targetCell +
+            " / ì‹œì‘ ì´ë™ ê°€ëŠ¥: " + startNode.walkable +
+            " / ëª©ì ì§€ ì´ë™ ê°€ëŠ¥: " + targetNode.walkable +
+            " / í”Œë ˆì´ì–´ ìœ„ì¹˜: " + player.position +
+            " / ëª©ì ì§€ ìœ„ì¹˜: " + destinationPosition
         );
 
-        // Ãâ¹ß ³ëµå¿¡¼­ ¸ñÇ¥ ³ëµå±îÁö A* Å½»ö ½ÇÇà
+        // ì¶œë°œ ë…¸ë“œì—ì„œ ëª©í‘œ ë…¸ë“œê¹Œì§€ A* íƒìƒ‰ ì‹¤í–‰
         List<GridNode> path = FindPath(startNode, targetNode);
 
 
         if (path != null)
         {
-            Debug.Log("°æ·Î Å½»ö ¼º°ø! ÀÌµ¿ Ä­ ¼ö : " + path.Count);
+            Debug.Log("ê²½ë¡œ íƒìƒ‰ ì„±ê³µ! ì´ë™ ì¹¸ ìˆ˜ : " + path.Count);
 
             foreach (GridNode node in path)
             {
@@ -595,7 +729,7 @@ public class MousePathfinding : MonoBehaviour
         else
         {
             Debug.Log(
-                "¸ñÀûÁö±îÁö ÀÌµ¿ÇÒ ¼ö ¾ø½À´Ï´Ù."
+                "ëª©ì ì§€ê¹Œì§€ ì´ë™í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤."
             );
 
             if (lineRenderer != null)
@@ -608,7 +742,7 @@ public class MousePathfinding : MonoBehaviour
 
 
         //// ---------------------------
-        //// 4. È®ÀÎ¿ë Ãâ·Â
+        //// 4. í™•ì¸ìš© ì¶œë ¥
         //// ---------------------------
 
         //Debug.Log(
@@ -617,7 +751,7 @@ public class MousePathfinding : MonoBehaviour
         //);
     }
 
-    /// <summary>ÀÚ¿ø ÁÖº¯ÀÇ »óÇÏÁÂ¿ì Á¢±Ù °¡´É ¼¿ Áß °¡Àå ÂªÀº °æ·Î¸¦ ¼±ÅÃÇÑ´Ù.</summary>
+    /// <summary>ìì› ì£¼ë³€ì˜ ìƒí•˜ì¢Œìš° ì ‘ê·¼ ê°€ëŠ¥ ì…€ ì¤‘ ê°€ì¥ ì§§ì€ ê²½ë¡œë¥¼ ì„ íƒí•œë‹¤.</summary>
     private void MoveToResource(ResourceNode resource)
     {
         if (resource == null || playerMovement == null || grid == null)
@@ -628,7 +762,7 @@ public class MousePathfinding : MonoBehaviour
         Vector3Int playerCell = grid.WorldToCell(player.position);
         Vector3Int resourceCell = grid.WorldToCell(resource.transform.position);
 
-        // ÀÚ¿øÀÌ ÀÖ´Â Ä­À» Á¦¿ÜÇÑ »óÇÏÁÂ¿ì ÈÄº¸ À§Ä¡
+        // ìì›ì´ ìˆëŠ” ì¹¸ì„ ì œì™¸í•œ ìƒí•˜ì¢Œìš° í›„ë³´ ìœ„ì¹˜
         Vector3Int[] directions =
         {
         new Vector3Int(1, 0, 0),
@@ -637,7 +771,7 @@ public class MousePathfinding : MonoBehaviour
         new Vector3Int(0, -1, 0)
     };
 
-        // ÇöÀç±îÁö ¹ß°ßÇÑ ÃÖ´Ü Á¢±Ù °æ·Î
+        // í˜„ì¬ê¹Œì§€ ë°œê²¬í•œ ìµœë‹¨ ì ‘ê·¼ ê²½ë¡œ
         List<GridNode> bestPath = null;
         Vector3Int bestCell = playerCell;
 
@@ -654,7 +788,7 @@ public class MousePathfinding : MonoBehaviour
             if (!candidateNode.walkable)
                 continue;
 
-            // A* Å½»ö¿¡¼­ ÀÌÀü °è»ê°ªÀÌ ³²Áö ¾Êµµ·Ï ÃÊ±âÈ­
+            // A* íƒìƒ‰ì—ì„œ ì´ì „ ê³„ì‚°ê°’ì´ ë‚¨ì§€ ì•Šë„ë¡ ì´ˆê¸°í™”
             nodes.Clear();
 
             GridNode startNode = GetNode(playerCell);
@@ -674,7 +808,7 @@ public class MousePathfinding : MonoBehaviour
 
         if (bestPath == null)
         {
-            Debug.Log("ÀÚ¿ø ÁÖº¯À¸·Î ÀÌµ¿ÇÒ ¼ö ¾ø½À´Ï´Ù.");
+            Debug.Log("ìì› ì£¼ë³€ìœ¼ë¡œ ì´ë™í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -693,13 +827,13 @@ public class MousePathfinding : MonoBehaviour
                 grid.GetCellCenterWorld(bestCell);
         }
 
-        // ÀÌµ¿ ¿Ï·á ½Ã ÀÚµ¿ Ã¤ÁıÀ» ½ÃÀÛÇÏµµ·Ï ÀÌº¥Æ® µî·Ï
+        // ì´ë™ ì™„ë£Œ ì‹œ ìë™ ì±„ì§‘ì„ ì‹œì‘í•˜ë„ë¡ ì´ë²¤íŠ¸ ë“±ë¡
         playerMovement.OnDestinationReached += OnResourceDestinationReached;
         playerMovement.MoveAlongPath(bestPath);
     }
 
-    // ÀÚ¿ø ±ÙÃ³¿¡ µµÂøÇßÀ» ¶§ Ã¤ÁıÀ» ½ÃÀÛÇÕ´Ï´Ù.
-    /// <summary>ÀÚ¿ø ÁÖº¯ µµÂø ½Ã °Å¸® È®ÀÎ ÈÄ Ã¤Áı ÄÚ·çÆ¾À» ½ÃÀÛÇÑ´Ù.</summary>
+    // ìì› ê·¼ì²˜ì— ë„ì°©í–ˆì„ ë•Œ ì±„ì§‘ì„ ì‹œì‘í•©ë‹ˆë‹¤.
+    /// <summary>ìì› ì£¼ë³€ ë„ì°© ì‹œ ê±°ë¦¬ í™•ì¸ í›„ ì±„ì§‘ ì½”ë£¨í‹´ì„ ì‹œì‘í•œë‹¤.</summary>
     private void OnResourceDestinationReached()
     {
         ResourceNode reachedResource = targetResource;
@@ -719,17 +853,17 @@ public class MousePathfinding : MonoBehaviour
 
         if (distance <= resourceInteractionDistance)
         {
-            Debug.Log("ÀÚ¿ø ±ÙÃ³ µµÂø! Ã¤Áı ½ÃÀÛ: " + reachedResource.Kind);
+            Debug.Log("ìì› ê·¼ì²˜ ë„ì°©! ì±„ì§‘ ì‹œì‘: " + reachedResource.Kind);
             gatheringCoroutine = StartCoroutine(GatherResourceRoutine(reachedResource));
         }
         else
         {
-            Debug.Log("Ã¤Áı °Å¸®°¡ ºÎÁ·ÇÕ´Ï´Ù. ÇöÀç °Å¸®: " + distance);
+            Debug.Log("ì±„ì§‘ ê±°ë¦¬ê°€ ë¶€ì¡±í•©ë‹ˆë‹¤. í˜„ì¬ ê±°ë¦¬: " + distance);
         }
     }
 
-    // Á¤ÇØÁø ½Ã°£ µ¿¾È ±â´Ù¸° µÚ ÀÚ¿ø È¹µæÀ» ¿äÃ»ÇÕ´Ï´Ù.
-    /// <summary>Ã¤Áı ½Ã°£¿¡ µû¶ó ÁøÇà·üÀ» °»½ÅÇÏ°í ¿Ï·á ½Ã ÀÚ¿ø È¹µæÀ» Ã³¸®ÇÑ´Ù.</summary>
+    // ì •í•´ì§„ ì‹œê°„ ë™ì•ˆ ê¸°ë‹¤ë¦° ë’¤ ìì› íšë“ì„ ìš”ì²­í•©ë‹ˆë‹¤.
+    /// <summary>ì±„ì§‘ ì‹œê°„ì— ë”°ë¼ ì§„í–‰ë¥ ì„ ê°±ì‹ í•˜ê³  ì™„ë£Œ ì‹œ ìì› íšë“ì„ ì²˜ë¦¬í•œë‹¤.</summary>
     private IEnumerator GatherResourceRoutine(ResourceNode resource)
     {
         if (resource == null || resource.IsDepleted)
@@ -742,17 +876,17 @@ public class MousePathfinding : MonoBehaviour
 
         activeProgressUI = progressUI;
 
-        // ÁøÇà·ü UI Ç¥½Ã
+        // ì§„í–‰ë¥  UI í‘œì‹œ
         if (progressUI != null)
             progressUI.ShowProgress();
 
         float elapsedTime = 0f;
-        // 0À¸·Î ³ª´©´Â ¹®Á¦¸¦ ¹æÁöÇÏµµ·Ï ÃÖ¼Ò Ã¤Áı ½Ã°£À» º¸Àå
+        // 0ìœ¼ë¡œ ë‚˜ëˆ„ëŠ” ë¬¸ì œë¥¼ ë°©ì§€í•˜ë„ë¡ ìµœì†Œ ì±„ì§‘ ì‹œê°„ì„ ë³´ì¥
         float duration = Mathf.Max(0.01f, resource.GatherDuration);
 
-        Debug.Log("Ã¤Áı ½ÃÀÛ: " + resource.Kind);
+        Debug.Log("ì±„ì§‘ ì‹œì‘: " + resource.Kind);
 
-        // Ã¤Áı ½Ã°£¿¡ ¸ÂÃç ÁøÇà·ü °»½Å
+        // ì±„ì§‘ ì‹œê°„ì— ë§ì¶° ì§„í–‰ë¥  ê°±ì‹ 
         while (elapsedTime < duration)
         {
             if (resource == null || resource.IsDepleted)
@@ -776,13 +910,13 @@ public class MousePathfinding : MonoBehaviour
             yield return null;
         }
 
-        // Ã¤Áı ¿Ï·á
+        // ì±„ì§‘ ì™„ë£Œ
         if (resource != null && !resource.IsDepleted)
         {
             resource.CompleteGathering();
         }
 
-        // ÁøÇà·ü UI ¼û±â±â
+        // ì§„í–‰ë¥  UI ìˆ¨ê¸°ê¸°
         if (progressUI != null)
             progressUI.HideProgress();
 
@@ -790,8 +924,8 @@ public class MousePathfinding : MonoBehaviour
         activeProgressUI = null;
     }
 
-    // ´Ù¸¥ °÷À» Å¬¸¯ÇÏ¸é ÀÌÀü ÀÚ¿ø ¸ñÇ¥ ¹× ÁøÇà ÁßÀÎ Ã¤ÁıÀ» Ãë¼ÒÇÕ´Ï´Ù.
-    /// <summary>ÁøÇà ÁßÀÎ Ã¤ÁıÀ» ÁßÁöÇÏ°í ÁøÇà·ü Ç¥½Ã¸¦ ¼û±ä´Ù.</summary>
+    // ë‹¤ë¥¸ ê³³ì„ í´ë¦­í•˜ë©´ ì´ì „ ìì› ëª©í‘œ ë° ì§„í–‰ ì¤‘ì¸ ì±„ì§‘ì„ ì·¨ì†Œí•©ë‹ˆë‹¤.
+    /// <summary>ì§„í–‰ ì¤‘ì¸ ì±„ì§‘ì„ ì¤‘ì§€í•˜ê³  ì§„í–‰ë¥  í‘œì‹œë¥¼ ìˆ¨ê¸´ë‹¤.</summary>
     private void CancelResourceTarget()
     {
         if (gatheringCoroutine != null)
@@ -799,7 +933,7 @@ public class MousePathfinding : MonoBehaviour
             StopCoroutine(gatheringCoroutine);
             gatheringCoroutine = null;
 
-            Debug.Log("ÀÚ¿ø Ã¤Áı Ãë¼Ò");
+            Debug.Log("ìì› ì±„ì§‘ ì·¨ì†Œ");
         }
 
         if (activeProgressUI != null)
@@ -809,7 +943,7 @@ public class MousePathfinding : MonoBehaviour
         }
     }
 
-    /// <summary>ÄÄÆ÷³ÍÆ®°¡ ºñÈ°¼ºÈ­µÉ ¶§ ÁøÇà ÁßÀÎ Ã¤ÁıÀ» Ãë¼ÒÇÑ´Ù.</summary>
+    /// <summary>ì»´í¬ë„ŒíŠ¸ê°€ ë¹„í™œì„±í™”ë  ë•Œ ì§„í–‰ ì¤‘ì¸ ì±„ì§‘ì„ ì·¨ì†Œí•œë‹¤.</summary>
     private void OnDisable()
     {
         CancelResourceTarget();

@@ -1,37 +1,37 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// ½ºÅ©¸³Æ® ¼³¸í: °Ç¼³ ¸ğµåÀÇ È°¼ºÈ­ ¿©ºÎ¿Í ÇöÀç ¼±ÅÃ µµ±¸¸¦ °ü¸®ÇÑ´Ù.
+// ìŠ¤í¬ë¦½íŠ¸ ì„¤ëª…: ê±´ì„¤ ëª¨ë“œì˜ í™œì„±í™” ì—¬ë¶€ì™€ í˜„ì¬ ì„ íƒ ë„êµ¬ë¥¼ ê´€ë¦¬í•œë‹¤.
 public class BuildingModeManager : MonoBehaviour
 {
     [Header("Build Mode")]
-    // º¯¼ö ¼³¸í: ÇöÀç °Ç¼³ ¸ğµå È°¼ºÈ­ ¿©ºÎ
+    // ë³€ìˆ˜ ì„¤ëª…: í˜„ì¬ ê±´ì„¤ ëª¨ë“œ í™œì„±í™” ì—¬ë¶€
     [SerializeField] private bool isBuildMode = false;
 
     [Header("Current Tool")]
     [SerializeField]
-    // º¯¼ö ¼³¸í: ÇöÀç ¼±ÅÃÇÑ °Ç¼³ ¶Ç´Â Ã¶°Å µµ±¸
+    // ë³€ìˆ˜ ì„¤ëª…: í˜„ì¬ ì„ íƒí•œ ê±´ì„¤ ë˜ëŠ” ì² ê±° ë„êµ¬
     private BuildingTool currentTool = BuildingTool.Build;
 
-    // ¼Ó¼º ¼³¸í: ÇöÀç °Ç¼³ ¸ğµå È°¼ºÈ­ »óÅÂ¸¦ ¿ÜºÎ¿¡ ÀĞ±â Àü¿ëÀ¸·Î Á¦°øÇÑ´Ù.
+    // ì†ì„± ì„¤ëª…: í˜„ì¬ ê±´ì„¤ ëª¨ë“œ í™œì„±í™” ìƒíƒœë¥¼ ì™¸ë¶€ì— ì½ê¸° ì „ìš©ìœ¼ë¡œ ì œê³µí•œë‹¤.
     public bool IsBuildMode
     {
         get { return isBuildMode; }
     }
 
-    // ¼Ó¼º ¼³¸í: ÇöÀç ¼±ÅÃµÈ °Ç¼³/Ã¶°Å µµ±¸¸¦ ¿ÜºÎ¿¡ Á¦°øÇÑ´Ù.
+    // ì†ì„± ì„¤ëª…: í˜„ì¬ ì„ íƒëœ ê±´ì„¤/ì² ê±° ë„êµ¬ë¥¼ ì™¸ë¶€ì— ì œê³µí•œë‹¤.
     public BuildingTool CurrentTool
     {
         get { return currentTool; }
     }
 
-    // ÇÔ¼ö ¼³¸í: BÅ°·Î °Ç¼³ ¸ğµå¸¦ ÀüÈ¯ÇÏ°í ¼ıÀÚ 1¡¤2Å°·Î µµ±¸¸¦ ¼±ÅÃÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: Bí‚¤ë¡œ ê±´ì„¤ ëª¨ë“œë¥¼ ì „í™˜í•˜ê³  ìˆ«ì 1Â·2í‚¤ë¡œ ë„êµ¬ë¥¼ ì„ íƒí•œë‹¤.
     void Update()
     {
         if (Keyboard.current == null)
             return;
 
-        // B = °Ç¼³ ¸ğµå ON/OFF
+        // B = ê±´ì„¤ ëª¨ë“œ ON/OFF
         if (Keyboard.current.bKey.wasPressedThisFrame)
         {
             ToggleBuildMode();
@@ -40,20 +40,20 @@ public class BuildingModeManager : MonoBehaviour
         if (!isBuildMode)
             return;
 
-        // 1 = °Ç¼³ µµ±¸
+        // 1 = ê±´ì„¤ ë„êµ¬
         if (Keyboard.current.digit1Key.wasPressedThisFrame)
         {
             SetBuildTool();
         }
 
-        // 2 = Ã¶°Å µµ±¸
+        // 2 = ì² ê±° ë„êµ¬
         if (Keyboard.current.digit2Key.wasPressedThisFrame)
         {
             SetDemolishTool();
         }
     }
 
-    // ÇÔ¼ö ¼³¸í: °Ç¼³ ¸ğµå¸¦ ÄÑ°Å³ª ²ô¸ç È°¼ºÈ­ ½Ã °Ç¼³ µµ±¸¸¦ ±âº» ¼±ÅÃÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ê±´ì„¤ ëª¨ë“œë¥¼ ì¼œê±°ë‚˜ ë„ë©° í™œì„±í™” ì‹œ ê±´ì„¤ ë„êµ¬ë¥¼ ê¸°ë³¸ ì„ íƒí•œë‹¤.
     void ToggleBuildMode()
     {
         isBuildMode = !isBuildMode;
@@ -62,27 +62,38 @@ public class BuildingModeManager : MonoBehaviour
         {
             currentTool = BuildingTool.Build;
 
-            Debug.Log("°Ç¼³ ¸ğµå ON");
-            Debug.Log("ÇöÀç µµ±¸ : Build");
+            Debug.Log("ê±´ì„¤ ëª¨ë“œ ON");
+            Debug.Log("í˜„ì¬ ë„êµ¬ : Build");
         }
         else
         {
-            Debug.Log("°Ç¼³ ¸ğµå OFF");
+            Debug.Log("ê±´ì„¤ ëª¨ë“œ OFF");
         }
     }
 
-    // ¿ÜºÎ UI¿¡¼­ °Ç¼³ ¸ğµå¸¦ È°¼ºÈ­
-    // ÇÔ¼ö ¼³¸í: ¿ÜºÎ UI¿¡¼­ °Ç¼³ ¸ğµå¸¦ ÄÑ°í °Ç¼³ µµ±¸¸¦ ¼±ÅÃÇÑ´Ù.
+    // ì™¸ë¶€ UIì—ì„œ ê±´ì„¤ ëª¨ë“œë¥¼ í™œì„±í™”
+    // í•¨ìˆ˜ ì„¤ëª…: ì™¸ë¶€ UIì—ì„œ ê±´ì„¤ ëª¨ë“œë¥¼ ì¼œê³  ê±´ì„¤ ë„êµ¬ë¥¼ ì„ íƒí•œë‹¤.
     public void EnterBuildMode()
     {
         isBuildMode = true;
         currentTool = BuildingTool.Build;
 
-        Debug.Log("°Ç¼³ ¸ğµå ON");
-        Debug.Log("ÇöÀç µµ±¸ : Build");
+        Debug.Log("ê±´ì„¤ ëª¨ë“œ ON");
+        Debug.Log("í˜„ì¬ ë„êµ¬ : Build");
     }
 
-    // ÇÔ¼ö ¼³¸í: °Ç¼³ ¸ğµå°¡ È°¼ºÈ­µÈ °æ¿ì °Ç¼³ µµ±¸·Î ÀüÈ¯ÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ê±´ì„¤ ëª¨ë“œë¥¼ ëˆë‹¤. (ê±´ë¬¼ í•˜ë‚˜ë¥¼ ì„¤ì¹˜í•œ ë’¤ ë“± ì™¸ë¶€ì—ì„œ í˜¸ì¶œ)
+    public void ExitBuildMode()
+    {
+        if (!isBuildMode)
+            return;
+
+        isBuildMode = false;
+
+        Debug.Log("ê±´ì„¤ ëª¨ë“œ OFF");
+    }
+
+    // í•¨ìˆ˜ ì„¤ëª…: ê±´ì„¤ ëª¨ë“œê°€ í™œì„±í™”ëœ ê²½ìš° ê±´ì„¤ ë„êµ¬ë¡œ ì „í™˜í•œë‹¤.
     public void SetBuildTool()
     {
         if (!isBuildMode)
@@ -90,10 +101,10 @@ public class BuildingModeManager : MonoBehaviour
 
         currentTool = BuildingTool.Build;
 
-        Debug.Log("ÇöÀç µµ±¸ : Build");
+        Debug.Log("í˜„ì¬ ë„êµ¬ : Build");
     }
 
-    // ÇÔ¼ö ¼³¸í: °Ç¼³ ¸ğµå°¡ È°¼ºÈ­µÈ °æ¿ì Ã¶°Å µµ±¸·Î ÀüÈ¯ÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ê±´ì„¤ ëª¨ë“œê°€ í™œì„±í™”ëœ ê²½ìš° ì² ê±° ë„êµ¬ë¡œ ì „í™˜í•œë‹¤.
     public void SetDemolishTool()
     {
         if (!isBuildMode)
@@ -101,6 +112,6 @@ public class BuildingModeManager : MonoBehaviour
 
         currentTool = BuildingTool.Demolish;
 
-        Debug.Log("ÇöÀç µµ±¸ : Demolish");
+        Debug.Log("í˜„ì¬ ë„êµ¬ : Demolish");
     }
 }

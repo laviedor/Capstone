@@ -1,7 +1,7 @@
 
 using UnityEngine;
 
-// ¼³Ä¡µÈ °Ç¹°µéÀ» Á¤·ÄÇÏ¿© °ü¸® Ä«µå·Î ³ª¿­ÇÏ°í ÀüÃ¼ »ı»ê·®À» °»½ÅÇÑ´Ù.
+// ì„¤ì¹˜ëœ ê±´ë¬¼ë“¤ì„ ì •ë ¬í•˜ì—¬ ê´€ë¦¬ ì¹´ë“œë¡œ ë‚˜ì—´í•˜ê³  ì „ì²´ ìƒì‚°ëŸ‰ì„ ê°±ì‹ í•œë‹¤.
 public class InstalledBuildingListUI : MonoBehaviour
 {
     [Header("UI References")]
@@ -13,7 +13,7 @@ public class InstalledBuildingListUI : MonoBehaviour
 
     [SerializeField] private GameObject totalProductionPanel;
 
-    // °ü¸® È­¸éÀÌ ¿­¸®¸é ÀüÃ¼ »ı»ê ÆĞ³ÎÀ» Ç¥½ÃÇÏ°í ¸ñ·ÏÀ» »õ·Î ¸¸µç´Ù.
+    // ê´€ë¦¬ í™”ë©´ì´ ì—´ë¦¬ë©´ ì „ì²´ ìƒì‚° íŒ¨ë„ì„ í‘œì‹œí•˜ê³  ëª©ë¡ì„ ìƒˆë¡œ ë§Œë“ ë‹¤.
     private void OnEnable()
     {
         if (totalProductionPanel != null)
@@ -22,46 +22,46 @@ public class InstalledBuildingListUI : MonoBehaviour
         RefreshList();
     }
 
-    // °ü¸® È­¸éÀÌ ´İÈ÷¸é ÀüÃ¼ »ı»ê ÆĞ³ÎÀ» ¼û±ä´Ù.
+    // ê´€ë¦¬ í™”ë©´ì´ ë‹«íˆë©´ ì „ì²´ ìƒì‚° íŒ¨ë„ì„ ìˆ¨ê¸´ë‹¤.
     private void OnDisable()
     {
         if (totalProductionPanel != null)
             totalProductionPanel.SetActive(false);
     }
 
-    // ±âÁ¸ Ä«µå¸¦ Áö¿ì°í ¼³Ä¡µÈ °Ç¹°À» ID¿Í ¹øÈ£·Î Á¤·ÄÇØ ¸ñ·ÏÀ» Àç»ı¼ºÇÑ´Ù.
+    // ê¸°ì¡´ ì¹´ë“œë¥¼ ì§€ìš°ê³  ì„¤ì¹˜ëœ ê±´ë¬¼ì„ IDì™€ ë²ˆí˜¸ë¡œ ì •ë ¬í•´ ëª©ë¡ì„ ì¬ìƒì„±í•œë‹¤.
     public void RefreshList()
     {
         if (content == null ||
             buildingCardPrefab == null ||
             buildingDetailUI == null)
         {
-            Debug.LogWarning("°Ç¹° °ü¸® UI ¿¬°áÀÌ ´©¶ôµÇ¾ú½À´Ï´Ù.");
+            Debug.LogWarning("ê±´ë¬¼ ê´€ë¦¬ UI ì—°ê²°ì´ ëˆ„ë½ë˜ì—ˆìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // ±âÁ¸ »ó¼¼ Á¤º¸ ÃÊ±âÈ­
+        // ê¸°ì¡´ ìƒì„¸ ì •ë³´ ì´ˆê¸°í™”
         buildingDetailUI.ClearDetail();
 
-        // ±âÁ¸ Ä«µå Á¦°Å
+        // ê¸°ì¡´ ì¹´ë“œ ì œê±°
         foreach (Transform child in content)
         {
             Destroy(child.gameObject);
         }
 
-        // ¼³Ä¡µÈ °Ç¹° °Ë»ö
+        // ì„¤ì¹˜ëœ ê±´ë¬¼ ê²€ìƒ‰
         Building[] buildings = FindObjectsByType<Building>(
             FindObjectsSortMode.None
         );
 
-        // °Ç¹° ID¸¦ ¿ì¼± ºñ±³ÇÏ°í °°Àº ID¶ó¸é °íÀ¯ ¹øÈ£·Î ¼ø¼­¸¦ °áÁ¤ÇÑ´Ù.
+        // ê±´ë¬¼ IDë¥¼ ìš°ì„  ë¹„êµí•˜ê³  ê°™ì€ IDë¼ë©´ ê³ ìœ  ë²ˆí˜¸ë¡œ ìˆœì„œë¥¼ ê²°ì •í•œë‹¤.
         System.Array.Sort(buildings, (a, b) =>
         {
             if (a == null && b == null) return 0;
             if (a == null) return 1;
             if (b == null) return -1;
 
-            // °Ç¹° Á¾·ùº° Á¤·Ä
+            // ê±´ë¬¼ ì¢…ë¥˜ë³„ ì •ë ¬
             int typeCompare = string.Compare(
                 a.BuildingID,
                 b.BuildingID,
@@ -71,7 +71,7 @@ public class InstalledBuildingListUI : MonoBehaviour
             if (typeCompare != 0)
                 return typeCompare;
 
-            // °°Àº Á¾·ù¶ó¸é °íÀ¯ ¹øÈ£¼ø Á¤·Ä
+            // ê°™ì€ ì¢…ë¥˜ë¼ë©´ ê³ ìœ  ë²ˆí˜¸ìˆœ ì •ë ¬
             return a.BuildingNumber.CompareTo(b.BuildingNumber);
         });
 
@@ -84,7 +84,7 @@ public class InstalledBuildingListUI : MonoBehaviour
                 continue;
             }
 
-            // ¼³Ä¡ ½Ã ºÎ¿©µÈ °íÀ¯ ¹øÈ£ »ç¿ë
+            // ì„¤ì¹˜ ì‹œ ë¶€ì—¬ëœ ê³ ìœ  ë²ˆí˜¸ ì‚¬ìš©
             int buildingNumber = building.BuildingNumber;
 
             InstalledBuildingCardUI card =
@@ -97,7 +97,7 @@ public class InstalledBuildingListUI : MonoBehaviour
             );
         }
 
-        Debug.Log("¼³Ä¡µÈ °Ç¹° ¸ñ·Ï °»½Å ¿Ï·á");
+        Debug.Log("ì„¤ì¹˜ëœ ê±´ë¬¼ ëª©ë¡ ê°±ì‹  ì™„ë£Œ");
         if (totalProductionUI != null)
         {
             totalProductionUI.RefreshProduction();

@@ -2,43 +2,43 @@
 using UnityEngine;
 using TMPro;
 
-// ¾À¿¡ ¼³Ä¡µÈ °Ç¹°µéÀÇ ÀÚ¿øº° ºÐ´ç »ý»ê·®À» ÇÕ»êÇØ ÅØ½ºÆ®·Î Ç¥½ÃÇÑ´Ù.
+// ì”¬ì— ì„¤ì¹˜ëœ ê±´ë¬¼ë“¤ì˜ ìžì›ë³„ ë¶„ë‹¹ ìƒì‚°ëŸ‰ì„ í•©ì‚°í•´ í…ìŠ¤íŠ¸ë¡œ í‘œì‹œí•œë‹¤.
 public class TotalProductionUI : MonoBehaviour
 {
-    // Inspector¿¡¼­ ¿¬°áÇÒ ³ª¹«¡¤µ¹¡¤°ñµå »ý»ê·® Ç¥½Ã ÅØ½ºÆ®.
+    // Inspectorì—ì„œ ì—°ê²°í•  ë‚˜ë¬´Â·ëŒÂ·ê³¨ë“œ ìƒì‚°ëŸ‰ í‘œì‹œ í…ìŠ¤íŠ¸.
     [Header("Production Texts")]
-    // ³ª¹«ÀÇ ºÐ´ç ÃÑ»ý»ê·® Ç¥½Ã ¿µ¿ª.
+    // ë‚˜ë¬´ì˜ ë¶„ë‹¹ ì´ìƒì‚°ëŸ‰ í‘œì‹œ ì˜ì—­.
     [SerializeField] private TMP_Text woodProductionText;
-    // µ¹ÀÇ ºÐ´ç ÃÑ»ý»ê·® Ç¥½Ã ¿µ¿ª.
+    // ëŒì˜ ë¶„ë‹¹ ì´ìƒì‚°ëŸ‰ í‘œì‹œ ì˜ì—­.
     [SerializeField] private TMP_Text stoneProductionText;
-    // °ñµåÀÇ ºÐ´ç ÃÑ»ý»ê·® Ç¥½Ã ¿µ¿ª.
+    // ê³¨ë“œì˜ ë¶„ë‹¹ ì´ìƒì‚°ëŸ‰ í‘œì‹œ ì˜ì—­.
     [SerializeField] private TMP_Text goldProductionText;
 
-    // UI°¡ È°¼ºÈ­µÉ ¶§ ÇöÀç ¼³Ä¡µÈ °Ç¹°µéÀ» ±âÁØÀ¸·Î »ý»ê·®À» ´Ù½Ã °è»êÇÑ´Ù.
+    // UIê°€ í™œì„±í™”ë  ë•Œ í˜„ìž¬ ì„¤ì¹˜ëœ ê±´ë¬¼ë“¤ì„ ê¸°ì¤€ìœ¼ë¡œ ìƒì‚°ëŸ‰ì„ ë‹¤ì‹œ ê³„ì‚°í•œë‹¤.
     private void OnEnable()
     {
         RefreshProduction();
     }
 
-    // ÀüÃ¼ °Ç¹°ÀÇ »ý»ê Á¤º¸¸¦ Á¶È¸ÇÏ°í ÀÚ¿ø Á¾·ùº° ºÐ´ç »ý»ê·®À» ÇÕ»êÇÑ´Ù.
+    // ì „ì²´ ê±´ë¬¼ì˜ ìƒì‚° ì •ë³´ë¥¼ ì¡°íšŒí•˜ê³  ìžì› ì¢…ë¥˜ë³„ ë¶„ë‹¹ ìƒì‚°ëŸ‰ì„ í•©ì‚°í•œë‹¤.
     public void RefreshProduction()
     {
-        // ÀÌ¹ø °»½Å¿¡ »ç¿ëÇÒ ÀÚ¿øº° ÇÕ°è¸¦ 0ºÎÅÍ °è»êÇÑ´Ù.
+        // ì´ë²ˆ ê°±ì‹ ì— ì‚¬ìš©í•  ìžì›ë³„ í•©ê³„ë¥¼ 0ë¶€í„° ê³„ì‚°í•œë‹¤.
         float woodPerMinute = 0f;
         float stonePerMinute = 0f;
         float goldPerMinute = 0f;
 
-        // ÇöÀç ¼³Ä¡µÈ °Ç¹° °Ë»ö
-        // ÇöÀç ¾À¿¡¼­ Building ÄÄÆ÷³ÍÆ®¸¦ °¡Áø ¿ÀºêÁ§Æ®µéÀ» Ã£´Â´Ù.
+        // í˜„ìž¬ ì„¤ì¹˜ëœ ê±´ë¬¼ ê²€ìƒ‰
+        // í˜„ìž¬ ì”¬ì—ì„œ Building ì»´í¬ë„ŒíŠ¸ë¥¼ ê°€ì§„ ì˜¤ë¸Œì íŠ¸ë“¤ì„ ì°¾ëŠ”ë‹¤.
         Building[] buildings =
             FindObjectsByType<Building>(
                 FindObjectsSortMode.None
             );
 
-        // °Ë»öÇÑ °Ç¹°¸¶´Ù ¼³Ä¡ »óÅÂ¿Í »ý»ê µ¥ÀÌÅÍ¸¦ °Ë»çÇÑ´Ù.
+        // ê²€ìƒ‰í•œ ê±´ë¬¼ë§ˆë‹¤ ì„¤ì¹˜ ìƒíƒœì™€ ìƒì‚° ë°ì´í„°ë¥¼ ê²€ì‚¬í•œë‹¤.
         foreach (Building building in buildings)
         {
-            // ¼³Ä¡µÇÁö ¾ÊÀº °Ç¹° Á¦¿Ü
+            // ì„¤ì¹˜ë˜ì§€ ì•Šì€ ê±´ë¬¼ ì œì™¸
             if (building == null ||
                 !building.IsPlaced ||
                 building.Data == null)
@@ -46,21 +46,21 @@ public class TotalProductionUI : MonoBehaviour
                 continue;
             }
 
-            // °Ç¹°¿¡ ¿¬°áµÈ ScriptableObject µ¥ÀÌÅÍ¿¡¼­ »ý»ê ¼³Á¤À» °¡Á®¿Â´Ù.
+            // ê±´ë¬¼ì— ì—°ê²°ëœ ScriptableObject ë°ì´í„°ì—ì„œ ìƒì‚° ì„¤ì •ì„ ê°€ì ¸ì˜¨ë‹¤.
             BuildingData data = building.Data;
 
-            // »ý»ê Á¤º¸°¡ ¾ø´Â °Ç¹° Á¦¿Ü
+            // ìƒì‚° ì •ë³´ê°€ ì—†ëŠ” ê±´ë¬¼ ì œì™¸
             if (data.productions == null ||
                 data.productions.Length == 0)
             {
                 continue;
             }
 
-            // Àß¸øµÈ »ý»ê ÁÖ±â Á¦¿Ü
+            // ìž˜ëª»ëœ ìƒì‚° ì£¼ê¸° ì œì™¸
             if (data.productionInterval <= 0f)
                 continue;
 
-            // ÇÑ °Ç¹°ÀÌ ¿©·¯ Á¾·ùÀÇ ÀÚ¿øÀ» »ý»êÇÒ ¼ö ÀÖÀ¸¹Ç·Î »ý»ê Ç×¸ñÀ» ¼øÈ¸ÇÑ´Ù.
+            // í•œ ê±´ë¬¼ì´ ì—¬ëŸ¬ ì¢…ë¥˜ì˜ ìžì›ì„ ìƒì‚°í•  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ìƒì‚° í•­ëª©ì„ ìˆœíšŒí•œë‹¤.
             foreach (ResourceProduction production
                      in data.productions)
             {
@@ -70,13 +70,13 @@ public class TotalProductionUI : MonoBehaviour
                     continue;
                 }
 
-                // ºÐ´ç »ý»ê·® °è»ê
-                // ÇÑ ¹ø¿¡ »ý»êÇÏ´Â ¾ç¿¡ 1ºÐ µ¿¾ÈÀÇ »ý»ê È½¼ö(60 / »ý»ê °£°Ý)¸¦ °öÇÑ´Ù.
+                // ë¶„ë‹¹ ìƒì‚°ëŸ‰ ê³„ì‚°
+                // í•œ ë²ˆì— ìƒì‚°í•˜ëŠ” ì–‘ì— 1ë¶„ ë™ì•ˆì˜ ìƒì‚° íšŸìˆ˜(60 / ìƒì‚° ê°„ê²©)ë¥¼ ê³±í•œë‹¤.
                 float amountPerMinute =
                     production.amount *
                     (60f / data.productionInterval);
 
-                // °è»êµÈ »ý»ê·®À» ÇØ´ç ÀÚ¿ø Á¾·ùÀÇ ÃÑÇÕ¿¡ ´õÇÑ´Ù.
+                // ê³„ì‚°ëœ ìƒì‚°ëŸ‰ì„ í•´ë‹¹ ìžì› ì¢…ë¥˜ì˜ ì´í•©ì— ë”í•œë‹¤.
                 switch (production.resourceType)
                 {
                     case ResourceType.Wood:
@@ -94,25 +94,25 @@ public class TotalProductionUI : MonoBehaviour
             }
         }
 
-        // UI °»½Å
-        // UI ÅØ½ºÆ®°¡ ¿¬°áµÈ °æ¿ì¿¡¸¸ °á°ú¸¦ Ãâ·ÂÇÑ´Ù.
+        // UI ê°±ì‹ 
+        // UI í…ìŠ¤íŠ¸ê°€ ì—°ê²°ëœ ê²½ìš°ì—ë§Œ ê²°ê³¼ë¥¼ ì¶œë ¥í•œë‹¤.
         if (woodProductionText != null)
         {
-            // ¼Ò¼öÁ¡ µÑÂ° ÀÚ¸®±îÁö ÇÊ¿äÇÑ ¸¸Å­¸¸ Ç¥½ÃÇÑ´Ù.
-            woodProductionText.text = "+" + woodPerMinute.ToString("0.##") + " / ºÐ";
+            // ì†Œìˆ˜ì  ë‘˜ì§¸ ìžë¦¬ê¹Œì§€ í•„ìš”í•œ ë§Œí¼ë§Œ í‘œì‹œí•œë‹¤.
+            woodProductionText.text = "+" + woodPerMinute.ToString("0.##") + " / ë¶„";
         }
 
         if (stoneProductionText != null)
         {
-            stoneProductionText.text = "+" + stonePerMinute.ToString("0.##") + " / ºÐ";
+            stoneProductionText.text = "+" + stonePerMinute.ToString("0.##") + " / ë¶„";
         }
 
         if (goldProductionText != null)
         {
-            goldProductionText.text = "+" + goldPerMinute.ToString("0.##") + " / ºÐ";
+            goldProductionText.text = "+" + goldPerMinute.ToString("0.##") + " / ë¶„";
         }
 
-        // °»½Å ÀÛ¾÷ÀÌ ³¡³µÀ½À» Unity ÄÜ¼Ö¿¡ ±â·ÏÇÑ´Ù.
-        Debug.Log("ÀüÃ¼ °Ç¹° »ý»ê ÇöÈ² °»½Å ¿Ï·á");
+        // ê°±ì‹  ìž‘ì—…ì´ ëë‚¬ìŒì„ Unity ì½˜ì†”ì— ê¸°ë¡í•œë‹¤.
+        Debug.Log("ì „ì²´ ê±´ë¬¼ ìƒì‚° í˜„í™© ê°±ì‹  ì™„ë£Œ");
     }
 }

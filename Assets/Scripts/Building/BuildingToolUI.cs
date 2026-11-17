@@ -1,36 +1,36 @@
 using UnityEngine;
 
-// ½ºÅ©¸³Æ® ¼³¸í: °Ç¼³ µµ±¸ »óÅÂ¿¡ µû¶ó ½Ã½ºÅÛ ¸¶¿ì½º Ä¿¼­¸¦ ¼³Á¤ÇÑ´Ù.
+// ìŠ¤í¬ë¦½íŠ¸ ì„¤ëª…: ê±´ì„¤ ë„êµ¬ ìƒíƒœì— ë”°ë¼ ì‹œìŠ¤í…œ ë§ˆìš°ìŠ¤ ì»¤ì„œë¥¼ ì„¤ì •í•œë‹¤.
 public class BuildingToolUI : MonoBehaviour
 {
     [Header("Building Mode")]
     [SerializeField]
-    // º¯¼ö ¼³¸í: ÇöÀç °Ç¼³ ¸ğµå ¹× ¼±ÅÃ µµ±¸¸¦ °ü¸®ÇÏ´Â ÄÄÆ÷³ÍÆ®
+    // ë³€ìˆ˜ ì„¤ëª…: í˜„ì¬ ê±´ì„¤ ëª¨ë“œ ë° ì„ íƒ ë„êµ¬ë¥¼ ê´€ë¦¬í•˜ëŠ” ì»´í¬ë„ŒíŠ¸
     private BuildingModeManager buildingModeManager;
 
     [Header("Cursor Textures")]
     [SerializeField]
-    // º¯¼ö ¼³¸í: ¸ÁÄ¡ Ä¿¼­·Î »ç¿ëÇÒ ÅØ½ºÃ³ ÂüÁ¶
+    // ë³€ìˆ˜ ì„¤ëª…: ë§ì¹˜ ì»¤ì„œë¡œ ì‚¬ìš©í•  í…ìŠ¤ì²˜ ì°¸ì¡°
     private Texture2D hammerCursor;
 
     [SerializeField]
-    // º¯¼ö ¼³¸í: °î±ªÀÌ Ä¿¼­·Î »ç¿ëÇÒ ÅØ½ºÃ³ ÂüÁ¶
+    // ë³€ìˆ˜ ì„¤ëª…: ê³¡ê´­ì´ ì»¤ì„œë¡œ ì‚¬ìš©í•  í…ìŠ¤ì²˜ ì°¸ì¡°
     private Texture2D pickaxeCursor;
 
-    // º¯¼ö ¼³¸í: ÀÌÀü ÇÁ·¹ÀÓ¿¡ ¼±ÅÃµÇ¾î ÀÖ´ø µµ±¸
+    // ë³€ìˆ˜ ì„¤ëª…: ì´ì „ í”„ë ˆì„ì— ì„ íƒë˜ì–´ ìˆë˜ ë„êµ¬
     private BuildingTool lastTool;
-    // º¯¼ö ¼³¸í: ÀÌÀü ÇÁ·¹ÀÓÀÇ °Ç¼³ ¸ğµå È°¼ºÈ­ ¿©ºÎ
+    // ë³€ìˆ˜ ì„¤ëª…: ì´ì „ í”„ë ˆì„ì˜ ê±´ì„¤ ëª¨ë“œ í™œì„±í™” ì—¬ë¶€
     private bool wasBuildMode;
 
 
-    // ÇÔ¼ö ¼³¸í: °Ç¼³ ¸ğµå¿Í ¼±ÅÃ µµ±¸ º¯°æ ¿©ºÎ¸¦ °¨ÁöÇÏ¿© Ä¿¼­¸¦ °»½ÅÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ê±´ì„¤ ëª¨ë“œì™€ ì„ íƒ ë„êµ¬ ë³€ê²½ ì—¬ë¶€ë¥¼ ê°ì§€í•˜ì—¬ ì»¤ì„œë¥¼ ê°±ì‹ í•œë‹¤.
     void Update()
     {
         if (buildingModeManager == null)
             return;
 
 
-        // °Ç¼³ ¸ğµå OFF
+        // ê±´ì„¤ ëª¨ë“œ OFF
         if (!buildingModeManager.IsBuildMode)
         {
             if (wasBuildMode)
@@ -43,8 +43,8 @@ public class BuildingToolUI : MonoBehaviour
         }
 
 
-        // °Ç¼³ ¸ğµå¿¡ Ã³À½ µé¾î¿Ô°Å³ª
-        // µµ±¸°¡ º¯°æµÇ¾úÀ» ¶§¸¸ Ä¿¼­ º¯°æ
+        // ê±´ì„¤ ëª¨ë“œì— ì²˜ìŒ ë“¤ì–´ì™”ê±°ë‚˜
+        // ë„êµ¬ê°€ ë³€ê²½ë˜ì—ˆì„ ë•Œë§Œ ì»¤ì„œ ë³€ê²½
         if (!wasBuildMode ||
             lastTool != buildingModeManager.CurrentTool)
         {
@@ -58,7 +58,7 @@ public class BuildingToolUI : MonoBehaviour
     }
 
 
-    // ÇÔ¼ö ¼³¸í: ¼±ÅÃ µµ±¸¿¡ µû¶ó Ä¿¼­ ¼³Á¤À» Àû¿ëÇÑ´Ù. ÇöÀç µÎ °æ¿ì ¸ğµÎ ±âº» Ä¿¼­·Î ¼³Á¤ÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ì„ íƒ ë„êµ¬ì— ë”°ë¼ ì»¤ì„œ ì„¤ì •ì„ ì ìš©í•œë‹¤. í˜„ì¬ ë‘ ê²½ìš° ëª¨ë‘ ê¸°ë³¸ ì»¤ì„œë¡œ ì„¤ì •í•œë‹¤.
     void UpdateCursor()
     {
         switch (buildingModeManager.CurrentTool)
@@ -87,7 +87,7 @@ public class BuildingToolUI : MonoBehaviour
     }
 
 
-    // ÇÔ¼ö ¼³¸í: ½Ã½ºÅÛ ±âº» Ä¿¼­·Î º¹¿øÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ì‹œìŠ¤í…œ ê¸°ë³¸ ì»¤ì„œë¡œ ë³µì›í•œë‹¤.
     void SetDefaultCursor()
     {
         Cursor.SetCursor(
@@ -98,7 +98,7 @@ public class BuildingToolUI : MonoBehaviour
     }
 
 
-    // ÇÔ¼ö ¼³¸í: ÄÄÆ÷³ÍÆ®°¡ ºñÈ°¼ºÈ­µÉ ¶§ Ä¿¼­¸¦ ±âº» »óÅÂ·Î º¹¿øÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ì»´í¬ë„ŒíŠ¸ê°€ ë¹„í™œì„±í™”ë  ë•Œ ì»¤ì„œë¥¼ ê¸°ë³¸ ìƒíƒœë¡œ ë³µì›í•œë‹¤.
     private void OnDisable()
     {
         SetDefaultCursor();

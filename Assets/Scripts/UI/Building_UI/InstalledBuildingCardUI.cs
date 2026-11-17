@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Text;
 
-// ¼³Ä¡µÈ °Ç¹° ÇÑ °³ÀÇ ÀÌ¸§°ú »ı»ê Á¤º¸¸¦ Ç¥½ÃÇÏ°í »ó¼¼ Á¤º¸ ¼±ÅÃÀ» Ã³¸®ÇÑ´Ù.
+// ì„¤ì¹˜ëœ ê±´ë¬¼ í•œ ê°œì˜ ì´ë¦„ê³¼ ìƒì‚° ì •ë³´ë¥¼ í‘œì‹œí•˜ê³  ìƒì„¸ ì •ë³´ ì„ íƒì„ ì²˜ë¦¬í•œë‹¤.
 public class InstalledBuildingCardUI : MonoBehaviour
 {
     [Header("UI")]
@@ -14,7 +14,7 @@ public class InstalledBuildingCardUI : MonoBehaviour
     private Building building;
     private BuildingDetailUI detailUI;
 
-    // °Ç¹° ÂüÁ¶¿Í ¹øÈ£¸¦ ¼³Á¤ÇÏ°í Ä«µå ÅØ½ºÆ® ¹× Å¬¸¯ ÀÌº¥Æ®¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    // ê±´ë¬¼ ì°¸ì¡°ì™€ ë²ˆí˜¸ë¥¼ ì„¤ì •í•˜ê³  ì¹´ë“œ í…ìŠ¤íŠ¸ ë° í´ë¦­ ì´ë²¤íŠ¸ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     public void Setup(
         Building targetBuilding,
         BuildingDetailUI targetDetailUI,
@@ -26,7 +26,7 @@ public class InstalledBuildingCardUI : MonoBehaviour
         if (building == null || building.Data == null)
             return;
 
-        // °Ç¹° ÀÌ¸§ ¹× °íÀ¯ ¹øÈ£
+        // ê±´ë¬¼ ì´ë¦„ ë° ê³ ìœ  ë²ˆí˜¸
         if (buildingNameText != null)
         {
             buildingNameText.text =
@@ -34,10 +34,10 @@ public class InstalledBuildingCardUI : MonoBehaviour
                 " #" + buildingNumber;
         }
 
-        // »ı»ê Á¤º¸ Ç¥½Ã
+        // ìƒì‚° ì •ë³´ í‘œì‹œ
         UpdateProductionText();
 
-        // Ä«µå Å¬¸¯ ÀÌº¥Æ®
+        // ì¹´ë“œ í´ë¦­ ì´ë²¤íŠ¸
         if (cardButton != null)
         {
             cardButton.onClick.RemoveListener(OnCardClicked);
@@ -45,7 +45,7 @@ public class InstalledBuildingCardUI : MonoBehaviour
         }
     }
 
-    // °Ç¹°ÀÇ ÀÚ¿øº° »ı»ê·®°ú »ı»ê ÁÖ±â¸¦ Ä«µå¿¡ Ç¥½ÃÇÑ´Ù.
+    // ê±´ë¬¼ì˜ ìì›ë³„ ìƒì‚°ëŸ‰ê³¼ ìƒì‚° ì£¼ê¸°ë¥¼ ì¹´ë“œì— í‘œì‹œí•œë‹¤.
     private void UpdateProductionText()
     {
         if (buildingProductionText == null ||
@@ -58,7 +58,7 @@ public class InstalledBuildingCardUI : MonoBehaviour
         if (data.productions == null ||
             data.productions.Length == 0)
         {
-            buildingProductionText.text = "»ı»ê ¾øÀ½";
+            buildingProductionText.text = "ìƒì‚° ì—†ìŒ";
             return;
         }
 
@@ -76,15 +76,15 @@ public class InstalledBuildingCardUI : MonoBehaviour
             sb.Append(
                 production.resourceType +
                 " +" + production.amount +
-                " / " + data.productionInterval + "ÃÊ"
+                " / " + data.productionInterval + "ì´ˆ"
             );
         }
 
         buildingProductionText.text =
-            sb.Length > 0 ? sb.ToString() : "»ı»ê ¾øÀ½";
+            sb.Length > 0 ? sb.ToString() : "ìƒì‚° ì—†ìŒ";
     }
 
-    // ¼±ÅÃÇÑ °Ç¹°ÀÇ »ó¼¼ Á¤º¸¸¦ °ü¸® ÆĞ³Î¿¡ Àü´ŞÇÑ´Ù.
+    // ì„ íƒí•œ ê±´ë¬¼ì˜ ìƒì„¸ ì •ë³´ë¥¼ ê´€ë¦¬ íŒ¨ë„ì— ì „ë‹¬í•œë‹¤.
     private void OnCardClicked()
     {
         if (building == null || detailUI == null)
@@ -93,12 +93,12 @@ public class InstalledBuildingCardUI : MonoBehaviour
         detailUI.ShowBuilding(building);
 
         Debug.Log(
-            "°ü¸® °Ç¹° ¼±ÅÃ: " +
+            "ê´€ë¦¬ ê±´ë¬¼ ì„ íƒ: " +
             building.Data.buildingName
         );
     }
 
-    // Ä«µå ÆÄ±« ½Ã ¹öÆ° ¸®½º³Ê¸¦ ÇØÁ¦ÇÑ´Ù.
+    // ì¹´ë“œ íŒŒê´´ ì‹œ ë²„íŠ¼ ë¦¬ìŠ¤ë„ˆë¥¼ í•´ì œí•œë‹¤.
     private void OnDestroy()
     {
         if (cardButton != null)

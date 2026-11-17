@@ -1,17 +1,17 @@
 using UnityEngine;
 
-/// <summary>ÇöÀç ÀÌµ¿ ±â´ÉÀÌ ±¸ÇöµÇÁö ¾ÊÀº ±âº» MonoBehaviour ½ºÅ©¸³Æ®.</summary>
+/// <summary>í˜„ì¬ ì´ë™ ê¸°ëŠ¥ì´ êµ¬í˜„ë˜ì§€ ì•Šì€ ê¸°ë³¸ MonoBehaviour ìŠ¤í¬ë¦½íŠ¸.</summary>
 public class CharacterMove : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    // ¿ÀºêÁ§Æ® È°¼ºÈ­ ÈÄ Ã¹ Update Àü¿¡ È£ÃâµÇ´Â ÃÊ±âÈ­ ÇÔ¼ö (ÇöÀç ºñ¾î ÀÖÀ½)
+    // ì˜¤ë¸Œì íŠ¸ í™œì„±í™” í›„ ì²« Update ì „ì— í˜¸ì¶œë˜ëŠ” ì´ˆê¸°í™” í•¨ìˆ˜ (í˜„ì¬ ë¹„ì–´ ìˆìŒ)
     void Start()
     {
 
     }
 
     // Update is called once per frame
-    // ¸Å ÇÁ·¹ÀÓ È£ÃâµÇ´Â ÇÔ¼ö (ÇöÀç ºñ¾î ÀÖÀ½)
+    // ë§¤ í”„ë ˆì„ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ (í˜„ì¬ ë¹„ì–´ ìˆìŒ)
     void Update()
     {
 

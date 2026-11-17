@@ -2,36 +2,36 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// ¸¶À» ¾ÀÀ» À¯ÁöÇÑ Ã¤ ÇÊµå ¾ÀÀ» Ãß°¡ ·ÎµåÇÏ°Å³ª ÇØÁ¦ÇÏ´Â ÀüÈ¯ °ü¸®ÀÚÀÔ´Ï´Ù.
+// ë§ˆì„ ì”¬ì„ ìœ ì§€í•œ ì±„ í•„ë“œ ì”¬ì„ ì¶”ê°€ ë¡œë“œí•˜ê±°ë‚˜ í•´ì œí•˜ëŠ” ì „í™˜ ê´€ë¦¬ìì…ë‹ˆë‹¤.
 public class FieldSceneManager : MonoBehaviour
 {
-    // ´Ù¸¥ UI¿¡¼­ ¾À ÀüÈ¯À» ¿äÃ»ÇÒ ¼ö ÀÖµµ·Ï Á¦°øÇÏ´Â ´ÜÀÏ Á¢±Ù ÁöÁ¡ÀÔ´Ï´Ù.
+    // ë‹¤ë¥¸ UIì—ì„œ ì”¬ ì „í™˜ì„ ìš”ì²­í•  ìˆ˜ ìˆë„ë¡ ì œê³µí•˜ëŠ” ë‹¨ì¼ ì ‘ê·¼ ì§€ì ì…ë‹ˆë‹¤.
     public static FieldSceneManager Instance { get; private set; }
 
-    [Header("¸¶À»¿¡¼­ ¼û±æ ¿ÀºêÁ§Æ®")]
-    // ÇÊµå·Î ÀÌµ¿ÇÏ¸é È­¸é¿¡¼­ ¼û±æ ¸¶À» ½Ã°¢ ¿ÀºêÁ§Æ®ÀÇ ·çÆ®ÀÔ´Ï´Ù.
+    [Header("ë§ˆì„ì—ì„œ ìˆ¨ê¸¸ ì˜¤ë¸Œì íŠ¸")]
+    // í•„ë“œë¡œ ì´ë™í•˜ë©´ í™”ë©´ì—ì„œ ìˆ¨ê¸¸ ë§ˆì„ ì‹œê° ì˜¤ë¸Œì íŠ¸ì˜ ë£¨íŠ¸ì…ë‹ˆë‹¤.
     [SerializeField] private GameObject villageVisualRoot;
 
-    [Header("¸¶À» Ä«¸Ş¶ó")]
-    // ±âÁ¸ ¸¶À» Ä«¸Ş¶ó ÂüÁ¶ÀÔ´Ï´Ù. ÇöÀç ÀüÈ¯ ÄÚµå¿¡¼­´Â ºñÈ°¼ºÈ­ÇÏÁö ¾Ê½À´Ï´Ù.
+    [Header("ë§ˆì„ ì¹´ë©”ë¼")]
+    // ê¸°ì¡´ ë§ˆì„ ì¹´ë©”ë¼ ì°¸ì¡°ì…ë‹ˆë‹¤. í˜„ì¬ ì „í™˜ ì½”ë“œì—ì„œëŠ” ë¹„í™œì„±í™”í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
     [SerializeField] private Camera villageCamera;
 
-    [Header("¸¶À» ¹Ù´Ú Tilemap")]
-    // ÇÊµå·Î ÀÌµ¿ÇÒ ¶§ ¼û±â°í µ¹¾Æ¿À¸é ´Ù½Ã Ç¥½ÃÇÒ ¸¶À» ¹Ù´ÚÀÔ´Ï´Ù.
+    [Header("ë§ˆì„ ë°”ë‹¥ Tilemap")]
+    // í•„ë“œë¡œ ì´ë™í•  ë•Œ ìˆ¨ê¸°ê³  ëŒì•„ì˜¤ë©´ ë‹¤ì‹œ í‘œì‹œí•  ë§ˆì„ ë°”ë‹¥ì…ë‹ˆë‹¤.
     [SerializeField] private GameObject villageTilemap;
 
-    // ¾À ·Îµå/¾ğ·Îµå°¡ ÁøÇà ÁßÀÏ ¶§ Áßº¹ ¿äÃ»À» ¸·´Â »óÅÂ°ªÀÔ´Ï´Ù.
+    // ì”¬ ë¡œë“œ/ì–¸ë¡œë“œê°€ ì§„í–‰ ì¤‘ì¼ ë•Œ ì¤‘ë³µ ìš”ì²­ì„ ë§‰ëŠ” ìƒíƒœê°’ì…ë‹ˆë‹¤.
     private bool isTransitioning = false;
-    // ÇöÀç Ãß°¡ ·ÎµåµÈ ÇÊµå ¾ÀÀÇ ÀÌ¸§ÀÔ´Ï´Ù. ºó ¹®ÀÚ¿­ÀÌ¸é ¸¶À» »óÅÂÀÔ´Ï´Ù.
+    // í˜„ì¬ ì¶”ê°€ ë¡œë“œëœ í•„ë“œ ì”¬ì˜ ì´ë¦„ì…ë‹ˆë‹¤. ë¹ˆ ë¬¸ìì—´ì´ë©´ ë§ˆì„ ìƒíƒœì…ë‹ˆë‹¤.
     private string currentFieldScene = "";
 
-    // ÇÊµå ¾À ÀÌ¸§ÀÌ ÀúÀåµÇ¾î ÀÖ´ÂÁö È®ÀÎÇÏ¿© ÇöÀç ÇÊµå ÁøÀÔ ¿©ºÎ¸¦ ¹İÈ¯ÇÕ´Ï´Ù.
+    // í•„ë“œ ì”¬ ì´ë¦„ì´ ì €ì¥ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•˜ì—¬ í˜„ì¬ í•„ë“œ ì§„ì… ì—¬ë¶€ë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
     public bool IsInField
     {
         get { return !string.IsNullOrEmpty(currentFieldScene); }
     }
 
-    // Áßº¹ ¸Å´ÏÀú°¡ »ı¼ºµÇ¸é »õ ¿ÀºêÁ§Æ®¸¦ Á¦°ÅÇÏ°í ÃÖÃÊ ÀÎ½ºÅÏ½º¸¦ À¯ÁöÇÕ´Ï´Ù.
+    // ì¤‘ë³µ ë§¤ë‹ˆì €ê°€ ìƒì„±ë˜ë©´ ìƒˆ ì˜¤ë¸Œì íŠ¸ë¥¼ ì œê±°í•˜ê³  ìµœì´ˆ ì¸ìŠ¤í„´ìŠ¤ë¥¼ ìœ ì§€í•©ë‹ˆë‹¤.
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -43,7 +43,7 @@ public class FieldSceneManager : MonoBehaviour
         Instance = this;
     }
 
-    // ÀüÈ¯ ÁßÀÌ°Å³ª ÀÌ¹Ì ÇÊµå¿¡ ÀÖÀ¸¸é ¿äÃ»À» ¹«½ÃÇÏ°í, À¯È¿ÇÑ ¾À ÀÌ¸§ÀÌ¸é ·Îµå¸¦ ½ÃÀÛÇÕ´Ï´Ù.
+    // ì „í™˜ ì¤‘ì´ê±°ë‚˜ ì´ë¯¸ í•„ë“œì— ìˆìœ¼ë©´ ìš”ì²­ì„ ë¬´ì‹œí•˜ê³ , ìœ íš¨í•œ ì”¬ ì´ë¦„ì´ë©´ ë¡œë“œë¥¼ ì‹œì‘í•©ë‹ˆë‹¤.
     public void MoveToField(string sceneName)
     {
         if (isTransitioning || !string.IsNullOrEmpty(currentFieldScene))
@@ -55,48 +55,48 @@ public class FieldSceneManager : MonoBehaviour
         StartCoroutine(LoadFieldRoutine(sceneName));
     }
 
-    // ÇÊµå ¾ÀÀ» Additive ¹æ½ÄÀ¸·Î ºñµ¿±â ·ÎµåÇÑ ÈÄ ¸¶À»ÀÇ È­¸é Ç¥½Ã¸¦ ¼û±é´Ï´Ù.
+    // í•„ë“œ ì”¬ì„ Additive ë°©ì‹ìœ¼ë¡œ ë¹„ë™ê¸° ë¡œë“œí•œ í›„ ë§ˆì„ì˜ í™”ë©´ í‘œì‹œë¥¼ ìˆ¨ê¹ë‹ˆë‹¤.
     private IEnumerator LoadFieldRoutine(string sceneName)
     {
         isTransitioning = true;
 
-        // ½£ SceneÀ» Ãß°¡·Î ºÒ·¯¿Â´Ù.
-        // UnityÀÇ ºñµ¿±â ¾À ÀÛ¾÷À» ½ÃÀÛÇÏ°í ¿Ï·á ¿©ºÎ¸¦ È®ÀÎÇÕ´Ï´Ù.
+        // ìˆ² Sceneì„ ì¶”ê°€ë¡œ ë¶ˆëŸ¬ì˜¨ë‹¤.
+        // Unityì˜ ë¹„ë™ê¸° ì”¬ ì‘ì—…ì„ ì‹œì‘í•˜ê³  ì™„ë£Œ ì—¬ë¶€ë¥¼ í™•ì¸í•©ë‹ˆë‹¤.
         AsyncOperation operation =
             SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
 
-        // ¾À ÀÛ¾÷À» ½ÃÀÛÇÏÁö ¸øÇßÀ» ¶§ ¿À·ù¸¦ ³²±â°í ÀüÈ¯ »óÅÂ¸¦ ÇØÁ¦ÇÕ´Ï´Ù.
+        // ì”¬ ì‘ì—…ì„ ì‹œì‘í•˜ì§€ ëª»í–ˆì„ ë•Œ ì˜¤ë¥˜ë¥¼ ë‚¨ê¸°ê³  ì „í™˜ ìƒíƒœë¥¼ í•´ì œí•©ë‹ˆë‹¤.
         if (operation == null)
         {
-            Debug.LogError("ÇÊµå Scene ·Îµå ½ÇÆĞ: " + sceneName);
+            Debug.LogError("í•„ë“œ Scene ë¡œë“œ ì‹¤íŒ¨: " + sceneName);
             isTransitioning = false;
             yield break;
         }
 
-        // ·Îµå ¶Ç´Â ¾ğ·Îµå°¡ ¿Ï·áµÉ ¶§±îÁö ¸Å ÇÁ·¹ÀÓ ±â´Ù¸³´Ï´Ù.
+        // ë¡œë“œ ë˜ëŠ” ì–¸ë¡œë“œê°€ ì™„ë£Œë  ë•Œê¹Œì§€ ë§¤ í”„ë ˆì„ ê¸°ë‹¤ë¦½ë‹ˆë‹¤.
         while (!operation.isDone)
             yield return null;
 
-        // ¸¶À»ÀÇ È­¸é Ç¥½Ã¸¸ ²ö´Ù.
+        // ë§ˆì„ì˜ í™”ë©´ í‘œì‹œë§Œ ëˆë‹¤.
         if (villageVisualRoot != null)
             villageVisualRoot.SetActive(false);
 
         if (villageTilemap != null)
             villageTilemap.SetActive(false);
 
-        // ±âÁ¸ ÃßÀû Ä«¸Ş¶ó¸¦ °è¼Ó »ç¿ëÇÑ´Ù.
+        // ê¸°ì¡´ ì¶”ì  ì¹´ë©”ë¼ë¥¼ ê³„ì† ì‚¬ìš©í•œë‹¤.
         // if (villageCamera != null)
         //     villageCamera.gameObject.SetActive(false);
 
-        // ¼º°øÀûÀ¸·Î ·ÎµåÇÑ ÇÊµå ÀÌ¸§À» ±â·ÏÇÏ¿© ÀÌÈÄ º¹±Í ´ë»ó¿¡ »ç¿ëÇÕ´Ï´Ù.
+        // ì„±ê³µì ìœ¼ë¡œ ë¡œë“œí•œ í•„ë“œ ì´ë¦„ì„ ê¸°ë¡í•˜ì—¬ ì´í›„ ë³µê·€ ëŒ€ìƒì— ì‚¬ìš©í•©ë‹ˆë‹¤.
         currentFieldScene = sceneName;
 
-        Debug.Log("ÇÊµå ÀÌµ¿ ¿Ï·á: " + sceneName);
+        Debug.Log("í•„ë“œ ì´ë™ ì™„ë£Œ: " + sceneName);
 
         isTransitioning = false;
     }
 
-    // ÇÊµå¿¡ ÀÖÀ» ¶§¸¸ ¸¶À» º¹±Í ÄÚ·çÆ¾À» ½ÇÇàÇÕ´Ï´Ù.
+    // í•„ë“œì— ìˆì„ ë•Œë§Œ ë§ˆì„ ë³µê·€ ì½”ë£¨í‹´ì„ ì‹¤í–‰í•©ë‹ˆë‹¤.
     public void ReturnToVillage()
     {
         if (isTransitioning || string.IsNullOrEmpty(currentFieldScene))
@@ -105,12 +105,12 @@ public class FieldSceneManager : MonoBehaviour
         StartCoroutine(ReturnRoutine());
     }
 
-    // ÇöÀç ÇÊµå ¾ÀÀ» ºñµ¿±â·Î ÇØÁ¦ÇÑ µÚ ¸¶À» ¿ÀºêÁ§Æ®¸¦ ´Ù½Ã Ç¥½ÃÇÕ´Ï´Ù.
+    // í˜„ì¬ í•„ë“œ ì”¬ì„ ë¹„ë™ê¸°ë¡œ í•´ì œí•œ ë’¤ ë§ˆì„ ì˜¤ë¸Œì íŠ¸ë¥¼ ë‹¤ì‹œ í‘œì‹œí•©ë‹ˆë‹¤.
     private IEnumerator ReturnRoutine()
     {
         isTransitioning = true;
 
-        // ÇØÁ¦ÇÒ ÇÊµå ¾À ÀÌ¸§À» ÇöÀç »óÅÂ¿¡¼­ °¡Á®¿É´Ï´Ù.
+        // í•´ì œí•  í•„ë“œ ì”¬ ì´ë¦„ì„ í˜„ì¬ ìƒíƒœì—ì„œ ê°€ì ¸ì˜µë‹ˆë‹¤.
         string sceneToUnload = currentFieldScene;
 
         AsyncOperation operation =
@@ -118,7 +118,7 @@ public class FieldSceneManager : MonoBehaviour
 
         if (operation == null)
         {
-            Debug.LogError("ÇÊµå Scene ¾ğ·Îµå ½ÇÆĞ: " + sceneToUnload);
+            Debug.LogError("í•„ë“œ Scene ì–¸ë¡œë“œ ì‹¤íŒ¨: " + sceneToUnload);
             isTransitioning = false;
             yield break;
         }
@@ -135,10 +135,10 @@ public class FieldSceneManager : MonoBehaviour
         //if (villageCamera != null)
         //    villageCamera.gameObject.SetActive(true);
 
-        // ÇÊµå ÀÌ¸§À» ºñ¿ö ¸¶À»¿¡ ÀÖ´Â »óÅÂ·Î ÀüÈ¯ÇÕ´Ï´Ù.
+        // í•„ë“œ ì´ë¦„ì„ ë¹„ì›Œ ë§ˆì„ì— ìˆëŠ” ìƒíƒœë¡œ ì „í™˜í•©ë‹ˆë‹¤.
         currentFieldScene = "";
 
-        Debug.Log("¸¶À» º¹±Í ¿Ï·á");
+        Debug.Log("ë§ˆì„ ë³µê·€ ì™„ë£Œ");
 
         isTransitioning = false;
     }

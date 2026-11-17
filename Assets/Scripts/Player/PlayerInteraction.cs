@@ -1,49 +1,49 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-/// <summary>FÅ° ÀÔ·Â ½Ã ÇÃ·¹ÀÌ¾î ÁÖº¯ÀÇ »óÈ£ÀÛ¿ë °¡´ÉÇÑ °Ç¹°À» Å½»öÇÑ´Ù.</summary>
+/// <summary>Fí‚¤ ì…ë ¥ ì‹œ í”Œë ˆì´ì–´ ì£¼ë³€ì˜ ìƒí˜¸ì‘ìš© ê°€ëŠ¥í•œ ê±´ë¬¼ì„ íƒìƒ‰í•œë‹¤.</summary>
 public class PlayerInteraction : MonoBehaviour
 {
     [Header("Interaction")]
-    // ÇÃ·¹ÀÌ¾î Áß½ÉÀÇ »óÈ£ÀÛ¿ë Å½»ö ¹İ°æ
+    // í”Œë ˆì´ì–´ ì¤‘ì‹¬ì˜ ìƒí˜¸ì‘ìš© íƒìƒ‰ ë°˜ê²½
     [SerializeField] private float interactionRange = 2f;
 
-    /// <summary>¸Å ÇÁ·¹ÀÓ FÅ°¸¦ ´©¸¥ ¼ø°£À» °Ë»çÇÑ´Ù.</summary>
+    /// <summary>ë§¤ í”„ë ˆì„ Fí‚¤ë¥¼ ëˆ„ë¥¸ ìˆœê°„ì„ ê²€ì‚¬í•œë‹¤.</summary>
     private void Update()
     {
-        // »õ·Î¿î Input SystemÀÇ FÅ° ´­¸² °¨Áö
+        // ìƒˆë¡œìš´ Input Systemì˜ Fí‚¤ ëˆŒë¦¼ ê°ì§€
         if (Keyboard.current.fKey.wasPressedThisFrame)
         {
-            Debug.Log("FÅ° ÀÔ·Â È®ÀÎ");
+            Debug.Log("Fí‚¤ ì…ë ¥ í™•ì¸");
             TryInteract();
         }
     }
 
-    /// <summary>¹İ°æ ³» Collider2D¸¦ Á¶»çÇÏ¿© °¡Àå °¡±î¿î BuildingInteractionÀ» ½ÇÇàÇÑ´Ù.</summary>
+    /// <summary>ë°˜ê²½ ë‚´ Collider2Dë¥¼ ì¡°ì‚¬í•˜ì—¬ ê°€ì¥ ê°€ê¹Œìš´ BuildingInteractionì„ ì‹¤í–‰í•œë‹¤.</summary>
     private void TryInteract()
     {
-        // ÇÃ·¹ÀÌ¾î ÁÖº¯ ¿øÇü ¹üÀ§¿Í °ãÄ¡´Â ¸ğµç 2D Äİ¶óÀÌ´õ °Ë»ö
+        // í”Œë ˆì´ì–´ ì£¼ë³€ ì›í˜• ë²”ìœ„ì™€ ê²¹ì¹˜ëŠ” ëª¨ë“  2D ì½œë¼ì´ë” ê²€ìƒ‰
         Collider2D[] hits =
             Physics2D.OverlapCircleAll(
                 transform.position,
                 interactionRange
             );
 
-        Debug.Log("°¨ÁöµÈ Collider ¼ö : " + hits.Length);
+        Debug.Log("ê°ì§€ëœ Collider ìˆ˜ : " + hits.Length);
 
         foreach (Collider2D hit in hits)
         {
-            Debug.Log("°¨ÁöµÈ ¿ÀºêÁ§Æ® : " + hit.gameObject.name);
+            Debug.Log("ê°ì§€ëœ ì˜¤ë¸Œì íŠ¸ : " + hit.gameObject.name);
         }
 
-        // °¡Àå °¡±î¿î »óÈ£ÀÛ¿ë °¡´É °Ç¹°À» ÀúÀå
+        // ê°€ì¥ ê°€ê¹Œìš´ ìƒí˜¸ì‘ìš© ê°€ëŠ¥ ê±´ë¬¼ì„ ì €ì¥
         BuildingInteraction closestBuilding = null;
-        // °Å¸® ºñ±³¸¦ À§ÇÑ ÃÊ±â ÃÖ´ñ°ª
+        // ê±°ë¦¬ ë¹„êµë¥¼ ìœ„í•œ ì´ˆê¸° ìµœëŒ“ê°’
         float closestDistance = Mathf.Infinity;
 
         foreach (Collider2D hit in hits)
         {
-            // Å½ÁöµÈ ¿ÀºêÁ§Æ®¿¡ BuildingInteractionÀÌ Á÷Á¢ ºÙ¾î ÀÖ´ÂÁö È®ÀÎ
+            // íƒì§€ëœ ì˜¤ë¸Œì íŠ¸ì— BuildingInteractionì´ ì§ì ‘ ë¶™ì–´ ìˆëŠ”ì§€ í™•ì¸
             BuildingInteraction building =
                 hit.GetComponent<BuildingInteraction>();
 
@@ -56,7 +56,7 @@ public class PlayerInteraction : MonoBehaviour
                     building.transform.position
                 );
 
-            // ´õ °¡±î¿î °Ç¹°ÀÌ ¹ß°ßµÇ¸é »óÈ£ÀÛ¿ë ´ë»óÀ¸·Î °»½Å
+            // ë” ê°€ê¹Œìš´ ê±´ë¬¼ì´ ë°œê²¬ë˜ë©´ ìƒí˜¸ì‘ìš© ëŒ€ìƒìœ¼ë¡œ ê°±ì‹ 
             if (distance < closestDistance)
             {
                 closestDistance = distance;
@@ -66,12 +66,12 @@ public class PlayerInteraction : MonoBehaviour
 
         if (closestBuilding != null)
         {
-            // ÃÖÁ¾ ¼±ÅÃµÈ °Ç¹°ÀÇ »óÈ£ÀÛ¿ë ÇÔ¼ö È£Ãâ
+            // ìµœì¢… ì„ íƒëœ ê±´ë¬¼ì˜ ìƒí˜¸ì‘ìš© í•¨ìˆ˜ í˜¸ì¶œ
             closestBuilding.Interact();
         }
     }
 
-    /// <summary>Scene ºä¿¡¼­ ¼±ÅÃ ½Ã »óÈ£ÀÛ¿ë ¹İ°æÀ» ¿øÀ¸·Î Ç¥½ÃÇÑ´Ù.</summary>
+    /// <summary>Scene ë·°ì—ì„œ ì„ íƒ ì‹œ ìƒí˜¸ì‘ìš© ë°˜ê²½ì„ ì›ìœ¼ë¡œ í‘œì‹œí•œë‹¤.</summary>
     private void OnDrawGizmosSelected()
     {
         Gizmos.DrawWireSphere(

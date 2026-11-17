@@ -2,66 +2,66 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-// Àå¼Ò ¼±ÅÃ ¹öÆ°°ú Ã¤Áı Å¸ÀÌ¸ÓÀÇ »óÅÂ¸¦ È­¸é¿¡ ¹İ¿µÇÑ´Ù.
+// ì¥ì†Œ ì„ íƒ ë²„íŠ¼ê³¼ ì±„ì§‘ íƒ€ì´ë¨¸ì˜ ìƒíƒœë¥¼ í™”ë©´ì— ë°˜ì˜í•œë‹¤.
 public class GatheringTimerUI : MonoBehaviour
 {
-    // ¸¶´ç, °³¿ï°¡, µéÆÇ, È£¼ı°¡ÀÇ ¼±ÅÃ ¹öÆ° ÂüÁ¶.
-    [Header("Àå¼Òº° Ã¤Áı ¹öÆ°")]
+    // ë§ˆë‹¹, ê°œìš¸ê°€, ë“¤íŒ, í˜¸ìˆ«ê°€ì˜ ì„ íƒ ë²„íŠ¼ ì°¸ì¡°.
+    [Header("ì¥ì†Œë³„ ì±„ì§‘ ë²„íŠ¼")]
     [SerializeField] private Button yardButton;
     [SerializeField] private Button streamButton;
     [SerializeField] private Button fieldButton;
     [SerializeField] private Button lakesideButton;
 
-    // °¢ ¹öÆ°¿¡ Àå¼Ò ÀÌ¸§, ³²Àº ½Ã°£, º¸»ó ¼ö·É »óÅÂ¸¦ Ç¥½ÃÇÑ´Ù.
-    [Header("¹öÆ° ÅØ½ºÆ®")]
+    // ê° ë²„íŠ¼ì— ì¥ì†Œ ì´ë¦„, ë‚¨ì€ ì‹œê°„, ë³´ìƒ ìˆ˜ë ¹ ìƒíƒœë¥¼ í‘œì‹œí•œë‹¤.
+    [Header("ë²„íŠ¼ í…ìŠ¤íŠ¸")]
     [SerializeField] private TMP_Text yardText;
     [SerializeField] private TMP_Text streamText;
     [SerializeField] private TMP_Text fieldText;
     [SerializeField] private TMP_Text lakesideText;
 
-    // Àå¼Òº° ¹öÆ°¿¡ Å¬¸¯ ÀÌº¥Æ®¸¦ µî·ÏÇÑ´Ù. ÇöÀç Àü´ŞÇÏ´Â Ã¤Áı ½Ã°£Àº ¸ğµÎ 10ÃÊ´Ù.
+    // ì¥ì†Œë³„ ë²„íŠ¼ì— í´ë¦­ ì´ë²¤íŠ¸ë¥¼ ë“±ë¡í•œë‹¤. í˜„ì¬ ì „ë‹¬í•˜ëŠ” ì±„ì§‘ ì‹œê°„ì€ ëª¨ë‘ 10ì´ˆë‹¤.
     private void Start()
     {
         yardButton.onClick.AddListener(
-            () => OnLocationClicked("¸¶´ç", 10f));
+            () => OnLocationClicked("ë§ˆë‹¹", 10f));
 
         streamButton.onClick.AddListener(
-            () => OnLocationClicked("°³¿ï°¡", 10f));
+            () => OnLocationClicked("ê°œìš¸ê°€", 10f));
 
         fieldButton.onClick.AddListener(
-            () => OnLocationClicked("µéÆÇ", 10f));
+            () => OnLocationClicked("ë“¤íŒ", 10f));
 
         lakesideButton.onClick.AddListener(
-            () => OnLocationClicked("È£¼ı°¡", 10f));
+            () => OnLocationClicked("í˜¸ìˆ«ê°€", 10f));
 
         RefreshUI();
     }
 
-    // ÆĞ³ÎÀÌ ´Ù½Ã Ç¥½ÃµÉ ¶§ ÇöÀç Ã¤Áı »óÅÂ¸¦ ¹İ¿µÇÑ´Ù.
+    // íŒ¨ë„ì´ ë‹¤ì‹œ í‘œì‹œë  ë•Œ í˜„ì¬ ì±„ì§‘ ìƒíƒœë¥¼ ë°˜ì˜í•œë‹¤.
     private void OnEnable()
     {
         RefreshUI();
     }
 
-    // ÁøÇà ÁßÀÎ Å¸ÀÌ¸Ó ¼ıÀÚ¸¦ ¸Å ÇÁ·¹ÀÓ »õ·Î Ç¥½ÃÇÑ´Ù.
+    // ì§„í–‰ ì¤‘ì¸ íƒ€ì´ë¨¸ ìˆ«ìë¥¼ ë§¤ í”„ë ˆì„ ìƒˆë¡œ í‘œì‹œí•œë‹¤.
     private void Update()
     {
         RefreshUI();
     }
 
-    // Àå¼Ò ¼±ÅÃ ½Ã Ã¤Áı ½ÃÀÛ ¶Ç´Â ¿Ï·áµÈ º¸»ó ¼ö·ÉÀ» Ã³¸®ÇÑ´Ù.
+    // ì¥ì†Œ ì„ íƒ ì‹œ ì±„ì§‘ ì‹œì‘ ë˜ëŠ” ì™„ë£Œëœ ë³´ìƒ ìˆ˜ë ¹ì„ ì²˜ë¦¬í•œë‹¤.
     private void OnLocationClicked(string location, float duration)
     {
         GatheringTimer timer = GatheringTimer.Instance;
 
         if (timer == null)
         {
-            Debug.LogError("GatheringTimer°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogError("GatheringTimerê°€ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // Ã¤Áı ¿Ï·á »óÅÂ
-        // ¿Ï·áµÈ Àå¼ÒÀÇ ¹öÆ°À» ´Ù½Ã ´©¸£¸é º¸»óÀ» ¼ö·ÉÇÑ´Ù.
+        // ì±„ì§‘ ì™„ë£Œ ìƒíƒœ
+        // ì™„ë£Œëœ ì¥ì†Œì˜ ë²„íŠ¼ì„ ë‹¤ì‹œ ëˆ„ë¥´ë©´ ë³´ìƒì„ ìˆ˜ë ¹í•œë‹¤.
         if (timer.IsComplete)
         {
             if (timer.CurrentLocation == location)
@@ -73,17 +73,17 @@ public class GatheringTimerUI : MonoBehaviour
             return;
         }
 
-        // ÀÌ¹Ì Ã¤Áı ÁßÀÌ¶ó¸é »õ·Î¿î Ã¤Áı ½ÃÀÛ ºÒ°¡
-        // ÇÑ ¹ø¿¡ ÇÏ³ªÀÇ Ã¤Áı¸¸ ÁøÇàÇÒ ¼ö ÀÖ´Ù.
+        // ì´ë¯¸ ì±„ì§‘ ì¤‘ì´ë¼ë©´ ìƒˆë¡œìš´ ì±„ì§‘ ì‹œì‘ ë¶ˆê°€
+        // í•œ ë²ˆì— í•˜ë‚˜ì˜ ì±„ì§‘ë§Œ ì§„í–‰í•  ìˆ˜ ìˆë‹¤.
         if (timer.IsGathering)
             return;
 
-        // ½£¿¡¼­¸¸ Ã¤Áı ½ÃÀÛ °¡´É
-        // ÇÊµå¿¡ ÀÖ´Â µ¿¾È¿¡¸¸ »õ·Î¿î Ã¤ÁıÀ» ½ÃÀÛÇÏµµ·Ï Á¦ÇÑÇÑ´Ù.
+        // ìˆ²ì—ì„œë§Œ ì±„ì§‘ ì‹œì‘ ê°€ëŠ¥
+        // í•„ë“œì— ìˆëŠ” ë™ì•ˆì—ë§Œ ìƒˆë¡œìš´ ì±„ì§‘ì„ ì‹œì‘í•˜ë„ë¡ ì œí•œí•œë‹¤.
         if (FieldSceneManager.Instance == null ||
             !FieldSceneManager.Instance.IsInField)
         {
-            Debug.LogWarning("½£¿¡¼­¸¸ Ã¤ÁıÇÒ ¼ö ÀÖ½À´Ï´Ù.");
+            Debug.LogWarning("ìˆ²ì—ì„œë§Œ ì±„ì§‘í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -91,7 +91,7 @@ public class GatheringTimerUI : MonoBehaviour
         RefreshUI();
     }
 
-    // ³× Àå¼ÒÀÇ ¹öÆ° Ç¥½Ã »óÅÂ¸¦ ÇÑ ¹ø¿¡ °»½ÅÇÑ´Ù.
+    // ë„¤ ì¥ì†Œì˜ ë²„íŠ¼ í‘œì‹œ ìƒíƒœë¥¼ í•œ ë²ˆì— ê°±ì‹ í•œë‹¤.
     private void RefreshUI()
     {
         GatheringTimer timer = GatheringTimer.Instance;
@@ -99,21 +99,21 @@ public class GatheringTimerUI : MonoBehaviour
         if (timer == null)
             return;
 
-        // ¹öÆ°¿¡ Ç¥½ÃµÇ´Â ½Ã°£ ¹®±¸´Â ½ÇÁ¦ ½ÃÀÛ ½Ã°£(10ÃÊ)°ú º°µµ·Î ÁöÁ¤µÇ¾î ÀÖ´Ù.
+        // ë²„íŠ¼ì— í‘œì‹œë˜ëŠ” ì‹œê°„ ë¬¸êµ¬ëŠ” ì‹¤ì œ ì‹œì‘ ì‹œê°„(10ì´ˆ)ê³¼ ë³„ë„ë¡œ ì§€ì •ë˜ì–´ ìˆë‹¤.
         UpdateLocationButton(
-            yardButton, yardText, "¸¶´ç", "15ºĞ");
+            yardButton, yardText, "ë§ˆë‹¹", "15ë¶„");
 
         UpdateLocationButton(
-            streamButton, streamText, "°³¿ï°¡", "30ºĞ");
+            streamButton, streamText, "ê°œìš¸ê°€", "30ë¶„");
 
         UpdateLocationButton(
-            fieldButton, fieldText, "µéÆÇ", "1½Ã°£");
+            fieldButton, fieldText, "ë“¤íŒ", "1ì‹œê°„");
 
         UpdateLocationButton(
-            lakesideButton, lakesideText, "È£¼ı°¡", "6½Ã°£");
+            lakesideButton, lakesideText, "í˜¸ìˆ«ê°€", "6ì‹œê°„");
     }
 
-    // ÇöÀç Àå¼Ò¿Í Ã¤Áı »óÅÂ¿¡ µû¶ó ¹öÆ° ¹®±¸ ¹× Å¬¸¯ °¡´É ¿©ºÎ¸¦ °áÁ¤ÇÑ´Ù.
+    // í˜„ì¬ ì¥ì†Œì™€ ì±„ì§‘ ìƒíƒœì— ë”°ë¼ ë²„íŠ¼ ë¬¸êµ¬ ë° í´ë¦­ ê°€ëŠ¥ ì—¬ë¶€ë¥¼ ê²°ì •í•œë‹¤.
     private void UpdateLocationButton(
         Button button,
         TMP_Text buttonText,
@@ -125,12 +125,12 @@ public class GatheringTimerUI : MonoBehaviour
         if (timer == null)
             return;
 
-        // ÇöÀç ÁøÇà ¶Ç´Â ¿Ï·áµÈ Ã¤ÁıÀÇ Àå¼Ò¿Í ÇØ´ç ¹öÆ°ÀÇ Àå¼Ò¸¦ ºñ±³ÇÑ´Ù.
+        // í˜„ì¬ ì§„í–‰ ë˜ëŠ” ì™„ë£Œëœ ì±„ì§‘ì˜ ì¥ì†Œì™€ í•´ë‹¹ ë²„íŠ¼ì˜ ì¥ì†Œë¥¼ ë¹„êµí•œë‹¤.
         bool isCurrentLocation =
             timer.CurrentLocation == location;
 
-        // ÁøÇà Áß¿¡´Â ¸ğµç Àå¼Ò ¹öÆ°À» Àá±×°í ÇØ´ç Àå¼Ò¿¡ ³²Àº ½Ã°£À» Ç¥½ÃÇÑ´Ù.
-        // Ã¤Áı ÁøÇà Áß
+        // ì§„í–‰ ì¤‘ì—ëŠ” ëª¨ë“  ì¥ì†Œ ë²„íŠ¼ì„ ì ê·¸ê³  í•´ë‹¹ ì¥ì†Œì— ë‚¨ì€ ì‹œê°„ì„ í‘œì‹œí•œë‹¤.
+        // ì±„ì§‘ ì§„í–‰ ì¤‘
         if (timer.IsGathering)
         {
             if (isCurrentLocation)
@@ -151,13 +151,13 @@ public class GatheringTimerUI : MonoBehaviour
             return;
         }
 
-        // ¿Ï·á ½Ã ÇØ´ç Àå¼ÒÀÇ ¹öÆ°¸¸ º¸»ó ¼ö·É¿ëÀ¸·Î È°¼ºÈ­ÇÑ´Ù.
-        // Ã¤Áı ¿Ï·á
+        // ì™„ë£Œ ì‹œ í•´ë‹¹ ì¥ì†Œì˜ ë²„íŠ¼ë§Œ ë³´ìƒ ìˆ˜ë ¹ìš©ìœ¼ë¡œ í™œì„±í™”í•œë‹¤.
+        // ì±„ì§‘ ì™„ë£Œ
         if (timer.IsComplete)
         {
             if (isCurrentLocation)
             {
-                buttonText.text = "º¸»ó ¼ö·É";
+                buttonText.text = "ë³´ìƒ ìˆ˜ë ¹";
                 button.interactable = true;
             }
             else
@@ -171,15 +171,15 @@ public class GatheringTimerUI : MonoBehaviour
             return;
         }
 
-        // ´ë±â Áß¿¡´Â ¸ğµç Àå¼Ò ¹öÆ°À» ´Ù½Ã ¼±ÅÃÇÒ ¼ö ÀÖ°Ô ÇÑ´Ù.
-        // Ã¤Áı ´ë±â »óÅÂ
+        // ëŒ€ê¸° ì¤‘ì—ëŠ” ëª¨ë“  ì¥ì†Œ ë²„íŠ¼ì„ ë‹¤ì‹œ ì„ íƒí•  ìˆ˜ ìˆê²Œ í•œë‹¤.
+        // ì±„ì§‘ ëŒ€ê¸° ìƒíƒœ
         buttonText.text =
             $"{location} ({durationLabel})";
 
         button.interactable = true;
     }
 
-    // ³²Àº ÃÊ¸¦ ¿Ã¸² Ã³¸®ÇÏ¿© ½Ã:ºĞ:ÃÊ(00:00:00) Çü½ÄÀ¸·Î º¯È¯ÇÑ´Ù.
+    // ë‚¨ì€ ì´ˆë¥¼ ì˜¬ë¦¼ ì²˜ë¦¬í•˜ì—¬ ì‹œ:ë¶„:ì´ˆ(00:00:00) í˜•ì‹ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
     private string FormatTime(float time)
     {
         int totalSeconds = Mathf.CeilToInt(time);

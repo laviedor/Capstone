@@ -2,23 +2,23 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// ÇÃ·¹ÀÌ¾î°¡ °¡±îÀÌ¿¡¼­ F Å°¸¦ ´©¸£¸é Áı ÀÔÀå ¶Ç´Â ÅğÀåÀ» ¿äÃ»ÇÑ´Ù.
+// í”Œë ˆì´ì–´ê°€ ê°€ê¹Œì´ì—ì„œ F í‚¤ë¥¼ ëˆ„ë¥´ë©´ ì§‘ ì…ì¥ ë˜ëŠ” í‡´ì¥ì„ ìš”ì²­í•œë‹¤.
 public class HouseInteraction : MonoBehaviour
 {
-    [Header("ÇÃ·¹ÀÌ¾î")]
-    // »óÈ£ÀÛ¿ë °Å¸®¸¦ °è»êÇÒ ÇÃ·¹ÀÌ¾î Transform.
+    [Header("í”Œë ˆì´ì–´")]
+    // ìƒí˜¸ì‘ìš© ê±°ë¦¬ë¥¼ ê³„ì‚°í•  í”Œë ˆì´ì–´ Transform.
     [SerializeField] private Transform player;
 
-    [Header("»óÈ£ÀÛ¿ë °Å¸®")]
-    // »óÈ£ÀÛ¿ëÀÌ Çã¿ëµÇ´Â ÃÖ´ë °Å¸®(¿ùµå ´ÜÀ§).
+    [Header("ìƒí˜¸ì‘ìš© ê±°ë¦¬")]
+    // ìƒí˜¸ì‘ìš©ì´ í—ˆìš©ë˜ëŠ” ìµœëŒ€ ê±°ë¦¬(ì›”ë“œ ë‹¨ìœ„).
     [SerializeField] private float interactionDistance = 1.5f;
 
-    [Header("»óÈ£ÀÛ¿ë Á¾·ù")]
-    // true¸é ÅğÀå ÁöÁ¡, false¸é ÀÔÀå ÁöÁ¡À¸·Î µ¿ÀÛÇÑ´Ù.
+    [Header("ìƒí˜¸ì‘ìš© ì¢…ë¥˜")]
+    // trueë©´ í‡´ì¥ ì§€ì , falseë©´ ì…ì¥ ì§€ì ìœ¼ë¡œ ë™ì‘í•œë‹¤.
     [SerializeField] private bool isExitPoint = false;
 
 
-    // ÇÃ·¹ÀÌ¾î ÂüÁ¶°¡ ºñ¾î ÀÖ´Ù¸é HouseSceneManager¿¡¼­ °¡Á®¿Â´Ù.
+    // í”Œë ˆì´ì–´ ì°¸ì¡°ê°€ ë¹„ì–´ ìˆë‹¤ë©´ HouseSceneManagerì—ì„œ ê°€ì ¸ì˜¨ë‹¤.
     private void Start()
     {
         if (player == null && HouseSceneManager.Instance != null)
@@ -26,44 +26,44 @@ public class HouseInteraction : MonoBehaviour
             player = HouseSceneManager.Instance.Player;
         }
     }
-    // ¸Å ÇÁ·¹ÀÓ F Å° ÀÔ·Â°ú ÇÃ·¹ÀÌ¾î °Å¸® ¹× ÇöÀç À§Ä¡ »óÅÂ¸¦ È®ÀÎÇÑ´Ù.
+    // ë§¤ í”„ë ˆì„ F í‚¤ ì…ë ¥ê³¼ í”Œë ˆì´ì–´ ê±°ë¦¬ ë° í˜„ì¬ ìœ„ì¹˜ ìƒíƒœë¥¼ í™•ì¸í•œë‹¤.
     private void Update()
     {
-        // Å°º¸µå ÀåÄ¡°¡ ¾øÀ¸¸é ÀÔ·Â °Ë»ç¸¦ ÁøÇàÇÏÁö ¾Ê´Â´Ù.
+        // í‚¤ë³´ë“œ ì¥ì¹˜ê°€ ì—†ìœ¼ë©´ ì…ë ¥ ê²€ì‚¬ë¥¼ ì§„í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
         if (Keyboard.current == null)
             return;
 
-        // F Å°¸¦ ´©¸¥ ÇÁ·¹ÀÓ¿¡¸¸ »óÈ£ÀÛ¿ëÀ» Ã³¸®ÇÑ´Ù.
+        // F í‚¤ë¥¼ ëˆ„ë¥¸ í”„ë ˆì„ì—ë§Œ ìƒí˜¸ì‘ìš©ì„ ì²˜ë¦¬í•œë‹¤.
         if (!Keyboard.current.fKey.wasPressedThisFrame)
             return;
 
-        // ÇÊ¿äÇÑ ÂüÁ¶°¡ ¾øÀ¸¸é °Å¸® °è»êÀÌ³ª ¾À ÀÌµ¿À» ½ÃµµÇÏÁö ¾Ê´Â´Ù.
+        // í•„ìš”í•œ ì°¸ì¡°ê°€ ì—†ìœ¼ë©´ ê±°ë¦¬ ê³„ì‚°ì´ë‚˜ ì”¬ ì´ë™ì„ ì‹œë„í•˜ì§€ ì•ŠëŠ”ë‹¤.
         if (player == null || HouseSceneManager.Instance == null)
             return;
 
-        // ÇÃ·¹ÀÌ¾î¿Í »óÈ£ÀÛ¿ë ´ë»ó »çÀÌÀÇ °Å¸®
+        // í”Œë ˆì´ì–´ì™€ ìƒí˜¸ì‘ìš© ëŒ€ìƒ ì‚¬ì´ì˜ ê±°ë¦¬
         float distance = Vector2.Distance(
             player.position,
             transform.position
         );
 
-        // ÇÃ·¹ÀÌ¾î°¡ Çã¿ë °Å¸®º¸´Ù ¸Ö¸é »óÈ£ÀÛ¿ëÀ» Ãë¼ÒÇÑ´Ù.
+        // í”Œë ˆì´ì–´ê°€ í—ˆìš© ê±°ë¦¬ë³´ë‹¤ ë©€ë©´ ìƒí˜¸ì‘ìš©ì„ ì·¨ì†Œí•œë‹¤.
         if (distance > interactionDistance)
             return;
 
-        // ÅğÀå ÁöÁ¡Àº ÇöÀç Áı ³»ºÎ¿¡ ÀÖÀ» ¶§¸¸ ExitHouse¸¦ È£ÃâÇÑ´Ù.
+        // í‡´ì¥ ì§€ì ì€ í˜„ì¬ ì§‘ ë‚´ë¶€ì— ìˆì„ ë•Œë§Œ ExitHouseë¥¼ í˜¸ì¶œí•œë‹¤.
         if (isExitPoint)
         {
-            // Áı ³»ºÎ¿¡¼­¸¸ ÅğÀå °¡´É
+            // ì§‘ ë‚´ë¶€ì—ì„œë§Œ í‡´ì¥ ê°€ëŠ¥
             if (HouseSceneManager.Instance.IsInsideHouse)
             {
                 HouseSceneManager.Instance.ExitHouse();
             }
         }
-        // ÀÔÀå ÁöÁ¡Àº ÇöÀç Áı ¹Û¿¡ ÀÖÀ» ¶§¸¸ EnterHouse¸¦ È£ÃâÇÑ´Ù.
+        // ì…ì¥ ì§€ì ì€ í˜„ì¬ ì§‘ ë°–ì— ìˆì„ ë•Œë§Œ EnterHouseë¥¼ í˜¸ì¶œí•œë‹¤.
         else
         {
-            // ¸¶À»¿¡¼­¸¸ ÀÔÀå °¡´É
+            // ë§ˆì„ì—ì„œë§Œ ì…ì¥ ê°€ëŠ¥
             if (!HouseSceneManager.Instance.IsInsideHouse)
             {
                 HouseSceneManager.Instance.EnterHouse();

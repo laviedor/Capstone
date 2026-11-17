@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
-// °Ç¼³ ¸ñ·Ï¿¡ µî·ÏÇÒ °Ç¹° µ¥ÀÌÅÍ¿Í ÇÁ¸®ÆÕÀ» ÇÑ ½ÖÀ¸·Î ÀúÀåÇÑ´Ù.
+// ê±´ì„¤ ëª©ë¡ì— ë“±ë¡í•  ê±´ë¬¼ ë°ì´í„°ì™€ í”„ë¦¬íŒ¹ì„ í•œ ìŒìœ¼ë¡œ ì €ì¥í•œë‹¤.
 public class ConstructionBuildingEntry
 {
     public BuildingData buildingData;
     public GameObject buildingPrefab;
 }
 
-// ÀÏ¹İ °Ç¹° Ä«µå¿Í º¸À¯ ÁßÀÎ Àå½Ä Ä«µå¸¦ °Ç¼³ ¸ñ·Ï¿¡ »ı¼ºÇÏ°í °»½ÅÇÑ´Ù.
+// ì¼ë°˜ ê±´ë¬¼ ì¹´ë“œì™€ ë³´ìœ  ì¤‘ì¸ ì¥ì‹ ì¹´ë“œë¥¼ ê±´ì„¤ ëª©ë¡ì— ìƒì„±í•˜ê³  ê°±ì‹ í•œë‹¤.
 public class ConstructionListUI : MonoBehaviour
 {
     [Header("Building List")]
@@ -25,6 +25,11 @@ public class ConstructionListUI : MonoBehaviour
     [SerializeField] private Transform content;
     [SerializeField] private BuildingCardUI buildingCardPrefab;
 
+    // ë””ìì¸ ê°œí¸ìœ¼ë¡œ ì¶”ê°€ëœ ìƒì„¸ íŒ¨ë„ê³¼ ë¶„ë¥˜ ì¹© (ì—†ì–´ë„ ë™ì‘í•œë‹¤)
+    [Header("Cozy Style (optional)")]
+    [SerializeField] private ConstructionDetailUI detailUI;
+    [SerializeField] private ChipGroupUI categoryChips;
+
     [Header("System References")]
     [SerializeField] private BuildingPlacement buildingPlacement;
     [SerializeField] private InventoryUI inventoryUI;
@@ -34,17 +39,29 @@ public class ConstructionListUI : MonoBehaviour
         decorationCards =
         new Dictionary<BuildingData, BuildingCardUI>();
 
-    // ÀÌº¥Æ®¸¦ ±¸µ¶ ÁßÀÎ ÀÎº¥Åä¸®¸¦ ±â·ÏÇØ Áßº¹ ±¸µ¶À» ÇÇÇÑ´Ù.
+    // ì´ë²¤íŠ¸ë¥¼ êµ¬ë… ì¤‘ì¸ ì¸ë²¤í† ë¦¬ë¥¼ ê¸°ë¡í•´ ì¤‘ë³µ êµ¬ë…ì„ í”¼í•œë‹¤.
     private DecorationInventory subscribedInventory;
 
-    // È°¼ºÈ­µÉ ¶§ Àå½Ä ÀÎº¥Åä¸® ÀÌº¥Æ®¸¦ ±¸µ¶ÇÏ°í Àå½Ä Ä«µå¸¦ °»½ÅÇÑ´Ù.
+    // ì¼ë°˜ ê±´ë¬¼ ì¹´ë“œ ëª©ë¡ (ë¶„ë¥˜ í•„í„°ìš©)
+    private readonly List<BuildingCardUI> buildingCards =
+        new List<BuildingCardUI>();
+
+    private bool chipsSubscribed;
+
+    // í™œì„±í™”ë  ë•Œ ì¥ì‹ ì¸ë²¤í† ë¦¬ ì´ë²¤íŠ¸ë¥¼ êµ¬ë…í•˜ê³  ì¥ì‹ ì¹´ë“œë¥¼ ê°±ì‹ í•œë‹¤.
     private void OnEnable()
     {
+        if (categoryChips != null && !chipsSubscribed)
+        {
+            categoryChips.OnSelected += _ => ApplyFilter();
+            chipsSubscribed = true;
+        }
+
         SubscribeInventory();
         RefreshDecorationCards();
     }
 
-    // ÃÊ±â ÀÏ¹İ °Ç¹° ¸ñ·ÏÀ» ¸¸µé°í Àå½Ä ¸ñ·ÏÀ» µ¿±âÈ­ÇÑ´Ù.
+    // ì´ˆê¸° ì¼ë°˜ ê±´ë¬¼ ëª©ë¡ì„ ë§Œë“¤ê³  ì¥ì‹ ëª©ë¡ì„ ë™ê¸°í™”í•œë‹¤.
     private void Start()
     {
         CreateBuildingList();
@@ -52,7 +69,7 @@ public class ConstructionListUI : MonoBehaviour
         RefreshDecorationCards();
     }
 
-    // ºñÈ°¼ºÈ­ ½Ã ÀÎº¥Åä¸® º¯°æ ÀÌº¥Æ® ¿¬°áÀ» ÇØÁ¦ÇÑ´Ù.
+    // ë¹„í™œì„±í™” ì‹œ ì¸ë²¤í† ë¦¬ ë³€ê²½ ì´ë²¤íŠ¸ ì—°ê²°ì„ í•´ì œí•œë‹¤.
     private void OnDisable()
     {
         if (subscribedInventory != null)
@@ -62,7 +79,7 @@ public class ConstructionListUI : MonoBehaviour
         }
     }
 
-    // ÇöÀç Àå½Ä ÀÎº¥Åä¸®ÀÇ º¯°æ ÀÌº¥Æ®¸¦ Áßº¹ ¾øÀÌ ±¸µ¶ÇÑ´Ù.
+    // í˜„ì¬ ì¥ì‹ ì¸ë²¤í† ë¦¬ì˜ ë³€ê²½ ì´ë²¤íŠ¸ë¥¼ ì¤‘ë³µ ì—†ì´ êµ¬ë…í•œë‹¤.
     private void SubscribeInventory()
     {
         DecorationInventory inventory = DecorationInventory.Instance;
@@ -77,7 +94,7 @@ public class ConstructionListUI : MonoBehaviour
         subscribedInventory.OnInventoryChanged += RefreshDecorationCards;
     }
 
-    // ±âÁ¸ Ä«µå¸¦ ºñ¿î ÈÄ µî·ÏµÈ ÀÏ¹İ °Ç¹° µ¥ÀÌÅÍ·Î »õ Ä«µå¸¦ »ı¼ºÇÑ´Ù.
+    // ê¸°ì¡´ ì¹´ë“œë¥¼ ë¹„ìš´ í›„ ë“±ë¡ëœ ì¼ë°˜ ê±´ë¬¼ ë°ì´í„°ë¡œ ìƒˆ ì¹´ë“œë¥¼ ìƒì„±í•œë‹¤.
     private void CreateBuildingList()
     {
         if (content == null ||
@@ -86,22 +103,23 @@ public class ConstructionListUI : MonoBehaviour
             inventoryUI == null ||
             buildingModeManager == null)
         {
-            Debug.LogError("°Ç¹° ¸ñ·Ï UI ¿¬°áÀÌ ´©¶ôµÇ¾ú½À´Ï´Ù.");
+            Debug.LogError("ê±´ë¬¼ ëª©ë¡ UI ì—°ê²°ì´ ëˆ„ë½ë˜ì—ˆìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // ±âÁ¸ Ä«µå ÃÊ±âÈ­
+        // ê¸°ì¡´ ì¹´ë“œ ì´ˆê¸°í™”
         foreach (Transform child in content)
         {
             Destroy(child.gameObject);
         }
 
         decorationCards.Clear();
+        buildingCards.Clear();
 
         if (availableBuildings == null)
             return;
 
-        // ±âÁ¸ °Ç¹° Ä«µå »ı¼º
+        // ê¸°ì¡´ ê±´ë¬¼ ì¹´ë“œ ìƒì„±
         foreach (ConstructionBuildingEntry entry in availableBuildings)
         {
             if (entry == null ||
@@ -116,7 +134,7 @@ public class ConstructionListUI : MonoBehaviour
                 building.Data != entry.buildingData)
             {
                 Debug.LogWarning(
-                    "°Ç¹° µ¥ÀÌÅÍ¿Í PrefabÀÌ ÀÏÄ¡ÇÏÁö ¾Ê½À´Ï´Ù: " +
+                    "ê±´ë¬¼ ë°ì´í„°ì™€ Prefabì´ ì¼ì¹˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤: " +
                     entry.buildingData.buildingName
                 );
                 continue;
@@ -132,14 +150,19 @@ public class ConstructionListUI : MonoBehaviour
                 inventoryUI,
                 buildingModeManager
             );
+
+            card.SetDetailPanel(detailUI);
+            buildingCards.Add(card);
         }
+
+        ApplyFilter();
     }
 
-    // ÇöÀç º¸À¯ Àå½Ä°ú Ä«µå ¸ñ·ÏÀ» ºñ±³ÇØ »ç¶óÁø Ä«µå¸¦ Á¦°ÅÇÏ°í »õ Ä«µå¸¦ Ãß°¡ÇÑ´Ù.
+    // í˜„ì¬ ë³´ìœ  ì¥ì‹ê³¼ ì¹´ë“œ ëª©ë¡ì„ ë¹„êµí•´ ì‚¬ë¼ì§„ ì¹´ë“œë¥¼ ì œê±°í•˜ê³  ìƒˆ ì¹´ë“œë¥¼ ì¶”ê°€í•œë‹¤.
     public void RefreshDecorationCards()
     {
         //
-        Debug.Log("µ¥ÄÚ·¹ÀÌ¼Ç ¸ñ·Ï °»½Å È£ÃâµÊ");
+        Debug.Log("ë°ì½”ë ˆì´ì…˜ ëª©ë¡ ê°±ì‹  í˜¸ì¶œë¨");
 
         Debug.Log("Inventory: " + (DecorationInventory.Instance != null));
         Debug.Log("Database: " + (decorationDatabase != null));
@@ -157,13 +180,13 @@ public class ConstructionListUI : MonoBehaviour
             DecorationInventory.Instance.GetOwnedDecorations();
 
         //
-        Debug.Log("º¸À¯ µ¥ÄÚ·¹ÀÌ¼Ç Á¾·ù ¼ö: " + ownedDecorations.Count);
+        Debug.Log("ë³´ìœ  ë°ì½”ë ˆì´ì…˜ ì¢…ë¥˜ ìˆ˜: " + ownedDecorations.Count);
         //
 
         HashSet<BuildingData> ownedSet =
             new HashSet<BuildingData>(ownedDecorations);
 
-        // º¸À¯ ¼ö·® 0°³ÀÎ Ä«µå Á¦°Å
+        // ë³´ìœ  ìˆ˜ëŸ‰ 0ê°œì¸ ì¹´ë“œ ì œê±°
         List<BuildingData> removeList =
             new List<BuildingData>();
 
@@ -181,7 +204,7 @@ public class ConstructionListUI : MonoBehaviour
             decorationCards.Remove(data);
         }
 
-        // »õ·Ó°Ô È¹µæÇÑ µ¥ÄÚ·¹ÀÌ¼Ç Ä«µå »ı¼º
+        // ìƒˆë¡­ê²Œ íšë“í•œ ë°ì½”ë ˆì´ì…˜ ì¹´ë“œ ìƒì„±
         foreach (BuildingData data in ownedDecorations)
         {
             if (decorationCards.ContainsKey(data))
@@ -193,7 +216,7 @@ public class ConstructionListUI : MonoBehaviour
             if (prefab == null)
             {
                 Debug.LogWarning(
-                    "µ¥ÄÚ·¹ÀÌ¼Ç PrefabÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù: " +
+                    "ë°ì½”ë ˆì´ì…˜ Prefabì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤: " +
                     data.buildingName
                 );
                 continue;
@@ -204,7 +227,7 @@ public class ConstructionListUI : MonoBehaviour
             if (building == null || building.Data != data)
             {
                 Debug.LogWarning(
-                    "µ¥ÄÚ·¹ÀÌ¼Ç µ¥ÀÌÅÍ¿Í PrefabÀÌ ÀÏÄ¡ÇÏÁö ¾Ê½À´Ï´Ù: " +
+                    "ë°ì½”ë ˆì´ì…˜ ë°ì´í„°ì™€ Prefabì´ ì¼ì¹˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤: " +
                     data.buildingName
                 );
                 continue;
@@ -221,7 +244,60 @@ public class ConstructionListUI : MonoBehaviour
                 buildingModeManager
             );
 
+            card.SetDetailPanel(detailUI);
             decorationCards.Add(data, card);
         }
+
+        ApplyFilter();
+    }
+
+    // ë¶„ë¥˜ ì¹©ì— ë§ëŠ” ì¹´ë“œë§Œ ë³´ì—¬ ì£¼ê³ , ì„ íƒì´ ì—†ìœ¼ë©´ ì²« ì¹´ë“œë¥¼ ì„ íƒí•œë‹¤.
+    // 0: ì „ì²´, 1: ìƒì‚°, 2: íŠ¹ìˆ˜, 3: ì¥ì‹
+    private void ApplyFilter()
+    {
+        int filter = categoryChips != null ? categoryChips.Selected : 0;
+
+        foreach (BuildingCardUI card in buildingCards)
+            SetCardVisible(card, filter);
+
+        foreach (BuildingCardUI card in decorationCards.Values)
+            SetCardVisible(card, filter);
+
+        if (detailUI == null)
+            return;
+
+        detailUI.ClearIfHidden();
+
+        if (detailUI.SelectedCard != null)
+            return;
+
+        foreach (Transform child in content)
+        {
+            BuildingCardUI card = child.GetComponent<BuildingCardUI>();
+
+            if (card != null && card.gameObject.activeSelf && card.Data != null)
+            {
+                detailUI.Select(card);
+                break;
+            }
+        }
+    }
+
+    private static void SetCardVisible(BuildingCardUI card, int filter)
+    {
+        if (card == null || card.Data == null)
+            return;
+
+        bool visible;
+
+        switch (filter)
+        {
+            case 1: visible = card.Data.buildingType == BuildingType.Production; break;
+            case 2: visible = card.Data.buildingType == BuildingType.Special; break;
+            case 3: visible = card.Data.buildingType == BuildingType.Decoration; break;
+            default: visible = true; break;
+        }
+
+        card.gameObject.SetActive(visible);
     }
 }

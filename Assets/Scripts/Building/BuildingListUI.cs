@@ -1,16 +1,16 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// ½ºÅ©¸³Æ® ¼³¸í: °Ç¹° ¸ñ·Ï ÆĞ³ÎÀÇ Ç¥½Ã »óÅÂ¸¦ °ü¸®ÇÑ´Ù.
+// ìŠ¤í¬ë¦½íŠ¸ ì„¤ëª…: ê±´ë¬¼ ëª©ë¡ íŒ¨ë„ì˜ í‘œì‹œ ìƒíƒœë¥¼ ê´€ë¦¬í•œë‹¤.
 public class BuildingListUI : MonoBehaviour
 {
     [Header("References")]
-    // º¯¼ö ¼³¸í: °Ç¹° ¸ñ·ÏÀ» Ç¥½ÃÇÏ´Â UI ÆĞ³Î
+    // ë³€ìˆ˜ ì„¤ëª…: ê±´ë¬¼ ëª©ë¡ì„ í‘œì‹œí•˜ëŠ” UI íŒ¨ë„
     [SerializeField] private GameObject buildingListPanel;
-    // º¯¼ö ¼³¸í: ÇöÀç °Ç¼³ ¸ğµå ¹× ¼±ÅÃ µµ±¸¸¦ °ü¸®ÇÏ´Â ÄÄÆ÷³ÍÆ®
+    // ë³€ìˆ˜ ì„¤ëª…: í˜„ì¬ ê±´ì„¤ ëª¨ë“œ ë° ì„ íƒ ë„êµ¬ë¥¼ ê´€ë¦¬í•˜ëŠ” ì»´í¬ë„ŒíŠ¸
     [SerializeField] private BuildingModeManager buildingModeManager;
 
-    // ¼Ó¼º ¼³¸í: ÇöÀç UI ÆĞ³ÎÀÌ ¿­·Á ÀÖ´ÂÁö ¿ÜºÎ¿¡¼­ È®ÀÎÇÒ ¼ö ÀÖ´Ù.
+    // ì†ì„± ì„¤ëª…: í˜„ì¬ UI íŒ¨ë„ì´ ì—´ë ¤ ìˆëŠ”ì§€ ì™¸ë¶€ì—ì„œ í™•ì¸í•  ìˆ˜ ìˆë‹¤.
     public bool IsOpen
     {
         get
@@ -20,7 +20,7 @@ public class BuildingListUI : MonoBehaviour
         }
     }
 
-    // ÇÔ¼ö ¼³¸í: ½ÃÀÛÇÒ ¶§ °Ç¹° ¸ñ·Ï ÆĞ³ÎÀ» ´İ¾Æ ÃÊ±â »óÅÂ¸¦ ¼³Á¤ÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ì‹œì‘í•  ë•Œ ê±´ë¬¼ ëª©ë¡ íŒ¨ë„ì„ ë‹«ì•„ ì´ˆê¸° ìƒíƒœë¥¼ ì„¤ì •í•œë‹¤.
     private void Start()
     {
         if (buildingListPanel != null)
@@ -29,27 +29,27 @@ public class BuildingListUI : MonoBehaviour
         }
     }
 
-    // ÇÔ¼ö ¼³¸í: °Ç¼³ ¸ğµå »óÅÂ¸¦ È®ÀÎÇÏ°í OÅ°·Î °Ç¹° ¸ñ·Ï Ç¥½Ã¸¦ ÀüÈ¯ÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ê±´ì„¤ ëª¨ë“œ ìƒíƒœë¥¼ í™•ì¸í•˜ê³  Oí‚¤ë¡œ ê±´ë¬¼ ëª©ë¡ í‘œì‹œë¥¼ ì „í™˜í•œë‹¤.
     private void Update()
     {
         if (buildingModeManager == null)
             return;
 
-        // °Ç¼³ ¸ğµå°¡ ¾Æ´Ï¸é ¸ñ·ÏÀ» ´İÀ½
+        // ê±´ì„¤ ëª¨ë“œê°€ ì•„ë‹ˆë©´ ëª©ë¡ì„ ë‹«ìŒ
         if (!buildingModeManager.IsBuildMode)
         {
             Close();
             return;
         }
 
-        // OÅ°·Î °Ç¹° ¸ñ·Ï ¿­±â / ´İ±â
+        // Oí‚¤ë¡œ ê±´ë¬¼ ëª©ë¡ ì—´ê¸° / ë‹«ê¸°
         if (Keyboard.current.oKey.wasPressedThisFrame)
         {
             Toggle();
         }
     }
 
-    // ÇÔ¼ö ¼³¸í: ÇöÀç ¸ñ·Ï ÆĞ³ÎÀÇ È°¼ºÈ­ »óÅÂ¸¦ ¹İÀüÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: í˜„ì¬ ëª©ë¡ íŒ¨ë„ì˜ í™œì„±í™” ìƒíƒœë¥¼ ë°˜ì „í•œë‹¤.
     public void Toggle()
     {
         if (buildingListPanel == null)
@@ -60,7 +60,7 @@ public class BuildingListUI : MonoBehaviour
         );
     }
 
-    // ÇÔ¼ö ¼³¸í: °Ç¹° ¸ñ·Ï ÆĞ³ÎÀ» Ç¥½ÃÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ê±´ë¬¼ ëª©ë¡ íŒ¨ë„ì„ í‘œì‹œí•œë‹¤.
     public void Open()
     {
         if (buildingListPanel != null)
@@ -69,7 +69,7 @@ public class BuildingListUI : MonoBehaviour
         }
     }
 
-    // ÇÔ¼ö ¼³¸í: °Ç¹° ¸ñ·Ï ÆĞ³ÎÀ» ¼û±ä´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ê±´ë¬¼ ëª©ë¡ íŒ¨ë„ì„ ìˆ¨ê¸´ë‹¤.
     public void Close()
     {
         if (buildingListPanel != null)

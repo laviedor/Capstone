@@ -1,36 +1,39 @@
 using UnityEngine;
 using TMPro;
 
-// ÇÃ·¹ÀÌ¾î°¡ º¸À¯ÇÑ ³ª¹«¡¤µ¹¡¤°ñµå ¼ö·®À» ÀÎº¥Åä¸® ÅØ½ºÆ®¿¡ Ç¥½ÃÇÑ´Ù.
+// í”Œë ˆì´ì–´ê°€ ë³´ìœ í•œ ë‚˜ë¬´Â·ëŒÂ·ê³¨ë“œ ìˆ˜ëŸ‰ì„ ì¸ë²¤í† ë¦¬ í…ìŠ¤íŠ¸ì— í‘œì‹œí•œë‹¤.
 public class InventoryResourceUI : MonoBehaviour
 {
-    // ÀÚ¿ø º¸À¯·®À» Á¶È¸ÇÒ ÇÃ·¹ÀÌ¾î ÀÚ¿ø °ü¸® ÄÄÆ÷³ÍÆ®
+    // ìì› ë³´ìœ ëŸ‰ì„ ì¡°íšŒí•  í”Œë ˆì´ì–´ ìì› ê´€ë¦¬ ì»´í¬ë„ŒíŠ¸
     [Header("Player Resources")]
     [SerializeField] private PlayerResources playerResources;
 
-    // ÀÚ¿ø Á¾·ùº° Ç¥½Ã¿ë TextMeshPro ÅØ½ºÆ®
+    // ìì› ì¢…ë¥˜ë³„ í‘œì‹œìš© TextMeshPro í…ìŠ¤íŠ¸
     [Header("Resource Texts")]
     [SerializeField] private TMP_Text woodText;
     [SerializeField] private TMP_Text stoneText;
     [SerializeField] private TMP_Text goldText;
 
-    // ¸Å ÇÁ·¹ÀÓ ÃÖ½Å ÀÚ¿ø º¸À¯·®À» UI¿¡ ¹İ¿µÇÑ´Ù.
+    // trueë©´ "ë‚˜ë¬´: 12" ëŒ€ì‹  ìˆ«ìë§Œ í‘œì‹œí•œë‹¤ (ì•„ì´ì½˜ ì˜†ì— ìˆ«ìë¥¼ ë‘ëŠ” ë””ìì¸ìš©)
+    [SerializeField] private bool numbersOnly;
+
+    // ë§¤ í”„ë ˆì„ ìµœì‹  ìì› ë³´ìœ ëŸ‰ì„ UIì— ë°˜ì˜í•œë‹¤.
     private void Update()
     {
-        // ÀÚ¿ø °ü¸® ÄÄÆ÷³ÍÆ®°¡ ¿¬°áµÇÁö ¾Ê¾ÒÀ¸¸é °»½ÅÀ» Áß´ÜÇÑ´Ù.
+        // ìì› ê´€ë¦¬ ì»´í¬ë„ŒíŠ¸ê°€ ì—°ê²°ë˜ì§€ ì•Šì•˜ìœ¼ë©´ ê°±ì‹ ì„ ì¤‘ë‹¨í•œë‹¤.
         if (playerResources == null)
             return;
 
-        // ³ª¹« º¸À¯·® Ç¥½Ã
-        woodText.text = "³ª¹«: " +
+        // ë‚˜ë¬´ ë³´ìœ ëŸ‰ í‘œì‹œ
+        woodText.text = (numbersOnly ? "" : "ë‚˜ë¬´: ") +
             playerResources.GetAmount(ResourceType.Wood);
 
-        // µ¹ º¸À¯·® Ç¥½Ã
-        stoneText.text = "µ¹: " +
+        // ëŒ ë³´ìœ ëŸ‰ í‘œì‹œ
+        stoneText.text = (numbersOnly ? "" : "ëŒ: ") +
             playerResources.GetAmount(ResourceType.Stone);
 
-        // °ñµå º¸À¯·® Ç¥½Ã
-        goldText.text = "°ñµå: " +
+        // ê³¨ë“œ ë³´ìœ ëŸ‰ í‘œì‹œ
+        goldText.text = (numbersOnly ? "" : "ê³¨ë“œ: ") +
             playerResources.GetAmount(ResourceType.Gold);
     }
 }

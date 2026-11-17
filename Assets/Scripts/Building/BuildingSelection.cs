@@ -1,19 +1,19 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// ½ºÅ©¸³Æ® ¼³¸í: ¸¶¿ì½º·Î °Ç¹°À» ¼±ÅÃÇÏ°í ¼±ÅÃ »óÅÂ¸¦ ÀúÀåÇÑ´Ù.
+// ìŠ¤í¬ë¦½íŠ¸ ì„¤ëª…: ë§ˆìš°ìŠ¤ë¡œ ê±´ë¬¼ì„ ì„ íƒí•˜ê³  ì„ íƒ ìƒíƒœë¥¼ ì €ì¥í•œë‹¤.
 public class BuildingSelection : MonoBehaviour
 {
     [Header("Building Mode")]
-    // º¯¼ö ¼³¸í: ÇöÀç °Ç¼³ ¸ğµå ¹× ¼±ÅÃ µµ±¸¸¦ °ü¸®ÇÏ´Â ÄÄÆ÷³ÍÆ®
+    // ë³€ìˆ˜ ì„¤ëª…: í˜„ì¬ ê±´ì„¤ ëª¨ë“œ ë° ì„ íƒ ë„êµ¬ë¥¼ ê´€ë¦¬í•˜ëŠ” ì»´í¬ë„ŒíŠ¸
     [SerializeField] private BuildingModeManager buildingModeManager;
 
     [SerializeField]
-    // º¯¼ö ¼³¸í: Ã¶°Å È®ÀÎÃ¢ÀÇ ¿­¸² ¿©ºÎ¸¦ È®ÀÎÇÏ´Â UI
+    // ë³€ìˆ˜ ì„¤ëª…: ì² ê±° í™•ì¸ì°½ì˜ ì—´ë¦¼ ì—¬ë¶€ë¥¼ í™•ì¸í•˜ëŠ” UI
     private DemolitionConfirmUI demolitionConfirmUI;
 
-    // ÇöÀç ¼±ÅÃµÈ °Ç¹°
-    // º¯¼ö ¼³¸í: ÇöÀç ¼±ÅÃÇÏ°Å³ª Ã¶°Å ´ë»óÀ¸·Î ÁöÁ¤ÇÑ °Ç¹°
+    // í˜„ì¬ ì„ íƒëœ ê±´ë¬¼
+    // ë³€ìˆ˜ ì„¤ëª…: í˜„ì¬ ì„ íƒí•˜ê±°ë‚˜ ì² ê±° ëŒ€ìƒìœ¼ë¡œ ì§€ì •í•œ ê±´ë¬¼
     private Building selectedBuilding;
 
     public Building SelectedBuilding
@@ -22,7 +22,7 @@ public class BuildingSelection : MonoBehaviour
     }
 
 
-    // ÇÔ¼ö ¼³¸í: Ã¶°Å È®ÀÎÃ¢°ú °Ç¼³ ¸ğµå »óÅÂ¸¦ È®ÀÎÇÑ µÚ ÁÂÅ¬¸¯ °Ç¹° ¼±ÅÃÀ» Ã³¸®ÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ì² ê±° í™•ì¸ì°½ê³¼ ê±´ì„¤ ëª¨ë“œ ìƒíƒœë¥¼ í™•ì¸í•œ ë’¤ ì¢Œí´ë¦­ ê±´ë¬¼ ì„ íƒì„ ì²˜ë¦¬í•œë‹¤.
     void Update()
     {
         if (demolitionConfirmUI != null && demolitionConfirmUI.IsOpen)
@@ -30,13 +30,13 @@ public class BuildingSelection : MonoBehaviour
             return;
         }
 
-        // °Ç¼³ ¸ğµå¿¡¼­´Â °Ç¹° ¼±ÅÃÇÏÁö ¾ÊÀ½
+        // ê±´ì„¤ ëª¨ë“œì—ì„œëŠ” ê±´ë¬¼ ì„ íƒí•˜ì§€ ì•ŠìŒ
         if (buildingModeManager != null && buildingModeManager.IsBuildMode)
         {
             return;
         }
 
-        // ÁÂÅ¬¸¯
+        // ì¢Œí´ë¦­
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
             TrySelectBuilding();
@@ -44,7 +44,7 @@ public class BuildingSelection : MonoBehaviour
     }
 
 
-    // ÇÔ¼ö ¼³¸í: Å¬¸¯ÇÑ À§Ä¡ÀÇ Ãæµ¹Ã¼¿¡¼­ BuildingÀ» Ã£´Â´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: í´ë¦­í•œ ìœ„ì¹˜ì˜ ì¶©ëŒì²´ì—ì„œ Buildingì„ ì°¾ëŠ”ë‹¤.
     void TrySelectBuilding()
     {
         Vector2 mouseScreenPosition =
@@ -62,12 +62,12 @@ public class BuildingSelection : MonoBehaviour
             );
 
 
-        // Å¬¸¯ÇÑ À§Ä¡¿¡ Collider2D°¡ ÀÖ´ÂÁö È®ÀÎ
+        // í´ë¦­í•œ ìœ„ì¹˜ì— Collider2Dê°€ ìˆëŠ”ì§€ í™•ì¸
         Collider2D hit =
             Physics2D.OverlapPoint(mousePosition2D);
 
 
-        // ¾Æ¹«°Íµµ Å¬¸¯ÇÏÁö ¾ÊÀ½
+        // ì•„ë¬´ê²ƒë„ í´ë¦­í•˜ì§€ ì•ŠìŒ
         if (hit == null)
         {
             ClearSelection();
@@ -75,12 +75,12 @@ public class BuildingSelection : MonoBehaviour
         }
 
 
-        // Collider°¡ ÀÚ½Ä¿¡ ÀÖ¾îµµ ºÎ¸ğ Building Å½»ö
+        // Colliderê°€ ìì‹ì— ìˆì–´ë„ ë¶€ëª¨ Building íƒìƒ‰
         Building building =
             hit.GetComponentInParent<Building>();
 
 
-        // BuildingÀÌ ¾Æ´Ô
+        // Buildingì´ ì•„ë‹˜
         if (building == null)
         {
             ClearSelection();
@@ -88,30 +88,30 @@ public class BuildingSelection : MonoBehaviour
         }
 
 
-        // °Ç¹° ¼±ÅÃ
+        // ê±´ë¬¼ ì„ íƒ
         SelectBuilding(building);
     }
 
 
-    // ÇÔ¼ö ¼³¸í: ÇöÀç ¼±ÅÃµÈ °Ç¹°À» ÀúÀåÇÏ°í ·Î±×¸¦ Ãâ·ÂÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: í˜„ì¬ ì„ íƒëœ ê±´ë¬¼ì„ ì €ì¥í•˜ê³  ë¡œê·¸ë¥¼ ì¶œë ¥í•œë‹¤.
     void SelectBuilding(Building building)
     {
         selectedBuilding = building;
 
         Debug.Log(
-            "°Ç¹° ¼±ÅÃ : " +
+            "ê±´ë¬¼ ì„ íƒ : " +
             selectedBuilding.Data.buildingName
         );
     }
 
 
-    // ÇÔ¼ö ¼³¸í: °Ç¹° ¼±ÅÃÀ» ÇØÁ¦ÇÏ°í ·Î±×¸¦ Ãâ·ÂÇÑ´Ù.
+    // í•¨ìˆ˜ ì„¤ëª…: ê±´ë¬¼ ì„ íƒì„ í•´ì œí•˜ê³  ë¡œê·¸ë¥¼ ì¶œë ¥í•œë‹¤.
     public void ClearSelection()
     {
         if (selectedBuilding != null)
         {
             Debug.Log(
-                "°Ç¹° ¼±ÅÃ ÇØÁ¦ : " +
+                "ê±´ë¬¼ ì„ íƒ í•´ì œ : " +
                 selectedBuilding.Data.buildingName
             );
         }
