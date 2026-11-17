@@ -25,6 +25,13 @@ public class InventoryUI : MonoBehaviour
     [Header("Construction List")]
     [SerializeField] private ConstructionListUI constructionListUI;
 
+    // 디자인 개편으로 추가된 탭 모양과 닫기 버튼 (없어도 동작한다)
+    [Header("Cozy Style (optional)")]
+    [SerializeField] private TabButtonVisual playerTabVisual;
+    [SerializeField] private TabButtonVisual buildingTabVisual;
+    [SerializeField] private TabButtonVisual fieldTabVisual;
+    [SerializeField] private Button closeButton;
+
     // 현재 인벤토리 열림 여부
     private bool isOpen = false;
 
@@ -38,6 +45,9 @@ public class InventoryUI : MonoBehaviour
         playerTabButton.onClick.AddListener(ShowPlayerPanel);
         buildingTabButton.onClick.AddListener(ShowBuildingPanel);
         fieldTabButton.onClick.AddListener(ShowFieldPanel);
+
+        if (closeButton != null)
+            closeButton.onClick.AddListener(CloseInventory);
 
         // 시작 시 인벤토리 닫기
         isOpen = false;
@@ -82,6 +92,7 @@ public class InventoryUI : MonoBehaviour
         playerPanel.SetActive(true);
         buildingPanel.SetActive(false);
         fieldPanel.SetActive(false);
+        SetTabVisuals(0);
     }
 
     // 건설 패널만 표시하고 보유 데코레이션 카드를 최신 상태로 갱신한다.
@@ -90,6 +101,7 @@ public class InventoryUI : MonoBehaviour
         playerPanel.SetActive(false);
         buildingPanel.SetActive(true);
         fieldPanel.SetActive(false);
+        SetTabVisuals(1);
 
         if (constructionListUI != null)
         {
@@ -103,5 +115,19 @@ public class InventoryUI : MonoBehaviour
         playerPanel.SetActive(false);
         buildingPanel.SetActive(false);
         fieldPanel.SetActive(true);
+        SetTabVisuals(2);
+    }
+
+    // 선택된 탭만 앞으로 나와 보이도록 탭 모양을 갱신한다.
+    private void SetTabVisuals(int index)
+    {
+        if (playerTabVisual != null)
+            playerTabVisual.SetActive(index == 0);
+
+        if (buildingTabVisual != null)
+            buildingTabVisual.SetActive(index == 1);
+
+        if (fieldTabVisual != null)
+            fieldTabVisual.SetActive(index == 2);
     }
 }

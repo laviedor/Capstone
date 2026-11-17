@@ -12,6 +12,11 @@ public class BuildingTabUI : MonoBehaviour
     [SerializeField] private Button constructionButton;
     [SerializeField] private Button managementButton;
 
+    // 선택된 버튼 모양 표시 (없어도 동작한다)
+    [Header("Cozy Style (optional)")]
+    [SerializeField] private TabButtonVisual constructionVisual;
+    [SerializeField] private TabButtonVisual managementVisual;
+
     // 건설/관리 버튼의 클릭 이벤트를 연결한다.
     private void Awake()
     {
@@ -33,6 +38,8 @@ public class BuildingTabUI : MonoBehaviour
 
         if (managementPanel != null)
             managementPanel.SetActive(false);
+
+        SetVisuals(true);
     }
 
     // 관리 패널을 켜고 건설 패널을 숨긴다.
@@ -43,5 +50,17 @@ public class BuildingTabUI : MonoBehaviour
 
         if (managementPanel != null)
             managementPanel.SetActive(true);
+
+        SetVisuals(false);
+    }
+
+    // 건설/관리 버튼의 선택 모양을 갱신한다.
+    private void SetVisuals(bool construction)
+    {
+        if (constructionVisual != null)
+            constructionVisual.SetActive(construction);
+
+        if (managementVisual != null)
+            managementVisual.SetActive(!construction);
     }
 }

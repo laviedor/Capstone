@@ -35,6 +35,9 @@ public class DesktopWindowLayout : MonoBehaviour
     /// <summary>창 크기를 계산해 적용한 뒤 모니터 하단 가운데로 옮긴다.</summary>
     private IEnumerator Start()
     {
+        // 컴패니언 게임은 다른 창을 쓰는 동안에도 계속 돌아가야 한다
+        Application.runInBackground = true;
+
         DisplayInfo display = Screen.mainWindowDisplayInfo;
 
         // 작업표시줄·Dock을 제외한 실제 사용 가능 영역

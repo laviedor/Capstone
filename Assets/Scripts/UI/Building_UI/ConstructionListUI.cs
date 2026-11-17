@@ -25,6 +25,11 @@ public class ConstructionListUI : MonoBehaviour
     [SerializeField] private Transform content;
     [SerializeField] private BuildingCardUI buildingCardPrefab;
 
+    // 디자인 개편으로 추가된 상세 패널과 분류 칩 (없어도 동작한다)
+    [Header("Cozy Style (optional)")]
+    [SerializeField] private ConstructionDetailUI detailUI;
+    [SerializeField] private ChipGroupUI categoryChips;
+
     [Header("System References")]
     [SerializeField] private BuildingPlacement buildingPlacement;
     [SerializeField] private InventoryUI inventoryUI;
@@ -37,9 +42,21 @@ public class ConstructionListUI : MonoBehaviour
     // 이벤트를 구독 중인 인벤토리를 기록해 중복 구독을 피한다.
     private DecorationInventory subscribedInventory;
 
+    // 일반 건물 카드 목록 (분류 필터용)
+    private readonly List<BuildingCardUI> buildingCards =
+        new List<BuildingCardUI>();
+
+    private bool chipsSubscribed;
+
     // 활성화될 때 장식 인벤토리 이벤트를 구독하고 장식 카드를 갱신한다.
     private void OnEnable()
     {
+        if (categoryChips != null && !chipsSubscribed)
+        {
+            categoryChips.OnSelected += _ => ApplyFilter();
+            chipsSubscribed = true;
+        }
+
         SubscribeInventory();
         RefreshDecorationCards();
     }
@@ -97,6 +114,7 @@ public class ConstructionListUI : MonoBehaviour
         }
 
         decorationCards.Clear();
+        buildingCards.Clear();
 
         if (availableBuildings == null)
             return;
@@ -132,7 +150,12 @@ public class ConstructionListUI : MonoBehaviour
                 inventoryUI,
                 buildingModeManager
             );
+
+            card.SetDetailPanel(detailUI);
+            buildingCards.Add(card);
         }
+
+        ApplyFilter();
     }
 
     // 현재 보유 장식과 카드 목록을 비교해 사라진 카드를 제거하고 새 카드를 추가한다.
@@ -221,7 +244,60 @@ public class ConstructionListUI : MonoBehaviour
                 buildingModeManager
             );
 
+            card.SetDetailPanel(detailUI);
             decorationCards.Add(data, card);
         }
+
+        ApplyFilter();
+    }
+
+    // 분류 칩에 맞는 카드만 보여 주고, 선택이 없으면 첫 카드를 선택한다.
+    // 0: 전체, 1: 생산, 2: 특수, 3: 장식
+    private void ApplyFilter()
+    {
+        int filter = categoryChips != null ? categoryChips.Selected : 0;
+
+        foreach (BuildingCardUI card in buildingCards)
+            SetCardVisible(card, filter);
+
+        foreach (BuildingCardUI card in decorationCards.Values)
+            SetCardVisible(card, filter);
+
+        if (detailUI == null)
+            return;
+
+        detailUI.ClearIfHidden();
+
+        if (detailUI.SelectedCard != null)
+            return;
+
+        foreach (Transform child in content)
+        {
+            BuildingCardUI card = child.GetComponent<BuildingCardUI>();
+
+            if (card != null && card.gameObject.activeSelf && card.Data != null)
+            {
+                detailUI.Select(card);
+                break;
+            }
+        }
+    }
+
+    private static void SetCardVisible(BuildingCardUI card, int filter)
+    {
+        if (card == null || card.Data == null)
+            return;
+
+        bool visible;
+
+        switch (filter)
+        {
+            case 1: visible = card.Data.buildingType == BuildingType.Production; break;
+            case 2: visible = card.Data.buildingType == BuildingType.Special; break;
+            case 3: visible = card.Data.buildingType == BuildingType.Decoration; break;
+            default: visible = true; break;
+        }
+
+        card.gameObject.SetActive(visible);
     }
 }

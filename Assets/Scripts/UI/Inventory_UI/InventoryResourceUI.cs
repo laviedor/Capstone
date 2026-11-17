@@ -14,6 +14,9 @@ public class InventoryResourceUI : MonoBehaviour
     [SerializeField] private TMP_Text stoneText;
     [SerializeField] private TMP_Text goldText;
 
+    // true면 "나무: 12" 대신 숫자만 표시한다 (아이콘 옆에 숫자를 두는 디자인용)
+    [SerializeField] private bool numbersOnly;
+
     // 매 프레임 최신 자원 보유량을 UI에 반영한다.
     private void Update()
     {
@@ -22,15 +25,15 @@ public class InventoryResourceUI : MonoBehaviour
             return;
 
         // 나무 보유량 표시
-        woodText.text = "나무: " +
+        woodText.text = (numbersOnly ? "" : "나무: ") +
             playerResources.GetAmount(ResourceType.Wood);
 
         // 돌 보유량 표시
-        stoneText.text = "돌: " +
+        stoneText.text = (numbersOnly ? "" : "돌: ") +
             playerResources.GetAmount(ResourceType.Stone);
 
         // 골드 보유량 표시
-        goldText.text = "골드: " +
+        goldText.text = (numbersOnly ? "" : "골드: ") +
             playerResources.GetAmount(ResourceType.Gold);
     }
 }

@@ -12,12 +12,23 @@ public class BuildingCardUI : MonoBehaviour
     [SerializeField] private TMP_Text buildingCostText;
     [SerializeField] private Button cardButton;
 
+    // 디자인 개편으로 추가된 선택 표시와 종류 표시 (없어도 동작한다)
+    [Header("Cozy Style (optional)")]
+    [SerializeField] private GameObject selectedRing;
+    [SerializeField] private TMP_Text typeText;
+    [SerializeField] private Image artBackground;
+
     // 카드가 선택할 건물 데이터와 생성할 프리팹, 건설 시스템 참조를 보관한다.
     private BuildingData buildingData;
     private GameObject buildingPrefab;
     private BuildingPlacement buildingPlacement;
     private InventoryUI inventoryUI;
     private BuildingModeManager buildingModeManager;
+
+    // 연결되어 있으면 카드를 눌렀을 때 바로 건설하지 않고 상세 패널에 정보를 보여 준다.
+    private ConstructionDetailUI detailUI;
+
+    public BuildingData Data => buildingData;
 
     // 장식 인벤토리 변경 이벤트를 구독하여 보유량 표시를 최신 상태로 유지한다.
     private void OnEnable()
@@ -65,6 +76,14 @@ public class BuildingCardUI : MonoBehaviour
 
         buildingNameText.text = data.buildingName;
 
+        if (typeText != null)
+            typeText.text = CozyColors.TypeName(data.buildingType);
+
+        if (artBackground != null)
+            artBackground.color = CozyColors.TypeTint(data.buildingType);
+
+        SetSelected(false);
+
         if (data.buildingIcon != null)
         {
             buildingImage.sprite = data.buildingIcon;
@@ -82,8 +101,33 @@ public class BuildingCardUI : MonoBehaviour
         cardButton.onClick.AddListener(OnCardClicked);
     }
 
-    // 선택 가능 여부를 확인한 후 건설 모드를 열고 인벤토리를 닫는다.
+    // 상세 패널을 연결한다. 연결 후에는 카드 클릭이 '선택'으로 동작한다.
+    public void SetDetailPanel(ConstructionDetailUI detail)
+    {
+        detailUI = detail;
+    }
+
+    // 선택 테두리를 켜고 끈다.
+    public void SetSelected(bool selected)
+    {
+        if (selectedRing != null)
+            selectedRing.SetActive(selected);
+    }
+
+    // 상세 패널이 있으면 선택만 하고, 없으면 기존처럼 바로 건설 모드를 연다.
     private void OnCardClicked()
+    {
+        if (detailUI != null)
+        {
+            detailUI.Select(this);
+            return;
+        }
+
+        StartPlacement();
+    }
+
+    // 선택 가능 여부를 확인한 후 건설 모드를 열고 인벤토리를 닫는다.
+    public void StartPlacement()
     {
         if (buildingPlacement == null ||
             buildingModeManager == null ||
@@ -140,8 +184,9 @@ public class BuildingCardUI : MonoBehaviour
 
             buildingCostText.text = "보유: " + count + "개";
 
+            // 상세 패널을 쓰는 경우 보유 0개여도 정보는 볼 수 있게 둔다.
             if (cardButton != null)
-                cardButton.interactable = count > 0;
+                cardButton.interactable = count > 0 || detailUI != null;
 
             return;
         }
