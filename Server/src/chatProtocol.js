@@ -14,6 +14,8 @@ const { MAX_NAME_LENGTH, MAX_CHAT_LENGTH, MAX_CELL, MAX_TOKEN_LENGTH, MAX_ZONE_L
 //                 { t: 'gather', node }             필드의 자원 노드를 캠 (node: 노드 종류)
 //                 { t: 'exp_start', area }          채집 타이머 시작 (area: 채집 장소 이름)
 //                 { t: 'exp_claim' }                끝난 채집 타이머의 보상 수령
+//                 { t: 'harvest', id }              건물 수확 (지금 있는 월드의 내 건물, 수확 주기가 지난 것만)
+//                 { t: 'discard', item }            장식 아이템 1개 버리기 (item: 장식물 건물 종류)
 //   서버 -> 클라  { t: 'chat', name, text }        어느 월드에 있든 모든 접속자에게 전달
 //                 { t: 'kick' }                    같은 계정(사용자명)이 다른 곳에서 로그인하거나 접속해 끊김.
 //                                                  받은 클라이언트는 다시 접속하지 않고 로그아웃해 로그인 화면으로 돌아간다
@@ -25,7 +27,10 @@ const { MAX_NAME_LENGTH, MAX_CHAT_LENGTH, MAX_CELL, MAX_TOKEN_LENGTH, MAX_ZONE_L
 //                                                  같은 월드의 다른 사람이 바꾼 건물 (바꾼 사람에게는 보내지 않음)
 //                 { t: 'left', name }              같이 보이던 사람이 다른 월드나 구역으로 가거나 접속을 끊음
 //                 { t: 'res', items: [{ id, n }] }  내 재화 전부 (id: wood, stone, gold ...). 바뀔 때마다 보낸다
-//                 { t: 'offline', seconds, items: [{ id, n }] }  접속하지 않은 seconds 초 동안 건물이 생산한 자원
+//                 { t: 'harvest', all, list: [{ id, remaining }] }  내 건물의 수확 타이머: remaining 초 뒤에 수확할 수 있음
+//                                                  (0 이면 지금). all 이 true 면 지금 있는 월드의 내 건물 전부이고
+//                                                  (월드에 들어갈 때, 요청이 거절되어 화면을 다시 맞출 때) 목록에 없는 건물은
+//                                                  수확할 수 없다. false 면 수확 요청의 결과로 보내는 그 건물 하나
 //                 { t: 'exp', area, remaining }    내 채집 타이머: area 에서 remaining 초 뒤에 끝남 (0 이면 보상을 받을 수 있음)
 //                                                  area 가 '' 이면 진행 중인 것이 없음. 입장할 때와 시작/수령 요청의 결과로 보낸다
 //                 { t: 'notice', text }            안내 (요청이 거절된 이유, 받은 보상 등)
@@ -67,6 +72,8 @@ function parse(line) {
   if (m.t === 'gather' && isName(m.node, 64)) return { t: 'gather', node: m.node };
   if (m.t === 'exp_start' && isName(m.area, 40)) return { t: 'exp_start', area: m.area };
   if (m.t === 'exp_claim') return { t: 'exp_claim' };
+  if (m.t === 'harvest' && isId(m.id)) return { t: 'harvest', id: m.id };
+  if (m.t === 'discard' && isId(m.item)) return { t: 'discard', item: m.item };
   return null;
 }
 
@@ -82,12 +89,12 @@ const demolish = id => toLine({ t: 'demolish', id });
 const move = b => toLine({ t: 'move', id: b.id, x: b.x, y: b.y });
 const left = name => toLine({ t: 'left', name });
 const resources = amounts => toLine({ t: 'res', items: toItems(amounts) });
-const offline = (seconds, amounts) => toLine({ t: 'offline', seconds, items: toItems(amounts) });
+const harvest = (timers, all = false) => toLine({ t: 'harvest', all, list: timers });
 const expedition = (area, remaining) => toLine({ t: 'exp', area, remaining });
 const notice = text => toLine({ t: 'notice', text });
 const dm = senderId => toLine({ t: 'dm', sender: senderId });
 const friends = () => toLine({ t: 'friends' });
 
 module.exports = {
-  parse, chat, kick, world, buildingList, build, demolish, move, left, resources, offline, expedition, notice, dm, friends,
+  parse, chat, kick, world, buildingList, build, demolish, move, left, resources, harvest, expedition, notice, dm, friends,
 };

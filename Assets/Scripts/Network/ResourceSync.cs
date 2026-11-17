@@ -3,37 +3,88 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // 서버가 알려 주는 재화를 PlayerResources(화면에 보이는 재화)와 DecorationInventory(가진 장식물 수)에 반영
-//   재화는 서버의 값이 기준이다: 건설 비용, 철거 환급, 건물의 주기적 생산, 채집 보상을 서버가 계산하고 바뀔 때마다 전부 알려 준다
-//   BuildingPlacement, BuildingDemolition, ResourceNode, GatheringTimer 가 화면에 먼저 반영해 둔 값도 서버 값으로 맞춰진다
+//   재화는 서버의 값이 기준이다: 건설 비용, 철거 환급, 건물 수확, 채집 보상을 서버가 계산하고 바뀔 때마다 전부 알려 준다
+//   BuildingPlacement, BuildingDemolition, BuildingHarvest, ResourceNode, GatheringTimer 가 화면에 먼저 반영해 둔 값도 서버 값으로 맞춰진다
 //   장식물은 서버 인벤토리에 장식물 건물 종류(buildingID)와 같은 이름의 아이템으로 들어 있다
-//   건물 생산은 게임을 꺼도 서버에서 계속되므로, 오래 접속하지 않았다가 들어오면 그동안 생산한 양을 알려 준다
+//   장식물을 버리면(플레이어 탭의 [버리기]) 화면에서 먼저 1개가 줄어든다: 서버가 모르는 채로 줄어든 장식물은 버린 것으로 서버에 알린다
 public class ResourceSync : MonoBehaviour
 {
+    public static ResourceSync Instance { get; private set; }
+
     [SerializeField] private ChatClient chatClient;
     [SerializeField] private PlayerResources playerResources;
-    [SerializeField] private ConfirmDialog dialog;
+
+    private readonly Dictionary<BuildingData, int> decorations = new Dictionary<BuildingData, int>(); // 서버와 맞춰 둔 장식물 수
+    private readonly Dictionary<BuildingData, int> placed = new Dictionary<BuildingData, int>();      // 이번 프레임에 지어서 쓴 장식물 수
+    private DecorationInventory watched; // 변경 알림을 받고 있는 인벤토리
+    private bool changed;                // 장식물 수가 바뀌었는데 아직 확인하지 않음 (서버 값을 반영한 것은 빼고)
+    private bool applying;               // 서버 값을 반영하는 중
+
+    void Awake()
+    {
+        Instance = this;
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+        if (watched != null) watched.OnInventoryChanged -= OnInventoryChanged;
+    }
 
     void OnEnable()
     {
         chatClient.ResourcesReceived += OnResources;
-        chatClient.OfflineProduced += OnOfflineProduced;
     }
 
     void OnDisable()
     {
         chatClient.ResourcesReceived -= OnResources;
-        chatClient.OfflineProduced -= OnOfflineProduced;
+    }
+
+    void LateUpdate()
+    {
+        DecorationInventory inventory = DecorationInventory.Instance;
+        if (inventory != watched)
+        {
+            if (watched != null) watched.OnInventoryChanged -= OnInventoryChanged;
+            watched = inventory;
+            if (watched != null) watched.OnInventoryChanged += OnInventoryChanged;
+        }
+
+        ReportDiscards();
+    }
+
+    void OnInventoryChanged()
+    {
+        if (!applying) changed = true;
+    }
+
+    // 장식물을 지어서 장식 아이템 1개를 썼을 때 (BuildingSync 가 서버로 보낸 뒤 호출): 버린 것으로 세지 않는다
+    public void OnDecorationPlaced(BuildingData data)
+    {
+        placed.TryGetValue(data, out int used);
+        placed[data] = used + 1;
     }
 
     void OnResources(ResourceMessage m)
     {
         if (m.items == null) return;
-        foreach (ResourceItem item in m.items)
+
+        ReportDiscards(); // 서버 값으로 맞추기 전에, 방금 버린 것부터 서버에 알린다
+        applying = true;
+        try
         {
-            if (TryGetType(item.id, out ResourceType type))
-                SetAmount(type, item.n);
-            else
-                SetDecorationCount(item.id, item.n);
+            foreach (ResourceItem item in m.items)
+            {
+                if (TryGetType(item.id, out ResourceType type))
+                    SetAmount(type, item.n);
+                else
+                    SetDecorationCount(item.id, item.n);
+            }
+        }
+        finally
+        {
+            applying = false;
         }
     }
 
@@ -55,43 +106,40 @@ public class ResourceSync : MonoBehaviour
         int have = inventory.GetCount(data);
         if (count > have) inventory.AddDecoration(data, count - have);
         for (int i = count; i < have; i++) inventory.TryConsumeDecoration(data);
+        decorations[data] = count;
     }
 
-    void OnOfflineProduced(ResourceMessage m)
+    // 서버가 모르는 채로 줄어든 장식물을 버린 것으로 서버에 알린다 (서버가 인벤토리에서 빼고 재화를 다시 알려 준다)
+    //   지어서 쓴 것(OnDecorationPlaced)은 건물 건설로 서버에 이미 갔으므로 뺀다
+    void ReportDiscards()
     {
-        var parts = new List<string>();
-        foreach (ResourceItem item in m.items ?? new ResourceItem[0])
+        if (changed && watched != null)
         {
-            if (item.n > 0 && TryGetType(item.id, out ResourceType type))
-                parts.Add($"{DisplayName(type)} +{item.n}");
-        }
-        if (parts.Count == 0) return;
+            foreach (BuildingData data in new List<BuildingData>(decorations.Keys))
+            {
+                placed.TryGetValue(data, out int used);
+                int discarded = decorations[data] - watched.GetCount(data) - used;
+                for (int i = 0; i < discarded; i++)
+                {
+                    if (chatClient.SendDiscard(data.buildingID)) continue;
 
-        dialog.Show($"접속하지 않은 {Duration(m.seconds)} 동안\n건물이 자원을 생산했습니다.\n{string.Join(", ", parts)}", "확인", null);
+                    // 서버에 알리지 못한 만큼은 버리지 않은 것으로 되돌린다
+                    applying = true;
+                    watched.AddDecoration(data, discarded - i);
+                    applying = false;
+                    Toast.Show("서버에 연결되어 있지 않아 버리지 못했습니다.");
+                    break;
+                }
+                decorations[data] = watched.GetCount(data);
+            }
+        }
+        changed = false;
+        placed.Clear();
     }
 
     // 서버의 자원 이름(wood, stone, gold)을 ResourceType 으로. 클라이언트가 모르는 자원이면 false
     static bool TryGetType(string id, out ResourceType type)
     {
         return Enum.TryParse(id, true, out type) && Enum.IsDefined(typeof(ResourceType), type);
-    }
-
-    static string DisplayName(ResourceType type)
-    {
-        switch (type)
-        {
-            case ResourceType.Wood: return "나무";
-            case ResourceType.Stone: return "돌";
-            case ResourceType.Gold: return "골드";
-            default: return type.ToString();
-        }
-    }
-
-    static string Duration(int seconds)
-    {
-        if (seconds >= 86400) return $"{seconds / 86400}일 {seconds % 86400 / 3600}시간";
-        if (seconds >= 3600) return $"{seconds / 3600}시간 {seconds % 3600 / 60}분";
-        if (seconds >= 60) return $"{seconds / 60}분";
-        return $"{seconds}초";
     }
 }

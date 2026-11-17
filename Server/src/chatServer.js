@@ -6,17 +6,17 @@ const presence = require('./presence');
 const worlds = require('./worlds');
 const buildings = require('./buildings');
 const resources = require('./resources');
-const production = require('./production');
+const harvest = require('./harvest');
 const gathering = require('./gathering');
 const catalog = require('./catalog');
-const { MAX_LINE_LENGTH, MULTIVERSE, PRODUCTION_TICK_MS, OFFLINE_NOTICE_SECONDS } = require('./config');
+const { MAX_LINE_LENGTH, MULTIVERSE } = require('./config');
 
-// TCP 서버: 채팅, 월드/구역 이동, 건물 변경(건설, 철거, 이동), 채집, 재화 알림
+// TCP 서버: 채팅, 월드/구역 이동, 건물 변경(건설, 철거, 이동), 건물 수확, 채집, 재화 알림
 //   채팅은 모든 접속자에게, 건물 변경은 같은 월드에 있는 사람에게 전달한다 (worlds.js)
-//   건물은 DB 에 저장하고(buildings.js) 건설 비용, 철거 환급, 건물 생산(production.js)을 서버가 계산해
+//   건물은 DB 에 저장하고(buildings.js) 건설 비용, 철거 환급, 건물 수확(harvest.js)을 서버가 계산해
 //   재화가 바뀔 때마다 그 유저에게 알려 준다
 //   필드의 자원 노드, 채집 타이머의 보상도 서버가 정해서 재화에 더한다 (gathering.js)
-//   로그인 토큰으로 입장한 접속만 건물을 짓고 채집하고, 재화, 1:1 채팅, 친구 알림을 받는다 (알림을 보내는 쪽은 friendRoutes.js)
+//   로그인 토큰으로 입장한 접속만 건물을 짓고 수확하고 채집하고, 재화, 1:1 채팅, 친구 알림을 받는다 (알림을 보내는 쪽은 friendRoutes.js)
 
 const BUILD_REFUSED = {
   unknown: '서버가 모르는 건물이라 지을 수 없습니다.',
@@ -58,24 +58,15 @@ function startChatServer(port) {
     if (amounts && canWrite(client)) client.socket.write(chatProtocol.resources(amounts));
   }
 
-  // 건물 생산을 지금까지 정산. 생산된 자원 { 자원: 수량 } 을 돌려주고, 다음 생산 시각을 기억해 둔다
-  //   joined: 방금 입장했으면 true. 오래 접속하지 않았으면 그동안 생산한 양을 따로 알려 준다
-  async function settleProduction(client, joined = false) {
-    const now = Date.now();
-    const { gained, nextAt, since } = await production.settle(client.userId, now);
-    client.nextProductionAt = nextAt;
-    const idle = since === null ? 0 : Math.floor((now - since) / 1000);
-    if (joined && idle >= OFFLINE_NOTICE_SECONDS && canWrite(client)) {
-      client.socket.write(chatProtocol.offline(idle, gained));
-    }
-    return gained;
-  }
-
-  // 요청을 거절: 이유를 알려 주고, 미리 바꿔 둔 화면을 서버 상태로 되돌리게 건물 목록과 재화를 다시 보낸다
+  // 요청을 거절: 이유를 알려 주고, 미리 바꿔 둔 화면을 서버 상태로 되돌리게 건물 목록, 수확 타이머, 재화를 다시 보낸다
   async function refuse(client, text) {
     if (!canWrite(client)) return;
+    const list = await buildings.list(client.world);
+    const timers = client.userId === null ? [] : await harvest.timers(client.world, client.userId);
+    if (!canWrite(client)) return;
     client.socket.write(chatProtocol.notice(text));
-    client.socket.write(chatProtocol.buildingList(await buildings.list(client.world)));
+    client.socket.write(chatProtocol.buildingList(list));
+    client.socket.write(chatProtocol.harvest(timers, true));
     if (client.userId !== null) await sendResources(client);
   }
 
@@ -94,23 +85,8 @@ function startChatServer(port) {
     return parts.join(', ') || '없음';
   }
 
-  // 접속 중인 유저의 건물 생산: 다음 생산 시각이 된 유저만 정산해서 늘어난 재화를 알려 준다
-  setInterval(() => {
-    const now = Date.now();
-    for (const client of presence.users()) {
-      if (client.settling || client.nextProductionAt === null || client.nextProductionAt > now) continue;
-      client.settling = true;
-      settleProduction(client)
-        .then(gained => (Object.keys(gained).length ? sendResources(client) : null))
-        .catch(err => console.error('[생산] 오류:', err.message))
-        .finally(() => {
-          client.settling = false;
-        });
-    }
-  }, PRODUCTION_TICK_MS);
-
   const server = net.createServer(socket => {
-    let client = null; // 입장하면 { socket, name, userId, world, zone, nextProductionAt, settling }
+    let client = null; // 입장하면 { socket, name, userId, world, zone }
     let buffer = '';
     let queue = Promise.resolve(); // 받은 줄을 순서대로 처리 (DB 를 기다리는 동안 다음 줄이 앞서지 않게)
     socket.setEncoding('utf8');
@@ -160,7 +136,7 @@ function startChatServer(port) {
           worlds.disconnect(old); // 같은 계정(사용자명)의 기존 접속 끊기: 그쪽 클라이언트는 로그아웃된다
           console.log(`[채팅] ${name} 중복 접속 - 기존 접속 종료`);
         }
-        client = { socket, name, userId: user ? user.id : null, world: null, zone: '', nextProductionAt: null, settling: false };
+        client = { socket, name, userId: user ? user.id : null, world: null, zone: '' };
         presence.add(client);
         console.log(`[채팅] ${name} 입장`);
 
@@ -168,7 +144,6 @@ function startChatServer(port) {
         if (!await worlds.enter(client, msg.world ?? MULTIVERSE)) await worlds.enter(client, MULTIVERSE);
         if (user) {
           notifyFriends(user.id);
-          await settleProduction(client, true); // 접속하지 않은 동안의 생산
           await sendResources(client);
           sendExpedition(client, await gathering.currentExpedition(user.id)); // 꺼 둔 동안에도 흘러간 채집 타이머
         }
@@ -194,6 +169,15 @@ function startChatServer(port) {
           return;
         }
         await gather(msg);
+      } else if (msg.t === 'harvest') {
+        if (client.userId === null) return refuse(client, '로그인해야 수확할 수 있습니다.');
+        await harvestBuilding(msg.id);
+      } else if (msg.t === 'discard') {
+        if (client.userId === null) return;
+        // 화면에서는 이미 1개가 줄었으므로, 버리지 못했어도 재화를 다시 보내 서버 값으로 맞춘다
+        if (await resources.discard(client.userId, msg.item)) console.log(`[재화] ${client.name} 장식 버림 ${msg.item}`);
+        else if (canWrite(client)) socket.write(chatProtocol.notice('버릴 수 없는 아이템입니다.'));
+        await sendResources(client);
       } else if (msg.t === 'build' || msg.t === 'demolish' || msg.t === 'move') {
         if (client.userId === null) return refuse(client, '로그인해야 건물을 지을 수 있습니다.');
         if (client.world !== MULTIVERSE && client.world !== client.userId) {
@@ -248,6 +232,23 @@ function startChatServer(port) {
       await sendResources(client);
     }
 
+    // 건물 수확: 수확량을 재화에 더하고 그 건물의 다음 수확 타이머를 알려 준다
+    //   화면에는 클라이언트가 먼저 반영해 두므로, 거절할 때도 타이머와 재화를 다시 보내 서버 값으로 맞춘다
+    async function harvestBuilding(id) {
+      const result = await harvest.harvest(client.world, client.userId, id);
+      if (result.result === 'none') return refuse(client, '수확할 수 없는 건물입니다.');
+      if (!canWrite(client)) return;
+
+      if (result.result === 'early') {
+        socket.write(chatProtocol.notice('아직 수확할 수 없습니다.'));
+      } else {
+        const gained = Object.entries(result.gained).map(([item, n]) => `${item} +${n}`).join(', ');
+        console.log(`[수확] ${client.name} ${result.type} ${gained}`);
+      }
+      socket.write(chatProtocol.harvest([result.timer]));
+      await sendResources(client);
+    }
+
     // 건물 건설, 철거, 이동: DB 와 재화에 반영하고 같은 월드의 다른 사람들에게 전달
     async function changeBuilding(world, msg) {
       const user = { id: client.userId, nickname: client.name };
@@ -258,7 +259,6 @@ function startChatServer(port) {
         console.log(`[건물] ${client.name} 건설 ${msg.type} (${msg.x}, ${msg.y}) 월드 ${world}`);
         worlds.broadcast(world, chatProtocol.build({ ...msg, owner: client.name }), client);
       } else if (msg.t === 'demolish') {
-        await settleProduction(client); // 철거하기 전까지 생산한 것은 받고 지운다
         if (!await buildings.demolish(world, user, msg.id)) {
           return refuse(client, '내가 지은 건물만 철거할 수 있습니다.');
         }
@@ -272,8 +272,7 @@ function startChatServer(port) {
         return;
       }
 
-      // 건물이 늘거나 줄었으니 다음 생산 시각을 다시 계산하고, 비용/환급이 반영된 재화를 알려 준다
-      await settleProduction(client);
+      // 비용/환급이 반영된 재화를 알려 준다
       await sendResources(client);
     }
   });

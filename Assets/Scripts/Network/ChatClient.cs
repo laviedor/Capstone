@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-// 채팅 서버와의 TCP 통신 (채팅, 월드/구역 이동, 건물 변경, 채집, 재화, 친구/1:1 채팅 알림): 로그인하면 접속하고, 끊기면 다시 접속
+// 채팅 서버와의 TCP 통신 (채팅, 월드/구역 이동, 건물 변경, 건물 수확, 채집, 재화, 친구/1:1 채팅 알림): 로그인하면 접속하고, 끊기면 다시 접속
 //   다른 곳에서 같은 계정으로 로그인해 서버가 끊은 경우(kick)에는 다시 접속하지 않고 로그아웃한다
 // (await 뒤의 코드는 Unity 메인 스레드에서 이어서 실행됨)
 public class ChatClient : MonoBehaviour
@@ -22,7 +22,7 @@ public class ChatClient : MonoBehaviour
     public event Action<WorldMessage> WorldEntered;         // 월드에 들어감 (WorldSync, BuildingSync 가 처리)
     public event Action<string> PlayerLeft;                 // 같은 월드에 있던 사람(사용자명)이 떠남
     public event Action<ResourceMessage> ResourcesReceived; // 내 재화 (ResourceSync 가 처리)
-    public event Action<ResourceMessage> OfflineProduced;   // 접속하지 않은 동안 건물이 생산한 자원
+    public event Action<HarvestMessage> HarvestReceived;    // 내 건물의 수확 타이머 (BuildingSync 가 처리)
     public event Action<string> ServerNotice;               // 서버의 안내 (요청이 거절된 이유, 받은 보상 등)
     public event Action<ExpeditionMessage> ExpeditionReceived; // 내 채집 타이머 (GatherSync 가 처리)
 
@@ -70,6 +70,12 @@ public class ChatClient : MonoBehaviour
     public bool SendExpeditionStart(string area) => TryWrite(new ExpeditionStartMessage { area = area });
 
     public bool SendExpeditionClaim() => TryWrite(new ChatMessage { t = ChatMessage.ExpeditionClaim });
+
+    // 건물 수확 (수확량은 서버가 재화에 더해 ResourcesReceived 로, 다음 타이머는 HarvestReceived 로 알려 준다)
+    public bool SendHarvest(string id) => TryWrite(new HarvestMessage { id = id });
+
+    // 장식 아이템 1개 버리기
+    public bool SendDiscard(string item) => TryWrite(new DiscardMessage { item = item });
 
     bool TryWrite(object msg)
     {
@@ -180,9 +186,9 @@ public class ChatClient : MonoBehaviour
         {
             ResourcesReceived?.Invoke(JsonUtility.FromJson<ResourceMessage>(line));
         }
-        else if (msg.t == ChatMessage.Offline)
+        else if (msg.t == ChatMessage.Harvest)
         {
-            OfflineProduced?.Invoke(JsonUtility.FromJson<ResourceMessage>(line));
+            HarvestReceived?.Invoke(JsonUtility.FromJson<HarvestMessage>(line));
         }
         else if (msg.t == ChatMessage.ServerNotice)
         {

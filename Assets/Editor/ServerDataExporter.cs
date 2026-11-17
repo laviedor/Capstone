@@ -8,13 +8,14 @@ using UnityEditor;
 using UnityEngine;
 
 // 서버가 쓰는 기획 데이터를 Unity 프로젝트에서 내보낸다: 메뉴 Tools > Export Server Data
-//   Server/data/buildings.json : 건물 프리팹(BuildingData)의 크기, 건설 비용, 생산, 장식물 여부
+//   Server/data/buildings.json : 건물 프리팹(BuildingData)의 크기, 건설 비용, 수확량과 수확 주기, 장식물 여부
 //   Server/data/gathering.json : 필드 자원 프리팹(ResourceNode)의 채집 보상과 시간, 채집 타이머 보상으로 나오는 장식물
 //   Server/data/expeditions.json : 채집 타이머의 장소별 시간, 골드, 장식물 확률 (GatheringTimer.cs, GatheringTimerUI.cs 코드에서 읽음)
-//   서버는 이 값으로 건설 비용, 철거 환급, 겹침 검사, 건물 생산, 채집 보상을 계산한다 (서버 catalog.js)
-//   건물/자원 프리팹이나 BuildingData, 장식물 목록(DecorationDatabase), 채집 타이머 코드의 숫자를 바꾸면
-//   다시 내보내고, 서버에 올려 재시작해야 반영된다
-//   건물 생산은 지금 게임과 같게, 프리팹에 BuildingProduction 이 붙어 있는 건물만 내보낸다
+//   서버는 이 값으로 건설 비용, 철거 환급, 겹침 검사, 건물 수확, 채집 보상을 계산한다 (서버 catalog.js)
+//   건물/자원 프리팹이나 BuildingData, 건물 수확(BuildingHarvest)의 주기와 기본 수확량, 장식물 목록(DecorationDatabase),
+//   채집 타이머 코드의 숫자를 바꾸면 다시 내보내고, 서버에 올려 재시작해야 반영된다
+//   건물 수확은 게임(BuildingHarvest)과 같게 내보낸다: 장식이 아닌 건물은 모두 수확하고,
+//   수확량은 BuildingData 의 생산 목록(productions), 비어 있으면 BuildingHarvest 의 기본값이다
 public static class ServerDataExporter
 {
     private const string BuildingsPath = "Server/data/buildings.json";
@@ -27,7 +28,9 @@ public static class ServerDataExporter
         int buildings = ExportBuildings();
         ExportGathering(out int nodes, out int decorations);
         int areas = ExportExpeditions();
-        Debug.Log($"서버 데이터를 내보냈습니다: 건물 {buildings}종, 자원 노드 {nodes}종, 보상 장식물 {decorations}종, " +
+        Debug.Log("서버 데이터를 내보냈습니다: " +
+                  (buildings >= 0 ? $"건물 {buildings}종, " : "건물은 수확 설정을 읽지 못해 기존 파일 유지, ") +
+                  $"자원 노드 {nodes}종, 보상 장식물 {decorations}종, " +
                   (areas >= 0 ? $"채집 타이머 장소 {areas}곳 " : "채집 타이머는 읽지 못해 기존 파일 유지 ") +
                   "(Server/data, 서버에 올리고 재시작해야 반영됩니다)");
     }
@@ -36,9 +39,9 @@ public static class ServerDataExporter
 
     private static int ExportBuildings()
     {
-        // 건물 종류(buildingID)별 BuildingData 와, 그 종류의 프리팹 중 BuildingProduction 이 붙은 것이 있는지
+        // 건물 종류(buildingID)별 BuildingData 와, 그 종류의 프리팹에 붙어 있는 BuildingHarvest (없으면 등록되지 않음)
         var datas = new SortedDictionary<string, BuildingData>(System.StringComparer.Ordinal);
-        var withProduction = new HashSet<string>();
+        var harvestOnPrefab = new Dictionary<string, BuildingHarvest>();
         foreach (GameObject prefab in AllPrefabs())
         {
             Building building = prefab.GetComponent<Building>();
@@ -50,44 +53,93 @@ public static class ServerDataExporter
                 datas.Add(id, building.Data);
             else if (datas[id] != building.Data)
                 Debug.LogWarning($"건물 종류 '{id}' 를 쓰는 BuildingData 가 여러 개입니다. {AssetDatabase.GetAssetPath(prefab)} 의 값은 내보내지 않습니다.");
-            if (prefab.GetComponent<BuildingProduction>() != null)
-                withProduction.Add(id);
+            BuildingHarvest harvest = prefab.GetComponent<BuildingHarvest>();
+            if (harvest != null && !harvestOnPrefab.ContainsKey(id))
+                harvestOnPrefab.Add(id, harvest);
         }
 
-        var entries = new List<string>();
-        foreach (BuildingData data in datas.Values)
+        // 프리팹에 BuildingHarvest 가 없는 건물은 지을 때 BuildingPlacement 가 붙이므로, 그때 쓰이는 스크립트의 기본값을 읽는다
+        var holder = new GameObject("BuildingHarvest defaults") { hideFlags = HideFlags.HideAndDontSave };
+        try
         {
-            bool decoration = data.buildingType == BuildingType.Decoration;
-            bool produces = withProduction.Contains(data.buildingID)
-                && data.productions != null && data.productions.Length > 0 && data.productionInterval > 0f;
-            var cost = new SortedDictionary<string, int>(System.StringComparer.Ordinal);
-            foreach (ResourceAmount amount in data.constructionCosts ?? new ResourceAmount[0])
-                Add(cost, amount.resourceType, amount.amount);
-            var production = new SortedDictionary<string, int>(System.StringComparer.Ordinal);
-            if (produces)
+            HarvestSettings defaults = ReadHarvest(holder.AddComponent<BuildingHarvest>());
+            if (defaults == null)
             {
-                foreach (ResourceProduction p in data.productions)
-                {
-                    if (p != null) Add(production, p.resourceType, p.amount);
-                }
+                Debug.LogError("BuildingHarvest 의 수확 설정(harvestInterval, defaultRewardType, defaultRewardAmount)을 읽지 못했습니다. " +
+                               "필드 이름이 바뀌었다면 ServerDataExporter.ReadHarvest 를 고쳐 주세요. buildings.json 은 그대로 둡니다.");
+                return -1;
             }
 
-            var sb = new StringBuilder();
-            sb.Append($"  {Quote(data.buildingID)}: {{\n");
-            sb.Append($"    \"name\": {Quote(data.buildingName)},\n");
-            sb.Append($"    \"width\": {data.width},\n");
-            sb.Append($"    \"height\": {data.height},\n");
-            sb.Append($"    \"cost\": {Amounts(cost)},\n");
-            sb.Append($"    \"production\": {Amounts(production)},\n");
-            sb.Append($"    \"interval\": {Number(production.Count > 0 ? data.productionInterval : 0f)}");
-            // 장식물: 서버가 자원 대신 같은 이름의 장식 아이템 1개를 쓰게 한다 (DecorationInventory 와 같은 규칙)
-            if (decoration) sb.Append(",\n    \"decoration\": true");
-            sb.Append("\n  }");
-            entries.Add(sb.ToString());
-        }
+            var entries = new List<string>();
+            foreach (BuildingData data in datas.Values)
+            {
+                bool decoration = data.buildingType == BuildingType.Decoration;
+                var cost = new SortedDictionary<string, int>(System.StringComparer.Ordinal);
+                foreach (ResourceAmount amount in data.constructionCosts ?? new ResourceAmount[0])
+                    Add(cost, amount.resourceType, amount.amount);
 
-        Write(BuildingsPath, "{\n" + string.Join(",\n", entries) + "\n}\n");
-        return entries.Count;
+                // 수확: BuildingHarvest.SetupRewards 와 같은 규칙 (생산 목록, 비어 있으면 기본값). 장식물은 수확하지 않는다
+                var harvest = new SortedDictionary<string, int>(System.StringComparer.Ordinal);
+                float harvestSeconds = 0f;
+                if (!decoration)
+                {
+                    HarvestSettings settings = harvestOnPrefab.TryGetValue(data.buildingID, out BuildingHarvest onPrefab)
+                        ? ReadHarvest(onPrefab) ?? defaults
+                        : defaults;
+                    foreach (ResourceProduction p in data.productions ?? new ResourceProduction[0])
+                    {
+                        if (p != null) Add(harvest, p.resourceType, p.amount);
+                    }
+                    if (harvest.Count == 0) Add(harvest, settings.defaultType, settings.defaultAmount);
+                    if (harvest.Count > 0) harvestSeconds = settings.interval;
+                }
+
+                var sb = new StringBuilder();
+                sb.Append($"  {Quote(data.buildingID)}: {{\n");
+                sb.Append($"    \"name\": {Quote(data.buildingName)},\n");
+                sb.Append($"    \"width\": {data.width},\n");
+                sb.Append($"    \"height\": {data.height},\n");
+                sb.Append($"    \"cost\": {Amounts(cost)},\n");
+                sb.Append($"    \"harvest\": {Amounts(harvest)},\n");
+                sb.Append($"    \"harvestSeconds\": {Number(harvestSeconds)}");
+                // 장식물: 서버가 자원 대신 같은 이름의 장식 아이템 1개를 쓰게 한다 (DecorationInventory 와 같은 규칙)
+                if (decoration) sb.Append(",\n    \"decoration\": true");
+                sb.Append("\n  }");
+                entries.Add(sb.ToString());
+            }
+
+            Write(BuildingsPath, "{\n" + string.Join(",\n", entries) + "\n}\n");
+            return entries.Count;
+        }
+        finally
+        {
+            Object.DestroyImmediate(holder);
+        }
+    }
+
+    // BuildingHarvest 의 수확 설정
+    private class HarvestSettings
+    {
+        public float interval;           // 수확 주기 (초)
+        public ResourceType defaultType; // 생산 목록이 없는 건물이 받는 자원
+        public int defaultAmount;        //   과 그 수량
+    }
+
+    // BuildingHarvest 에 저장된 수확 설정을 읽는다 (private 필드라 SerializedObject 로). 필드를 찾지 못하면 null
+    private static HarvestSettings ReadHarvest(BuildingHarvest harvest)
+    {
+        var serialized = new SerializedObject(harvest);
+        SerializedProperty interval = serialized.FindProperty("harvestInterval");
+        SerializedProperty type = serialized.FindProperty("defaultRewardType");
+        SerializedProperty amount = serialized.FindProperty("defaultRewardAmount");
+        if (interval == null || type == null || amount == null) return null;
+
+        return new HarvestSettings
+        {
+            interval = interval.floatValue,
+            defaultType = (ResourceType)System.Enum.Parse(typeof(ResourceType), type.enumNames[type.enumValueIndex]),
+            defaultAmount = amount.intValue,
+        };
     }
 
     // ---------- gathering.json ----------

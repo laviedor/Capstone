@@ -2,14 +2,15 @@ const fs = require('fs');
 const path = require('path');
 const { DEMOLISH_REFUND_RATE } = require('./config');
 
-// 기획 데이터 (data 폴더). 서버는 이 값으로 비용, 환급, 생산, 채집 보상을 계산한다
+// 기획 데이터 (data 폴더). 서버는 이 값으로 비용, 환급, 수확, 채집 보상을 계산한다
 //
 //   buildings.json, gathering.json, expeditions.json : Unity 프로젝트에서 내보낸 파일 (Unity 메뉴 Tools > Export Server Data)
-//     건물 프리팹/BuildingData, 필드 자원 프리팹, 장식물 목록, 채집 타이머의 시간과 보상(GatheringTimer.cs,
-//     GatheringTimerUI.cs 에 적힌 숫자)을 바꾸면 다시 내보내고 서버를 재시작한다
+//     건물 프리팹/BuildingData, 건물 수확(BuildingHarvest), 필드 자원 프리팹, 장식물 목록, 채집 타이머의 시간과 보상
+//     (GatheringTimer.cs, GatheringTimerUI.cs 에 적힌 숫자)을 바꾸면 다시 내보내고 서버를 재시작한다
 //
-//   buildings.json   { 건물 종류(buildingID): { name, width, height, cost, production, interval, decoration } }
-//     cost, production: { 자원: 수량 }, interval: 생산 주기(초). production 이 비어 있으면 생산하지 않는 건물
+//   buildings.json   { 건물 종류(buildingID): { name, width, height, cost, harvest, harvestSeconds, decoration } }
+//     cost: 건설 비용, harvest: 한 번 수확할 때 받는 양 { 자원: 수량 }, harvestSeconds: 수확 주기(초)
+//     harvest 가 비어 있으면 수확하지 않는 건물 (장식물)
 //     decoration: true 면 장식물. 자원 대신 같은 이름의 장식 아이템 1개를 써서 짓고, 철거하면 1개를 돌려받는다
 //   gathering.json   { nodes: { 노드 종류(프리팹 이름): { item, amount, gatherSeconds, respawnSeconds, count } },
 //                      decorations: [채집 타이머 보상으로 나올 수 있는 장식물 종류] }
@@ -37,7 +38,7 @@ const isPositive = n => Number.isFinite(n) && n > 0;
 
 for (const [type, b] of Object.entries(buildings)) {
   const ok = Number.isInteger(b.width) && b.width > 0 && Number.isInteger(b.height) && b.height > 0
-    && isAmounts(b.cost) && isAmounts(b.production) && Number.isFinite(b.interval);
+    && isAmounts(b.cost) && isAmounts(b.harvest) && Number.isFinite(b.harvestSeconds) && b.harvestSeconds >= 0;
   if (!ok) throw new Error(`data/buildings.json: '${type}' 의 값이 올바르지 않습니다`);
   if (b.decoration) {
     b.cost = { [type]: 1 };   // 장식 아이템 1개로 짓고
@@ -58,10 +59,10 @@ for (const [area, e] of Object.entries(expeditions)) {
 const own = (table, key) => (Object.hasOwn(table, key) ? table[key] : null);
 const get = type => own(buildings, type);
 
-// 주기적으로 자원을 생산하는 건물인지
-const produces = type => {
+// 수확할 수 있는 건물인지 (수확 주기마다 harvest 만큼 받는다, harvest.js)
+const harvestable = type => {
   const b = get(type);
-  return !!b && b.interval > 0 && Object.keys(b.production).length > 0;
+  return !!b && b.harvestSeconds > 0 && Object.keys(b.harvest).length > 0;
 };
 
 // 철거하면 돌려받는 것 { 자원: 수량 }
@@ -86,14 +87,14 @@ const decorationRewards = (gathering.decorations ?? []).filter(type => decoratio
 
 // 데이터에 나오는 자원 이름 전부 (장식 아이템은 빼고)
 const items = [...new Set([
-  ...Object.values(buildings).filter(b => !b.decoration).flatMap(b => [...Object.keys(b.cost), ...Object.keys(b.production)]),
+  ...Object.values(buildings).filter(b => !b.decoration).flatMap(b => [...Object.keys(b.cost), ...Object.keys(b.harvest)]),
   ...Object.values(nodes).map(n => n.item),
 ])];
 
 module.exports = {
   get,
   has: type => get(type) !== null,
-  produces,
+  harvestable,
   refund,
   items,
   decorations,

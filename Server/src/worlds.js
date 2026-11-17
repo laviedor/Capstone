@@ -1,6 +1,7 @@
 const chatProtocol = require('./chatProtocol');
 const presence = require('./presence');
 const buildings = require('./buildings');
+const harvest = require('./harvest');
 const friends = require('./friends');
 const accounts = require('./accounts');
 const { MULTIVERSE, KICK_GRACE_MS } = require('./config');
@@ -28,11 +29,13 @@ async function resolve(client, world) {
   return owner && { id: world, name: owner.nickname, mine: false, build: false };
 }
 
-// client 를 그 월드로 옮기고 월드 정보와 건물 목록을 보낸다. 들어갈 수 없는 월드면 false (있던 곳에 그대로 있음)
+// client 를 그 월드로 옮기고 월드 정보, 건물 목록, 내 건물의 수확 타이머를 보낸다
+// 들어갈 수 없는 월드면 false (있던 곳에 그대로 있음)
 async function enter(client, world) {
   const info = await resolve(client, world);
   if (!info) return false;
   const list = await buildings.list(info.id);
+  const timers = client.userId === null ? [] : await harvest.timers(info.id, client.userId);
   if (client.socket.destroyed) return false; // 확인하는 사이에 끊김
 
   const old = client.world;
@@ -43,6 +46,7 @@ async function enter(client, world) {
   }
   client.socket.write(chatProtocol.world(info));
   client.socket.write(chatProtocol.buildingList(list));
+  client.socket.write(chatProtocol.harvest(timers, true)); // 건물 목록 다음에 보낸다 (목록에 있는 건물의 타이머)
   return true;
 }
 

@@ -7,13 +7,15 @@ using System;
 //                 gather  { node }                필드의 자원 노드를 캠 (GatherMessage)
 //                 exp_start { area }              채집 타이머 시작 (ExpeditionStartMessage)
 //                 exp_claim                       끝난 채집 타이머의 보상 수령
+//                 harvest { id }                  건물 수확 (HarvestMessage)
+//                 discard { item }                장식 아이템 1개 버리기 (DiscardMessage)
 //                 chat    { text }                멀티버스 채팅
 //   서버 -> 클라  chat    { name, text }          어느 월드에 있든 모든 접속자에게 전달
 //                 kick                            같은 계정이 다른 곳에서 로그인(접속)해 끊김: 이쪽은 로그아웃된다 (LoginUI.ForceLogout)
 //                 world   { id, name, mine, build }  들어간 월드 (WorldMessage)
 //                 left    { name }                같이 보이던 사람이 다른 월드나 구역으로 가거나 접속을 끊음
 //                 res     { items }               내 재화 전부 (ResourceMessage), 바뀔 때마다 옴
-//                 offline { seconds, items }      접속하지 않은 동안 건물이 생산한 자원 (ResourceMessage)
+//                 harvest { list }                내 건물의 수확 타이머 (HarvestMessage), 월드에 들어갈 때와 수확 요청의 결과로 옴
 //                 exp     { area, remaining }     내 채집 타이머 (ExpeditionMessage), 접속할 때와 시작/수령 요청의 결과로 옴
 //                 notice  { text }                안내 (요청이 거절된 이유, 받은 보상 등)
 //                 dm      { sender }              친구(유저 id sender)가 1:1 채팅을 보냄 (FriendPush, 내용은 FriendApi 로 받음)
@@ -30,13 +32,14 @@ public class ChatMessage
     public const string World = "world";
     public const string Left = "left";
     public const string Resources = "res";
-    public const string Offline = "offline";
     public const string ServerNotice = "notice";
     public const string Zone = "zone";
     public const string Gather = "gather";
     public const string ExpeditionStart = "exp_start";
     public const string ExpeditionClaim = "exp_claim";
     public const string Expedition = "exp";
+    public const string Harvest = "harvest";
+    public const string Discard = "discard";
     public const int MaxTextLength = 200; // 서버 config.js의 MAX_CHAT_LENGTH와 같게 유지
 
     public string t;
@@ -106,12 +109,11 @@ public class WorldMessage
     public bool build;  // 여기서 건물을 지을 수 있는지 (친구 마을은 구경만)
 }
 
-// 재화 (res: 지금 가진 양 전부, offline: 접속하지 않은 동안 생산한 양)
+// 재화 (res: 지금 가진 양 전부)
 [Serializable]
 public class ResourceMessage
 {
     public string t;
-    public int seconds;          // offline: 접속하지 않은 시간 (초)
     public ResourceItem[] items;
 }
 
@@ -120,6 +122,35 @@ public class ResourceItem
 {
     public string id; // 자원 이름 (wood, stone, gold), ResourceType 과 대소문자만 다름
     public int n;     // 수량
+}
+
+// 건물 수확
+//   클라 -> 서버: id 건물을 수확한다는 요청
+//   서버 -> 클라: 내 건물의 수확 타이머 list
+//     all 이 true 면 지금 있는 월드의 내 건물 전부 (월드에 들어갈 때 등): 목록에 없는 건물은 수확할 수 없다
+//     all 이 false 면 수확 요청의 결과로 오는 그 건물 하나
+[Serializable]
+public class HarvestMessage
+{
+    public string t = ChatMessage.Harvest;
+    public string id;           // 수확할 건물의 네트워크 ID
+    public bool all;
+    public HarvestTimer[] list; // 수확 타이머
+}
+
+[Serializable]
+public class HarvestTimer
+{
+    public string id;     // 건물의 네트워크 ID
+    public int remaining; // 수확할 수 있을 때까지 남은 시간(초), 0 이면 지금 수확할 수 있음
+}
+
+// 장식 아이템 1개 버리기
+[Serializable]
+public class DiscardMessage
+{
+    public string t = ChatMessage.Discard;
+    public string item; // 장식물 건물 종류 (BuildingData.buildingID)
 }
 
 // 1:1 채팅 알림 (dm)

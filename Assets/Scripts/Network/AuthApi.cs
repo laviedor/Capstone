@@ -61,6 +61,12 @@ public static class AuthApi
     private static Mutex windowLock;
 #pragma warning restore 0414
 
+    // 이 창의 번호: 같은 PC 에 먼저 띄운 창이 1, 그다음에 띄운 창부터 2, 3 ... (떠 있는 창이 쓰지 않는 가장 작은 번호)
+    //   에디터, 가상 플레이어, 번호를 정하지 못한 환경에서는 1
+    //   저장해 둔 로그인을 창마다 따로 두는 데(TokenKey)와 창을 겹치지 않게 놓는 데(DesktopWindowLayout) 쓴다
+    public static int WindowNumber => Mathf.Max(1, windowNumber);
+    private static int windowNumber; // TokenKey 를 정할 때 같이 정해진다 (WindowSuffix)
+
     // 한 PC 에서 게임 창을 여러 개 띄우면 PlayerPrefs 를 같이 쓰므로 (Windows 는 레지스트리: 다른 창이 저장한 값이 바로 보인다),
     // 창마다 다른 키에 토큰을 저장해 각자 자기 계정을 기억한다
     private static readonly string TokenKey = "auth.token" + InstanceSuffix();
@@ -96,6 +102,7 @@ public static class AuthApi
                 if (free)
                 {
                     windowLock = mutex;
+                    windowNumber = n;
                     return n == 1 ? "" : "." + n;
                 }
                 mutex.Dispose(); // 다른 창이 쓰고 있는 번호

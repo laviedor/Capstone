@@ -52,9 +52,9 @@ async function build(world, user, building, now = Date.now()) {
       return result;
     }
 
-    // produced_at: 생산을 여기까지 정산했다는 시각 (production.js). 지은 순간부터 생산 주기를 센다
+    // harvested_at: 마지막으로 수확한 시각 (harvest.js). 지은 순간부터 수확 주기를 센다
     await conn.query(
-      'INSERT INTO buildings (uid, village_id, owner_id, building_id, x, y, produced_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO buildings (uid, village_id, owner_id, building_id, x, y, harvested_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [building.id, world, user.id, building.type, building.x, building.y, new Date(now)],
     );
     await conn.commit();

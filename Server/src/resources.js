@@ -68,7 +68,26 @@ async function add(userId, gains) {
   }
 }
 
+// 장식 아이템 1개를 버림. 장식물이 아니거나 가진 것이 없으면 false
+async function discard(userId, item) {
+  if (!catalog.decorations.includes(item)) return false;
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    const done = await change(conn, userId, { [item]: -1 });
+    if (done) await conn.commit();
+    else await conn.rollback();
+    return done;
+  } catch (err) {
+    await conn.rollback();
+    throw err;
+  } finally {
+    conn.release();
+  }
+}
+
 // 가입할 때 주는 재화 (계정을 만드는 트랜잭션 안에서 호출)
 const grantStarter = (conn, userId) => change(conn, userId, STARTING_RESOURCES);
 
-module.exports = { get, change, add, grantStarter };
+module.exports = { get, change, add, discard, grantStarter };
