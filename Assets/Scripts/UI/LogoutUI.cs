@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// 회원 탈퇴 버튼 위의 [로그아웃] 버튼: 확인을 받은 뒤 저장된 토큰을 지우고 처음(로그인) 화면으로 돌아감
+// 계정 메뉴(톱니바퀴, AccountMenuUI)의 [로그아웃] 버튼: 확인을 받은 뒤 저장된 토큰을 지우고 처음(로그인) 화면으로 돌아감
 public class LogoutUI : MonoBehaviour
 {
     [SerializeField] private Button logoutButton;
