@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -73,6 +72,7 @@ public class CameraFollow : MonoBehaviour
 
     // 현재 건물 보기 모드 여부를 외부에서 조회
     public bool IsViewingBuilding => isViewingBuilding;
+    public MapBounds CurrentMapBounds => mapBounds;
 
     /// <summary>카메라 컴포넌트를 캐싱한다.</summary>
     private void Awake()
@@ -440,5 +440,41 @@ public class CameraFollow : MonoBehaviour
             minZoom,
             allowedMaxZoom
         );
+    }
+
+    // 씬 전환 시 카메라의 이동 경계를 변경한다.
+    public void SetMapBounds(MapBounds newBounds)
+    {
+        mapBounds = newBounds;
+
+        // 기존 수동 카메라 이동 상태 해제
+        isManualView = false;
+        isDragging = false;
+        isPanPointerDown = false;
+
+        // 건물 보기 모드 해제
+        isViewingBuilding = false;
+        viewingTarget = null;
+    }
+
+    //House Scene 
+    // 씬 전환 직후 플레이어 위치로 카메라를 이동한다.
+    public void SnapToPlayer()
+    {
+        if (target == null)
+            return;
+
+        Vector3 position = new Vector3(
+            target.position.x,
+            target.position.y,
+            transform.position.z
+        );
+
+        if (mapBounds != null && cam != null)
+        {
+            position = ClampCameraPosition(position);
+        }
+
+        transform.position = position;
     }
 }

@@ -149,9 +149,16 @@ public class BuildingPlacement : MonoBehaviour
     // 함수 설명: 건설 도구 사용 중 미리보기와 격자를 갱신하고 우클릭 설치를 처리한다.
     void Update()
     {
+        // 마을 밖에서는 일반 건물 건설을 허용하지 않는다.
+        if (!IsVillageBuildAllowed())
+        {
+            isPlaceClickPending = false;
+            SetBuildModeVisuals(false);
+            return;
+        }
+
         if (buildingModeManager == null)
             return;
-
 
         // 건설 모드가 아니면 Preview 숨김
         if (!buildingModeManager.IsBuildMode)
@@ -161,9 +168,7 @@ public class BuildingPlacement : MonoBehaviour
             return;
         }
 
-
-        // 철거 도구를 사용 중이면
-        // BuildingPlacement는 아무것도 하지 않음
+        // 철거 도구를 사용 중이면 배치 처리를 하지 않는다.
         if (buildingModeManager.CurrentTool != BuildingTool.Build)
         {
             isPlaceClickPending = false;
@@ -171,21 +176,13 @@ public class BuildingPlacement : MonoBehaviour
             return;
         }
 
-
-        // Build 도구일 때만 Preview 표시
         SetBuildModeVisuals(true);
 
-
         UpdatePreviewPosition();
-
         UpdateGridPreviewPosition();
-
         UpdateBuildGridPosition();
-
         UpdatePreviewColor();
-
         UpdateGridPreviewColor();
-
 
         HandlePlaceClick();
     }
@@ -433,6 +430,11 @@ public class BuildingPlacement : MonoBehaviour
     // 함수 설명: 설치 조건과 비용을 확인하고 실제 건물을 생성·초기화한 뒤 자원과 점유 정보를 갱신한다.
     bool PlaceBuilding()
     {
+        if (!IsVillageBuildAllowed())
+        {
+            Debug.LogWarning("현재 공간에서는 일반 건물을 설치할 수 없습니다.");
+            return false;
+        }
         // 설치할 수 없는 위치라면 건설 중단
         if (!canPlace)
         {
@@ -1014,6 +1016,26 @@ public class BuildingPlacement : MonoBehaviour
         }
 
         return occupied;
+    }
+
+    // 현재 일반 건물 건설이 허용되는 공간인지 확인한다.
+    public bool IsVillageBuildAllowed()
+    {
+        // 집 내부에서는 일반 건물 건설 금지
+        if (HouseSceneManager.Instance != null &&
+            HouseSceneManager.Instance.IsInsideHouse)
+        {
+            return false;
+        }
+
+        // 리소스 필드에서는 모든 일반 건물 건설 금지
+        if (FieldSceneManager.Instance != null &&
+            FieldSceneManager.Instance.IsInField)
+        {
+            return false;
+        }
+
+        return true;
     }
 
 

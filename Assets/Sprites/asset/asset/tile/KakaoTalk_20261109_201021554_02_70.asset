@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 13312, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: KakaoTalk_20261109_201021554_01_0
+  m_Name: KakaoTalk_20261109_201021554_02_70
   m_EditorClassIdentifier: 
-  m_Sprite: {fileID: -5104405323369475532, guid: baa34cdbcfde6b94bb4607949fbe98fd, type: 3}
+  m_Sprite: {fileID: 1708501490, guid: a9f16ca40a0a6ea47baf29c47036a3fe, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Transform:
     e00: 1

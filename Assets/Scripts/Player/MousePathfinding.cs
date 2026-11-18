@@ -300,7 +300,14 @@ public class MousePathfinding : MonoBehaviour
         bool isWalkable = true;
 
         // 건물 배치 시스템이 존재하면 점유 여부 확인
-        if (buildingPlacement != null)
+        // 마을에서만 일반 건물의 점유 셀을 장애물로 검사한다.
+        bool isVillage =
+            (HouseSceneManager.Instance == null ||
+             !HouseSceneManager.Instance.IsInsideHouse) &&
+            (FieldSceneManager.Instance == null ||
+             !FieldSceneManager.Instance.IsInField);
+
+        if (isVillage && buildingPlacement != null)
         {
             isWalkable =
                 !buildingPlacement.IsCellOccupied(cellPosition);
@@ -658,6 +665,17 @@ public class MousePathfinding : MonoBehaviour
 
         targetCell =
             grid.WorldToCell(mouseWorldPosition);
+
+        Debug.Log(
+            "[House 이동 좌표 확인]" +
+            "\n마우스 화면 좌표: " + mouseScreenPosition +
+            "\n마우스 월드 좌표: " + mouseWorldPosition +
+            "\nGrid 이름: " + grid.name +
+            "\nGrid 위치: " + grid.transform.position +
+            "\n목적지 Cell: " + targetCell +
+            "\n목적지 월드 좌표: " + grid.GetCellCenterWorld(targetCell) +
+            "\n현재 MapBounds: " + (mapBounds != null ? mapBounds.name : "없음")
+        );
 
 
         // ---------------------------

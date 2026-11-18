@@ -1,4 +1,3 @@
-
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -27,6 +26,10 @@ public class HouseSceneManager : MonoBehaviour
     [SerializeField]
     // 씬 전환 시 이동 경로와 이동 가능 영역을 변경할 경로 탐색 컴포넌트.
     private MousePathfinding mousePathfinding;
+    [Header("카메라")]
+    [SerializeField] private CameraFollow cameraFollow;
+
+    private MapBounds villageCameraBounds;
 
     [Header("플레이어")]
     // 씬 사이에서 위치를 이동시킬 플레이어 Transform.
@@ -56,6 +59,10 @@ public class HouseSceneManager : MonoBehaviour
         }
 
         Instance = this;
+        if (cameraFollow != null)
+        {
+            villageCameraBounds = cameraFollow.CurrentMapBounds;
+        }
     }
 
     // 집 입장
@@ -192,6 +199,11 @@ public class HouseSceneManager : MonoBehaviour
                 "InteriorMapBounds 또는 MousePathfinding이 없습니다."
             );
         }
+        if (cameraFollow != null)
+        {
+            cameraFollow.SetMapBounds(interiorBounds);
+            cameraFollow.SnapToPlayer();
+        }
 
         // 마을 화면 숨기기
         if (villageVisualRoot != null)
@@ -235,6 +247,12 @@ public class HouseSceneManager : MonoBehaviour
             player.position = villageReturnPosition;
 
             Debug.Log("플레이어 마을 위치 복구 완료");
+        }
+        // 마을 카메라 경계 복구
+        if (cameraFollow != null)
+        {
+            cameraFollow.SetMapBounds(villageCameraBounds);
+            cameraFollow.SnapToPlayer();
         }
 
         // 집 내부 오브젝트 숨기기
