@@ -136,6 +136,10 @@ public class BuildingDemolition : MonoBehaviour
     // 함수 설명: 외부에서 지정한 건물에 대한 철거 확인을 요청한다.
     public void RequestDemolition(Building building)
     {
+        // 친구 마을, 멀티버스에서는 철거할 수 없다: 알림을 띄우고 취소
+        if (WorldSync.BlockBuildingChange())
+            return;
+
         if (building == null ||
             !building.IsPlaced ||
             building.Data == null)
@@ -250,6 +254,13 @@ public class BuildingDemolition : MonoBehaviour
     {
         if (selectedBuilding == null)
             return;
+
+        // 확인창이 열린 사이에 친구 마을이나 멀티버스로 옮겼으면 철거하지 않는다
+        if (WorldSync.BlockBuildingChange())
+        {
+            ClearSelection();
+            return;
+        }
 
         Building buildingToDestroy = selectedBuilding;
 

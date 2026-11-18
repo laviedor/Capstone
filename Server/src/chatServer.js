@@ -180,7 +180,10 @@ function startChatServer(port) {
         await sendResources(client);
       } else if (msg.t === 'build' || msg.t === 'demolish' || msg.t === 'move') {
         if (client.userId === null) return refuse(client, '로그인해야 건물을 지을 수 있습니다.');
-        if (client.world !== MULTIVERSE && client.world !== client.userId) {
+        if (client.world === MULTIVERSE) {
+          return refuse(client, '멀티버스에서는 건물을 짓거나 철거할 수 없습니다.');
+        }
+        if (client.world !== client.userId) {
           return refuse(client, '친구의 마을에서는 구경만 할 수 있습니다.');
         }
         const world = client.world;

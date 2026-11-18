@@ -28,6 +28,23 @@ public class WorldSync : MonoBehaviour
     public bool Entered => Current >= 0;
     public bool InMultiverse => Current == Multiverse;
 
+    // 여기서 건물을 짓거나 철거, 이동할 수 없는지 (친구 마을은 구경만, 멀티버스는 건물을 바꿀 수 없음)
+    public bool BuildingLocked => Entered && (!CanBuild || InMultiverse);
+
+    // 건물을 바꿀 수 없을 때 띄우는 알림
+    public string BuildingLockedMessage =>
+        InMultiverse ? "멀티버스에서는 건물을 짓거나 철거할 수 없습니다." : "친구의 마을에서는 구경만 할 수 있습니다.";
+
+    // 지금 월드에서 건물을 바꿀 수 없으면 알림을 띄우고 true (건설, 철거를 시작하기 전에 부른다)
+    public static bool BlockBuildingChange()
+    {
+        WorldSync world = Instance;
+        if (world == null || !world.BuildingLocked) return false;
+
+        Toast.Show(world.BuildingLockedMessage);
+        return true;
+    }
+
     // 화면에 보여 줄 지금 위치
     public string Label
     {
@@ -135,10 +152,10 @@ public class WorldSync : MonoBehaviour
     {
         UpdateZone();
 
-        // 구경만 할 수 있는 곳에서는 건설 모드를 켤 수 없다 (서버도 건설 요청을 거절한다)
-        if (!Entered || CanBuild || !buildingModeManager.IsBuildMode) return;
+        // 친구 마을, 멀티버스에서는 건설 모드를 켤 수 없다 (서버도 건설, 철거 요청을 거절한다)
+        if (!BuildingLocked || !buildingModeManager.IsBuildMode) return;
 
         buildingModeManager.SendMessage("ToggleBuildMode", SendMessageOptions.DontRequireReceiver);
-        Toast.Show("친구의 마을에서는 구경만 할 수 있습니다.");
+        Toast.Show(BuildingLockedMessage);
     }
 }

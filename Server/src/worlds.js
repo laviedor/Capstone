@@ -7,7 +7,7 @@ const accounts = require('./accounts');
 const { MULTIVERSE, KICK_GRACE_MS } = require('./config');
 
 // 월드 이동
-//   월드 0: 멀티버스. 누구나 들어가고, 로그인한 사람은 건물도 짓는다
+//   월드 0: 멀티버스. 누구나 들어가지만 건물은 짓거나 철거할 수 없다 (구경과 채팅만)
 //   내 유저 id: 내 마을. 나만 짓고, 다른 사람은 보이지 않는다 (구경 온 친구만 보임)
 //   친구의 유저 id: 친구 마을. 친구만 들어갈 수 있고 구경만 한다
 // 같은 월드에 있는 사람끼리만 건물 변경(chatServer.js)을 주고받고,
@@ -20,7 +20,7 @@ function broadcast(world, line, except) {
 
 // client 가 들어갈 수 있는 월드면 { id, name: 마을 주인 닉네임(멀티버스는 ''), mine: 내 마을인지, build: 지을 수 있는지 }
 async function resolve(client, world) {
-  if (world === MULTIVERSE) return { id: MULTIVERSE, name: '', mine: false, build: client.userId !== null };
+  if (world === MULTIVERSE) return { id: MULTIVERSE, name: '', mine: false, build: false };
   if (client.userId === null) return null; // 로그인하지 않은 접속은 멀티버스만
   if (world === client.userId) return { id: world, name: client.name, mine: true, build: true };
 
