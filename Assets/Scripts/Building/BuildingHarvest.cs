@@ -123,6 +123,10 @@ public class BuildingHarvest : MonoBehaviour
         if (!isReady || playerResources == null)
             return;
 
+        // 수확은 서버에 알려야 한다 (재화는 서버가 계산한다). 알리지 못하면 수확하지 않는다
+        if (BuildingSync.Instance != null && !BuildingSync.Instance.OnLocalHarvest(this))
+            return;
+
         string buildingName =
             building != null && building.Data != null
                 ? building.Data.buildingName
@@ -137,6 +141,13 @@ public class BuildingHarvest : MonoBehaviour
 
         timer = 0f;
         SetReady(false);
+    }
+
+    /// <summary>수확까지 남은 시간을 맞춘다. 서버가 알려 준 수확 타이머를 반영할 때 쓴다. (BuildingSync 에서 호출)</summary>
+    public void SetRemainingTime(float seconds)
+    {
+        timer = Mathf.Clamp(harvestInterval - seconds, 0f, harvestInterval);
+        SetReady(timer >= harvestInterval);
     }
 
     /// <summary>BuildingData의 생산 목록으로 지급 자원을 정하고, 없으면 기본값을 쓴다.</summary>

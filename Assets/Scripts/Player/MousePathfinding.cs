@@ -136,7 +136,8 @@ public class MousePathfinding : MonoBehaviour
         // 좌클릭을 누른 위치를 기록해 두고, 뗄 때 클릭인지 드래그인지 판정한다
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
-            isLeftClickPending = true;
+            // 채팅창 등 UI 위를 누른 경우는 이동하지 않는다
+            isLeftClickPending = !UIInput.IsPointerOverUI();
             leftPressScreenPosition = Mouse.current.position.ReadValue();
         }
 

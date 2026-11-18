@@ -1,0 +1,35 @@
+{
+  "blacksmith": {
+    "name": "Blacksmith",
+    "width": 4,
+    "height": 4,
+    "cost": { "stone": 100, "wood": 50 },
+    "harvest": { "stone": 10 },
+    "harvestSeconds": 30
+  },
+  "decoration_tree_01": {
+    "name": "작은 나무",
+    "width": 1,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true
+  },
+  "player_house": {
+    "name": "Player House",
+    "width": 4,
+    "height": 4,
+    "cost": { "gold": 100, "wood": 100 },
+    "harvest": { "gold": 10 },
+    "harvestSeconds": 30
+  },
+  "shop_001": {
+    "name": "Test Shop",
+    "width": 4,
+    "height": 4,
+    "cost": { "stone": 50, "wood": 100 },
+    "harvest": { "gold": 10 },
+    "harvestSeconds": 30
+  }
+}
