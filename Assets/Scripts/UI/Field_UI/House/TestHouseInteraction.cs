@@ -1,35 +1,17 @@
 using UnityEngine;
 
-public class TestHouseInteraction : MonoBehaviour
+// ë§ˆì„ì— ë¯¸ë¦¬ ë†“ì•„ ë‘” ì‹œí—˜ìš© ì§‘ì˜ ì…êµ¬.
+//   í´ë¦­í•˜ë©´ ëœ¨ëŠ” 'ì´ë™' ë²„íŠ¼ì„ ëˆ„ë¥´ê±°ë‚˜ ë”ë¸”í´ë¦­í•˜ë©´ ì§‘ ì•ˆìœ¼ë¡œ ë“¤ì–´ê°„ë‹¤ (í”Œë ˆì´ì–´ ìœ„ì¹˜ì™€ ìƒê´€ì—†ìŒ)
+public class TestHouseInteraction : HouseDoor
 {
-    [Header("»óÈ£ÀÛ¿ë ¼³Á¤")]
-    [SerializeField] private float interactionDistance = 1.5f;
+    public override bool CanUse => CanEnterHouse();
 
-    [Header("ÇÃ·¹ÀÌ¾î")]
-    [SerializeField] private Transform player;
-
-    private void Update()
+    public override void Use()
     {
-        if (player == null || HouseSceneManager.Instance == null)
+        if (!CanUse)
             return;
 
-        // ÀÌ¹Ì Áı ¾È¿¡ ÀÖ´Ù¸é ÀÔÀå ÀÔ·ÂÀ» ¹ŞÁö ¾Ê´Â´Ù.
-        if (HouseSceneManager.Instance.IsInsideHouse)
-            return;
-
-        // ÇÃ·¹ÀÌ¾î¿Í °Ç¹° »çÀÌÀÇ °Å¸® °è»ê
-        float distance = Vector2.Distance(
-            player.position,
-            transform.position
-        );
-
-        // ÀÏÁ¤ °Å¸® ÀÌ³»¿¡¼­ FÅ°¸¦ ´©¸£¸é Áı ÀÔÀå
-        if (distance <= interactionDistance &&
-            Input.GetKeyDown(KeyCode.F))
-        {
-            Debug.Log("ÀÓ½Ã Áı »óÈ£ÀÛ¿ë ¼º°ø");
-
-            HouseSceneManager.Instance.EnterHouse();
-        }
+        Debug.Log("ì„ì‹œ ì§‘ ì…ì¥");
+        HouseSceneManager.Instance.EnterHouse();
     }
 }

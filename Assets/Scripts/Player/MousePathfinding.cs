@@ -86,6 +86,100 @@ public class MousePathfinding : MonoBehaviour
     private Vector2 leftPressScreenPosition;
 
 
+    // 플레이어가 서 있는 칸에서 빈칸을 찾을 때 살펴볼 최대 칸 수
+    private const int MaxUnstuckSearchCells = 4000;
+
+    // 집 더블클릭 판정
+    private const float DoubleClickSeconds = 0.35f;
+    private HouseDoor lastClickedDoor;
+    private float lastDoorClickTime = -1f;
+
+    /// <summary>건물 배치가 바뀌면(월드 이동 후 건물 목록 수신 등) 플레이어가 건물 안에 끼지 않았는지 확인한다.</summary>
+    private void OnEnable()
+    {
+        BuildingSync.LayoutChanged += OnBuildingLayoutChanged;
+    }
+
+    private void OnBuildingLayoutChanged()
+    {
+        EnsurePlayerOnWalkableCell();
+    }
+
+    /// <summary>
+    /// 플레이어가 건물이 차지한 칸 위에 서 있으면 가장 가까운 빈칸으로 옮긴다. 옮겼으면 true.
+    /// 맵을 옮기면 플레이어가 시작 자리(맵 중앙)에 서는데, 그 자리에 건물이 있으면 길찾기 시작 칸이 막혀 움직일 수 없게 된다.
+    /// </summary>
+    public bool EnsurePlayerOnWalkableCell()
+    {
+        if (grid == null || player == null)
+            return false;
+
+        Vector3Int start = grid.WorldToCell(player.position);
+
+        if (GetNode(start).walkable)
+            return false;
+
+        Vector3Int[] directions =
+        {
+            new Vector3Int(1, 0, 0),
+            new Vector3Int(-1, 0, 0),
+            new Vector3Int(0, 1, 0),
+            new Vector3Int(0, -1, 0)
+        };
+
+        // 가까운 칸부터 넓혀 가며 이동 가능한 빈칸을 찾는다 (맵 밖은 제외)
+        HashSet<Vector3Int> visited = new HashSet<Vector3Int> { start };
+        Queue<Vector3Int> queue = new Queue<Vector3Int>();
+        queue.Enqueue(start);
+
+        while (queue.Count > 0 && visited.Count < MaxUnstuckSearchCells)
+        {
+            Vector3Int cell = queue.Dequeue();
+
+            foreach (Vector3Int direction in directions)
+            {
+                Vector3Int next = cell + direction;
+
+                if (!visited.Add(next))
+                    continue;
+
+                Vector3 nextWorld = grid.GetCellCenterWorld(next);
+
+                if (mapBounds != null && !mapBounds.IsInside(nextWorld))
+                    continue;
+
+                if (GetNode(next).walkable)
+                {
+                    MovePlayerTo(nextWorld);
+                    Debug.Log("건물 안에 있던 플레이어를 가까운 빈칸으로 옮김: " + next);
+                    return true;
+                }
+
+                queue.Enqueue(next);
+            }
+        }
+
+        Debug.LogWarning("플레이어 주변에서 이동 가능한 빈칸을 찾지 못했습니다.");
+        return false;
+    }
+
+    // 진행 중인 이동을 멈추고 플레이어를 그 위치로 옮긴다
+    private void MovePlayerTo(Vector3 worldPosition)
+    {
+        CancelResourceTarget();
+
+        if (playerMovement != null)
+            playerMovement.StopMovement();
+
+        ClearMovementVisuals();
+
+        player.position = new Vector3(worldPosition.x, worldPosition.y, player.position.z);
+        nodes.Clear();
+
+        if (cameraFollow != null)
+            cameraFollow.SnapToPlayer();
+    }
+
     /// <summary>최초 지정된 마을 경계를 저장한다.</summary>
     private void Awake()
     {
@@ -195,6 +289,18 @@ public class MousePathfinding : MonoBehaviour
                 }
             }
 
+            // 집(입구·출구)을 눌렀다면 이동 버튼을 띄우고, 두 번 연달아 누르면 바로 들어간다
+            HouseDoor door = HouseDoor.FindAt(clickPosition);
+
+            if (door != null)
+            {
+                OnHouseDoorClicked(door, mouseScreenPosition);
+                return;
+            }
+
+            lastClickedDoor = null;
+            HouseMovePopup.Hide();
+
             foreach (Collider2D hit in hitColliders)
             {
                 // 자식 콜라이더를 클릭해도 부모의 ResourceNode를 찾는다
@@ -218,6 +324,24 @@ public class MousePathfinding : MonoBehaviour
             // 자원이 아닌 바닥을 클릭한 경우 기존 이동 실행
             SetDestination();
         }
+    }
+
+    /// <summary>집을 한 번 누르면 마우스 옆에 '이동' 버튼을 띄우고, 빠르게 두 번 누르면 바로 이동한다.</summary>
+    private void OnHouseDoorClicked(HouseDoor door, Vector2 screenPosition)
+    {
+        float now = Time.unscaledTime;
+
+        if (door == lastClickedDoor && now - lastDoorClickTime <= DoubleClickSeconds)
+        {
+            lastClickedDoor = null;
+            HouseMovePopup.Hide();
+            door.Use();
+            return;
+        }
+
+        lastClickedDoor = door;
+        lastDoorClickTime = now;
+        HouseMovePopup.Show(door, screenPosition);
     }
 
     /// <summary>경로 선과 목적지 마커를 제거한다.</summary>
@@ -624,6 +748,9 @@ public class MousePathfinding : MonoBehaviour
         // 1. Player의 시작 위치
         // ---------------------------
 
+        // 건물 칸에 끼어 있으면 먼저 빈칸으로 빼낸다 (시작 칸이 막혀 있으면 길을 찾을 수 없다)
+        EnsurePlayerOnWalkableCell();
+
         startCell =
             grid.WorldToCell(player.position);
 
@@ -776,6 +903,7 @@ public class MousePathfinding : MonoBehaviour
             return;
 
         CancelResourceTarget();
+        EnsurePlayerOnWalkableCell();
 
         Vector3Int playerCell = grid.WorldToCell(player.position);
         Vector3Int resourceCell = grid.WorldToCell(resource.transform.position);
@@ -961,9 +1089,10 @@ public class MousePathfinding : MonoBehaviour
         }
     }
 
-    /// <summary>컴포넌트가 비활성화될 때 진행 중인 채집을 취소한다.</summary>
+    /// <summary>컴포넌트가 비활성화될 때 진행 중인 채집을 취소하고 건물 배치 알림 구독을 해제한다.</summary>
     private void OnDisable()
     {
+        BuildingSync.LayoutChanged -= OnBuildingLayoutChanged;
         CancelResourceTarget();
     }
 }

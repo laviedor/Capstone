@@ -32,8 +32,8 @@ async function list(world) {
 }
 
 // 건설: 비용을 내고 건물을 저장한다
-//   -> 'ok' | 'unknown'(없는 건물 종류) | 'full'(건물이 너무 많음) | 'blocked'(다른 건물과 겹침)
-//      | 'poor'(자원 부족) | 'duplicate'(이미 있는 id)
+//   -> 'ok' | 'unknown'(없는 건물 종류) | 'full'(건물이 너무 많음) | 'limit'(마을당 개수 제한, 예: 플레이어 집 1개)
+//      | 'blocked'(다른 건물과 겹침) | 'poor'(자원 부족) | 'duplicate'(이미 있는 id)
 async function build(world, user, building, now = Date.now()) {
   const data = catalog.get(building.type);
   if (!data) return 'unknown';
@@ -41,10 +41,12 @@ async function build(world, user, building, now = Date.now()) {
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
-    const [rows] = await conn.query('SELECT building_id AS type, x, y FROM buildings WHERE village_id = ?', [world]);
+    // FOR UPDATE: 같은 마을에 동시에 짓는 요청이 개수 제한을 함께 통과하지 않도록 잠근다
+    const [rows] = await conn.query('SELECT building_id AS type, x, y FROM buildings WHERE village_id = ? FOR UPDATE', [world]);
 
     let result = 'ok';
     if (rows.length >= MAX_BUILDINGS) result = 'full';
+    else if (data.maxPerVillage > 0 && rows.filter(row => row.type === building.type).length >= data.maxPerVillage) result = 'limit';
     else if (rows.some(row => overlaps(row, building))) result = 'blocked';
     else if (!await resources.change(conn, user.id, negate(data.cost))) result = 'poor';
     if (result !== 'ok') {

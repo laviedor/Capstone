@@ -104,6 +104,13 @@ public class ConstructionDetailUI : MonoBehaviour
             enough = count > 0;
             buildLabel.text = enough ? "배치하기" : "보유한 장식이 없어요";
         }
+        else if (BuildingLimits.ReachedLimit(data))
+        {
+            // 마을당 개수 제한 (예: 플레이어 집은 하나만)
+            costText.text = BuildingLimits.LimitText(data);
+            enough = false;
+            buildLabel.text = "이미 지었어요";
+        }
         else
         {
             costText.text = BuildCostText(data, out enough);

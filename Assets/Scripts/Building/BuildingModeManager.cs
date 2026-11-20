@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 // 스크립트 설명: 건설 모드의 활성화 여부와 현재 선택 도구를 관리한다.
 public class BuildingModeManager : MonoBehaviour
@@ -25,32 +24,12 @@ public class BuildingModeManager : MonoBehaviour
         get { return currentTool; }
     }
 
-    // 함수 설명: B키로 건설 모드를 전환하고 숫자 1·2키로 도구를 선택한다.
-    void Update()
+    // 건설·철거는 마우스로만 한다 (키보드 단축키 없음).
+    //   건설: Tab 메뉴 건물 탭의 카드 → 건설하기 / 철거: 건물 탭의 [철거] 버튼
+    //   끝내기: 화면 아래 안내 바의 [취소]/[끝내기] 버튼 또는 우클릭 (BuildModeHUD)
+    private void Awake()
     {
-        if (Keyboard.current == null)
-            return;
-
-        // B = 건설 모드 ON/OFF
-        if (Keyboard.current.bKey.wasPressedThisFrame)
-        {
-            ToggleBuildMode();
-        }
-
-        if (!isBuildMode)
-            return;
-
-        // 1 = 건설 도구
-        if (Keyboard.current.digit1Key.wasPressedThisFrame)
-        {
-            SetBuildTool();
-        }
-
-        // 2 = 철거 도구
-        if (Keyboard.current.digit2Key.wasPressedThisFrame)
-        {
-            SetDemolishTool();
-        }
+        BuildModeHUD.Ensure(this);
     }
 
     // 함수 설명: 건설 모드를 켜거나 끄며 활성화 시 건설 도구를 기본 선택한다.
@@ -80,6 +59,16 @@ public class BuildingModeManager : MonoBehaviour
 
         Debug.Log("건설 모드 ON");
         Debug.Log("현재 도구 : Build");
+    }
+
+    // 외부 UI에서 철거 모드를 활성화
+    // 함수 설명: 건물 탭의 [철거] 버튼에서 호출한다. 건설 모드를 켜고 철거 도구를 선택한다.
+    public void EnterDemolishMode()
+    {
+        isBuildMode = true;
+        currentTool = BuildingTool.Demolish;
+
+        Debug.Log("철거 모드 ON");
     }
 
     // 함수 설명: 건설 모드를 끈다. (건물 하나를 설치한 뒤 등 외부에서 호출)

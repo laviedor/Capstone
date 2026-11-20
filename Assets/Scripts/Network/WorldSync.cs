@@ -121,7 +121,7 @@ public class WorldSync : MonoBehaviour
             if (HouseSceneManager.Instance != null && HouseSceneManager.Instance.IsInsideHouse)
                 HouseSceneManager.Instance.ExitHouse();
             else if (FieldSceneManager.Instance != null && FieldSceneManager.Instance.IsInField)
-                FieldSceneManager.Instance.ReturnToVillage();
+                FieldSceneManager.Instance.ReturnToVillage(false); // 위치는 아래에서 새 월드의 시작 자리로 정한다
             playerMovement.StopMovement();
             player.position = spawnPosition;
         }

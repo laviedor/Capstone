@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -28,99 +29,164 @@ public class BuildingDemolition : MonoBehaviour
     // 변수 설명: 현재 선택하거나 철거 대상으로 지정한 건물
     private Building selectedBuilding;
 
-    // 선택 전 원래 색상
-    // 변수 설명: 철거 대상 선택 전 스프라이트 색상
-    private Color originalColor = Color.white;
+    // 철거 모드에서 마우스를 올린 건물 (붉게 깜빡이며 표시)
+    private Building hoveredBuilding;
+
+    // 색을 바꿔 둔 건물과 그 그림들의 원래 색 (한 번에 한 건물만 강조한다)
+    private Building highlightedBuilding;
+    private readonly List<KeyValuePair<SpriteRenderer, Color>> originalColors =
+        new List<KeyValuePair<SpriteRenderer, Color>>();
+
+    [Header("강조 색")]
+    // 마우스를 올린 건물의 색 (두 색 사이를 오가며 깜빡인다)
+    [SerializeField] private Color hoverTintA = new Color(1f, 0.84f, 0.8f, 1f);
+    [SerializeField] private Color hoverTintB = new Color(1f, 0.62f, 0.56f, 1f);
+    [SerializeField] private float hoverPulseSpeed = 6f;
+    // 철거 확인창이 떠 있는 동안의 건물 색
+    [SerializeField] private Color selectedTint = new Color(1f, 0.42f, 0.4f, 1f);
 
     public Building SelectedBuilding
     {
         get { return selectedBuilding; }
     }
 
-    // 함수 설명: 철거 모드에서 좌클릭 입력을 받아 철거할 건물을 선택한다.
+    // 함수 설명: 철거 모드에서 마우스를 올린 건물을 강조하고, 좌클릭하면 철거 확인창을 연다.
     private void Update()
     {
         if (buildingModeManager == null)
             return;
 
-        // 철거 확인창이 열려 있으면 입력 차단
+        // 철거 확인창이 열려 있으면 선택한 건물만 강조한 채로 입력 차단
         if (confirmUI != null && confirmUI.IsOpen)
             return;
 
-        if (!buildingModeManager.IsBuildMode)
+        if (!buildingModeManager.IsBuildMode ||
+            buildingModeManager.CurrentTool != BuildingTool.Demolish ||
+            Mouse.current == null)
         {
             ClearSelection();
+            SetHovered(null);
             return;
         }
 
-        if (buildingModeManager.CurrentTool != BuildingTool.Demolish)
-        {
+        // 확인창을 닫고 돌아왔으면 선택 표시를 지운다
+        if (selectedBuilding != null)
             ClearSelection();
-            return;
+
+        // 안내 바의 [끝내기] 버튼 등 UI 위에서는 건물을 고르지 않는다
+        bool overUI = UIInput.IsPointerOverUI();
+        SetHovered(overUI ? null : BuildingAtPointer());
+
+        if (hoveredBuilding != null)
+        {
+            float t = (Mathf.Sin(Time.unscaledTime * hoverPulseSpeed) + 1f) / 2f;
+            Highlight(hoveredBuilding, Color.Lerp(hoverTintA, hoverTintB, t));
         }
 
-        if (Mouse.current == null)
-            return;
-
-        if (Mouse.current.leftButton.wasPressedThisFrame)
+        if (Mouse.current.leftButton.wasPressedThisFrame && !overUI && hoveredBuilding != null)
         {
-            TrySelectBuilding();
+            SelectBuilding(hoveredBuilding);
         }
     }
 
-    // 함수 설명: 마우스 위치의 2D 충돌체에서 Building 컴포넌트를 탐색한다.
-    void TrySelectBuilding()
+    // 함수 설명: 마우스 위치에 있는 설치된 건물을 찾는다.
+    //           맵 경계(MapBounds) 같은 큰 충돌체가 함께 겹치므로, 겹친 충돌체를 모두 살펴 건물을 고른다.
+    //           건물끼리 겹쳐 있으면 화면에서 위에 그려진(앞쪽) 건물을 고른다.
+    Building BuildingAtPointer()
     {
-        Vector2 mouseScreenPosition =
-            Mouse.current.position.ReadValue();
+        Camera cam = Camera.main;
+
+        if (cam == null)
+            return null;
 
         Vector3 mouseWorldPosition =
-            Camera.main.ScreenToWorldPoint(mouseScreenPosition);
+            cam.ScreenToWorldPoint(Mouse.current.position.ReadValue());
 
-        Vector2 mousePosition2D =
-            new Vector2(
-                mouseWorldPosition.x,
-                mouseWorldPosition.y
-            );
+        Collider2D[] hits = Physics2D.OverlapPointAll(
+            new Vector2(mouseWorldPosition.x, mouseWorldPosition.y));
 
-        Collider2D hit =
-            Physics2D.OverlapPoint(mousePosition2D);
+        Building best = null;
+        int bestOrder = int.MinValue;
+        float bestY = float.MaxValue;
 
-        if (hit == null)
+        foreach (Collider2D hit in hits)
         {
-            ClearSelection();
-            return;
+            Building building = hit.GetComponentInParent<Building>();
+
+            if (building == null || !building.IsPlaced || building.Data == null)
+                continue;
+
+            SpriteRenderer renderer = building.GetComponentInChildren<SpriteRenderer>();
+            int order = renderer != null ? renderer.sortingOrder : 0;
+            float y = building.transform.position.y;
+
+            // 정렬 순서가 높을수록, 같으면 아래쪽(앞쪽)에 있을수록 우선
+            if (order > bestOrder || (order == bestOrder && y < bestY))
+            {
+                best = building;
+                bestOrder = order;
+                bestY = y;
+            }
         }
 
-        Building building =
-            hit.GetComponentInParent<Building>();
+        return best;
+    }
 
-        if (building == null)
-        {
-            ClearSelection();
+    // 마우스를 올린 건물이 바뀌면 이전 건물의 색을 되돌린다
+    void SetHovered(Building building)
+    {
+        if (hoveredBuilding == building)
             return;
+
+        hoveredBuilding = building;
+
+        if (building == null && selectedBuilding == null)
+            RestoreHighlight();
+    }
+
+    // 건물의 모든 그림에 색을 곱해 강조한다 (원래 색은 기억해 두었다가 되돌린다)
+    void Highlight(Building building, Color tint)
+    {
+        if (highlightedBuilding != building)
+        {
+            RestoreHighlight();
+            highlightedBuilding = building;
+
+            if (building != null)
+            {
+                foreach (SpriteRenderer renderer in building.GetComponentsInChildren<SpriteRenderer>())
+                    originalColors.Add(new KeyValuePair<SpriteRenderer, Color>(renderer, renderer.color));
+            }
         }
 
-        SelectBuilding(building);
+        foreach (KeyValuePair<SpriteRenderer, Color> pair in originalColors)
+        {
+            if (pair.Key != null)
+                pair.Key.color = pair.Value * tint;
+        }
+    }
+
+    // 강조한 건물의 색을 원래대로 되돌린다
+    void RestoreHighlight()
+    {
+        foreach (KeyValuePair<SpriteRenderer, Color> pair in originalColors)
+        {
+            if (pair.Key != null)
+                pair.Key.color = pair.Value;
+        }
+
+        originalColors.Clear();
+        highlightedBuilding = null;
     }
 
     // 함수 설명: 철거 대상으로 지정하고 붉게 표시한 뒤 확인창을 연다.
     void SelectBuilding(Building building)
     {
-        ClearSelection();
+        if (building == null || building.Data == null)
+            return;
 
         selectedBuilding = building;
-
-        SpriteRenderer renderer =
-            selectedBuilding.GetComponent<SpriteRenderer>();
-
-        if (renderer != null)
-        {
-            originalColor = renderer.color;
-
-            renderer.color =
-                new Color(1f, 0.3f, 0.3f, 1f);
-        }
+        Highlight(building, selectedTint);
 
         Debug.Log(
             "철거 대상 선택 : " +
@@ -130,6 +196,10 @@ public class BuildingDemolition : MonoBehaviour
         if (confirmUI != null)
         {
             confirmUI.Open(selectedBuilding);
+        }
+        else
+        {
+            Debug.LogError("철거 확인 UI가 연결되지 않았습니다.");
         }
     }
 
@@ -232,20 +302,13 @@ public class BuildingDemolition : MonoBehaviour
         if (selectedBuilding == null)
             return;
 
-        SpriteRenderer renderer =
-            selectedBuilding.GetComponent<SpriteRenderer>();
-
-        if (renderer != null)
-        {
-            renderer.color = originalColor;
-        }
-
         Debug.Log(
             "철거 대상 선택 해제 : " +
-            selectedBuilding.Data.buildingName
+            (selectedBuilding.Data != null ? selectedBuilding.Data.buildingName : selectedBuilding.name)
         );
 
         selectedBuilding = null;
+        RestoreHighlight();
     }
 
     // 실제 철거 처리
@@ -307,6 +370,9 @@ public class BuildingDemolition : MonoBehaviour
         }
 
         selectedBuilding = null;
+        hoveredBuilding = null;
+        originalColors.Clear(); // 곧 지워질 건물이므로 색을 되돌리지 않는다
+        highlightedBuilding = null;
 
         Destroy(buildingToDestroy.gameObject);
     }

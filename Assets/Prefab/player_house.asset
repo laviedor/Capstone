@@ -28,3 +28,4 @@ MonoBehaviour:
   - resourceType: 2
     amount: 10
   productionInterval: 10
+  maxPerVillage: 1

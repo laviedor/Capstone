@@ -22,7 +22,8 @@
     "height": 4,
     "cost": { "gold": 100, "wood": 100 },
     "harvest": { "gold": 10 },
-    "harvestSeconds": 30
+    "harvestSeconds": 30,
+    "maxPerVillage": 1
   },
   "shop_001": {
     "name": "Test Shop",

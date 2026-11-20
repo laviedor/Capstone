@@ -407,9 +407,9 @@ public static class CozyTabMenuBuilder
         rowRt.anchoredPosition = new Vector2(20f, 0f);
         rowRt.sizeDelta = new Vector2(320f, 34f);
 
-        TabButtonVisual pv = StyleTab(playerTab, 0, "플레이어", kit.dotPlayer, kit.gPerson, kit);
-        TabButtonVisual bv = StyleTab(buildingTab, 1, "건물", kit.dotBuilding, kit.gHouse, kit);
-        TabButtonVisual fv = StyleTab(fieldTab, 2, "필드", kit.dotField, kit.gPin, kit);
+        TabButtonVisual pv = StyleTab(playerTab, 0, "인벤토리", kit.dotPlayer, kit.gPerson, kit);
+        TabButtonVisual bv = StyleTab(buildingTab, 1, "건설", kit.dotBuilding, kit.gHouse, kit);
+        TabButtonVisual fv = StyleTab(fieldTab, 2, "탐색", kit.dotField, kit.gPin, kit);
 
         // 자원 표시: 기존 ResourceArea(InventoryResourceUI)를 창 오른쪽 위로 옮긴다.
         InventoryResourceUI resourceUI = window.GetComponentInChildren<InventoryResourceUI>(true);
@@ -952,7 +952,7 @@ public static class CozyTabMenuBuilder
                 hlg.childForceExpandHeight = true;
 
                 SetRef(tabUI, "constructionVisual", SegmentButton(cb, "건설", kit, true));
-                SetRef(tabUI, "managementVisual", SegmentButton(mb, "관리", kit, false));
+                SetRef(tabUI, "managementVisual", SegmentButton(mb, "철거", kit, false)); // 예전 관리 탭 버튼: 이제 철거 모드 버튼
             }
         }
 

@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 // 스크립트 설명: 건물 목록 패널의 표시 상태를 관리한다.
 public class BuildingListUI : MonoBehaviour
@@ -29,7 +28,7 @@ public class BuildingListUI : MonoBehaviour
         }
     }
 
-    // 함수 설명: 건설 모드 상태를 확인하고 O키로 건물 목록 표시를 전환한다.
+    // 함수 설명: 건설 모드가 아니면 건물 목록을 닫는다. (키보드 단축키는 쓰지 않는다)
     private void Update()
     {
         if (buildingModeManager == null)
@@ -39,13 +38,6 @@ public class BuildingListUI : MonoBehaviour
         if (!buildingModeManager.IsBuildMode)
         {
             Close();
-            return;
-        }
-
-        // O키로 건물 목록 열기 / 닫기
-        if (Keyboard.current.oKey.wasPressedThisFrame)
-        {
-            Toggle();
         }
     }
 

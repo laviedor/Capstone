@@ -1,14 +1,15 @@
 const pool = require('./db');
 const catalog = require('./catalog');
 const resources = require('./resources');
-const { HARVEST_GRACE_MS } = require('./config');
+const { HARVEST_GRACE_MS, MULTIVERSE } = require('./config');
 
 // 건물 수확 (클라이언트 BuildingHarvest: 건물 위에 뜨는 수확 버튼)
 //   장식이 아닌 건물은 지은 뒤 수확 주기(harvestSeconds)가 지나면 수확할 수 있다
 //   수확하면 그 건물의 수확량(harvest)을 주인의 재화에 더하고 주기를 처음부터 다시 센다
 //   수확하지 않고 두어도 더 쌓이지는 않는다 (접속하지 않은 동안에도 한 번 수확할 양만 기다린다)
 //   건물마다 harvested_at(마지막으로 수확한 시각, 수확한 적이 없으면 지은 시각)을 DB 에 둔다
-//   내가 지은 건물만 수확할 수 있다 (멀티버스에서도, 친구 마을에는 내 건물이 없다)
+//   내가 지은 건물만 수확할 수 있다 (친구 마을에는 내 건물이 없다)
+//   멀티버스는 모두가 같이 쓰는 공용 공간이라 그곳에 있는 건물은 수확하지 않는다
 
 // 수확까지 남은 시간(초, 올림). 0 이면 지금 수확할 수 있다
 const remaining = (data, harvestedAt, now) =>
@@ -16,6 +17,7 @@ const remaining = (data, harvestedAt, now) =>
 
 // 이 월드에 있는 내 건물 중 수확하는 건물의 타이머 [{ id, remaining }]
 async function timers(world, userId, now = Date.now()) {
+  if (world === MULTIVERSE) return [];
   const [rows] = await pool.query(
     'SELECT uid AS id, building_id AS type, harvested_at FROM buildings WHERE village_id = ? AND owner_id = ? ORDER BY building_uid',
     [world, userId],
@@ -30,6 +32,7 @@ async function timers(world, userId, now = Date.now()) {
 //      { result: 'early', timer }                              아직 수확할 수 없음. timer: 남은 시간
 //      { result: 'none' }                                      이 월드에 없는 건물, 남의 건물, 수확하지 않는 건물
 async function harvest(world, userId, id, now = Date.now()) {
+  if (world === MULTIVERSE) return { result: 'none' };
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();

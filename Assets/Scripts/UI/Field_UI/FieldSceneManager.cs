@@ -20,6 +20,18 @@ public class FieldSceneManager : MonoBehaviour
     // 필드로 이동할 때 숨기고 돌아오면 다시 표시할 마을 바닥입니다.
     [SerializeField] private GameObject villageTilemap;
 
+    [Header("플레이어 (비어 있으면 자동으로 찾음)")]
+    // 필드에 들어가기 전 마을 위치를 저장했다가 돌아올 때 되돌릴 플레이어입니다.
+    [SerializeField] private Transform player;
+    // 씬 전환 전 이동·경로 표시를 정리하고, 돌아온 뒤 건물에 끼지 않았는지 확인합니다.
+    [SerializeField] private MousePathfinding mousePathfinding;
+    // 돌아온 뒤 카메라를 플레이어 위치로 바로 옮깁니다.
+    [SerializeField] private CameraFollow cameraFollow;
+
+    // 필드에 들어가기 직전의 마을 위치 (돌아올 때 이 자리로 돌아온다)
+    private Vector3 villageReturnPosition;
+    private bool hasVillageReturnPosition;
+
     // 씬 로드/언로드가 진행 중일 때 중복 요청을 막는 상태값입니다.
     private bool isTransitioning = false;
     // 현재 추가 로드된 필드 씬의 이름입니다. 빈 문자열이면 마을 상태입니다.
@@ -52,7 +64,46 @@ public class FieldSceneManager : MonoBehaviour
         if (string.IsNullOrEmpty(sceneName))
             return;
 
+        FindReferences();
+
+        // 탐색 창 등 열려 있는 창을 닫는다
+        CloseWindows();
+
+        // 이동 중이던 경로와 채집을 정리하고, 지금 마을 위치를 기억해 둔다
+        if (mousePathfinding != null)
+            mousePathfinding.PrepareForSceneTransition();
+
+        if (player != null)
+        {
+            villageReturnPosition = player.position;
+            hasVillageReturnPosition = true;
+        }
+
         StartCoroutine(LoadFieldRoutine(sceneName));
+    }
+
+    // 비어 있는 참조를 씬에서 찾는다
+    private void FindReferences()
+    {
+        if (player == null && HouseSceneManager.Instance != null)
+            player = HouseSceneManager.Instance.Player;
+
+        if (mousePathfinding == null)
+            mousePathfinding = FindFirstObjectByType<MousePathfinding>();
+
+        if (cameraFollow == null)
+            cameraFollow = FindFirstObjectByType<CameraFollow>();
+    }
+
+    // 장소를 옮길 때는 열려 있는 창(인벤토리·건설·탐색)과 집 이동 버튼을 닫는다
+    private static void CloseWindows()
+    {
+        InventoryUI inventoryUI = FindFirstObjectByType<InventoryUI>();
+
+        if (inventoryUI != null)
+            inventoryUI.CloseInventory();
+
+        HouseMovePopup.Hide();
     }
 
     // 필드 씬을 Additive 방식으로 비동기 로드한 후 마을의 화면 표시를 숨깁니다.
@@ -96,11 +147,26 @@ public class FieldSceneManager : MonoBehaviour
         isTransitioning = false;
     }
 
-    // 필드에 있을 때만 마을 복귀 코루틴을 실행합니다.
+    // 필드에 있을 때만 마을 복귀 코루틴을 실행합니다. 필드에 들어가기 전 마을 위치로 돌아옵니다.
     public void ReturnToVillage()
+    {
+        ReturnToVillage(true);
+    }
+
+    // restorePosition 이 false 면 위치는 되돌리지 않는다 (다른 월드로 옮겨 시작 자리에 세울 때: WorldSync)
+    public void ReturnToVillage(bool restorePosition)
     {
         if (isTransitioning || string.IsNullOrEmpty(currentFieldScene))
             return;
+
+        FindReferences();
+        CloseWindows();
+
+        if (mousePathfinding != null)
+            mousePathfinding.PrepareForSceneTransition();
+
+        if (!restorePosition)
+            hasVillageReturnPosition = false;
 
         StartCoroutine(ReturnRoutine());
     }
@@ -137,6 +203,25 @@ public class FieldSceneManager : MonoBehaviour
 
         // 필드 이름을 비워 마을에 있는 상태로 전환합니다.
         currentFieldScene = "";
+
+        // 필드에 들어가기 전 마을 위치로 되돌린다 (필드에서 돌아다닌 위치에 그대로 서 있지 않도록)
+        if (hasVillageReturnPosition && player != null)
+        {
+            if (mousePathfinding != null)
+                mousePathfinding.PrepareForSceneTransition();
+
+            player.position = villageReturnPosition;
+            Debug.Log("플레이어 마을 위치 복구 완료");
+        }
+
+        hasVillageReturnPosition = false;
+
+        // 필드에 있는 동안 그 자리에 건물이 생겼으면 가까운 빈칸으로 옮긴다
+        if (mousePathfinding != null)
+            mousePathfinding.EnsurePlayerOnWalkableCell();
+
+        if (cameraFollow != null)
+            cameraFollow.SnapToPlayer();
 
         Debug.Log("마을 복귀 완료");
 

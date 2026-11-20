@@ -451,6 +451,10 @@ public class BuildingPlacement : MonoBehaviour
             return false;
         }
 
+        // 마을당 개수 제한 (예: 플레이어 집은 하나만)
+        if (BuildingLimits.BlockIfReached(currentBuildingData))
+            return false;
+
         // 건물 ID 확인
         if (string.IsNullOrEmpty(currentBuildingData.buildingID))
         {

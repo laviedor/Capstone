@@ -41,6 +41,12 @@ public class BuildingData : ScriptableObject
     // 변수 설명: 건설 시 필요한 자원 종류와 수량 목록
     public ResourceAmount[] constructionCosts;
 
+    [Header("Placement Limit")]
+    // 변수 설명: 한 마을에 지을 수 있는 최대 개수 (0 이면 제한 없음). 예) 플레이어 집 = 1
+    //           건물은 내 마을에만 지을 수 있으므로(멀티버스, 친구 마을은 건설 불가) 사실상 '내 마을에 N개까지'다
+    //           서버도 같은 값으로 검사한다 (Tools > Export Server Data 로 내보내기)
+    [Min(0)] public int maxPerVillage = 0;
+
     [Header("Interaction")]
     // 변수 설명: 상호작용 가능한 건물인지 나타내는 설정값
     public bool canInteract;

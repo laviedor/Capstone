@@ -15,6 +15,9 @@ public class BuildingSync : MonoBehaviour
 {
     public static BuildingSync Instance { get; private set; }
 
+    // 서버에서 받은 건물 배치가 바뀜 (목록 수신, 다른 사람의 건설·이동). MousePathfinding 이 플레이어가 건물에 끼지 않게 확인한다
+    public static event Action LayoutChanged;
+
     private const float HarvestTolerance = 1f; // 화면의 수확 타이머가 서버와 이만큼(초) 넘게 어긋나면 맞춘다
 
     [SerializeField] private ChatClient chatClient;
@@ -105,6 +108,13 @@ public class BuildingSync : MonoBehaviour
     //   false 면 수확하지 않는다: 서버에 연결되어 있지 않거나, 서버가 내 건물이라고 알려 준 적이 없는 건물
     public bool OnLocalHarvest(BuildingHarvest harvest)
     {
+        // 멀티버스는 공용 공간이라 건물을 수확할 수 없다 (서버도 거절한다)
+        if (world == WorldSync.Multiverse)
+        {
+            Toast.Show("멀티버스의 건물은 수확할 수 없습니다.");
+            return false;
+        }
+
         string id = IdOf(harvest.GetComponent<Building>());
         if (id == null || !harvests.TryGetValue(id, out HarvestState state)) return false;
 
@@ -158,12 +168,14 @@ public class BuildingSync : MonoBehaviour
         {
             case BuildingMessage.Build:
                 Spawn(m.id, m.type, m.x, m.y);
+                LayoutChanged?.Invoke();
                 break;
             case BuildingMessage.Demolish:
                 Remove(m.id);
                 break;
             case BuildingMessage.Move:
                 MoveTo(m.id, m.x, m.y);
+                LayoutChanged?.Invoke();
                 break;
             case BuildingMessage.List:
                 Reconcile(m.list);
@@ -189,6 +201,8 @@ public class BuildingSync : MonoBehaviour
         {
             if (!alive.Contains(id)) Remove(id);
         }
+
+        LayoutChanged?.Invoke();
     }
 
     void Spawn(string id, string type, int x, int y)
@@ -215,8 +229,12 @@ public class BuildingSync : MonoBehaviour
     //   남은 시간은 Update 가 BuildingHarvest 에 반영한다 (방금 붙인 BuildingHarvest 는 Start 에서 타이머를 처음으로 되돌리므로)
     void OnHarvestTimers(HarvestMessage m)
     {
+        // 멀티버스는 공용 공간이라 수확하지 않는다: 서버가 예전 버전이라 타이머를 보내도 무시하고 수확 버튼을 모두 뗀다
+        bool multiverse = world == WorldSync.Multiverse;
+        HarvestTimer[] list = multiverse ? new HarvestTimer[0] : m.list ?? new HarvestTimer[0];
+
         var listed = new HashSet<string>();
-        foreach (HarvestTimer timer in m.list ?? new HarvestTimer[0])
+        foreach (HarvestTimer timer in list)
         {
             listed.Add(timer.id);
             if (!buildings.TryGetValue(timer.id, out Building building) || building == null) continue;
@@ -230,7 +248,7 @@ public class BuildingSync : MonoBehaviour
             state.readyAt = Time.realtimeSinceStartup + timer.remaining;
             state.awaitingServer = false;
         }
-        if (!m.all) return;
+        if (!m.all && !multiverse) return;
 
         // 전체 목록에 없는 건물은 수확할 수 없다: 수확 버튼을 뗀다
         foreach (string id in new List<string>(harvests.Keys))

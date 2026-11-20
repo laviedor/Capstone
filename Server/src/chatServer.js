@@ -24,6 +24,7 @@ const BUILD_REFUSED = {
   blocked: '다른 건물과 겹쳐서 지을 수 없습니다.',
   poor: '자원이 부족해 지을 수 없습니다.',
   duplicate: '건물을 짓지 못했습니다. 다시 시도해 주세요.',
+  limit: '이 건물은 마을에 더 지을 수 없습니다. (플레이어 집은 마을에 하나만 지을 수 있습니다)',
 };
 
 function startChatServer(port) {
@@ -171,6 +172,7 @@ function startChatServer(port) {
         await gather(msg);
       } else if (msg.t === 'harvest') {
         if (client.userId === null) return refuse(client, '로그인해야 수확할 수 있습니다.');
+        if (client.world === MULTIVERSE) return refuse(client, '멀티버스의 건물은 수확할 수 없습니다.');
         await harvestBuilding(msg.id);
       } else if (msg.t === 'discard') {
         if (client.userId === null) return;
