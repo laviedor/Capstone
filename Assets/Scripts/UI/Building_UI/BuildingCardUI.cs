@@ -129,6 +129,10 @@ public class BuildingCardUI : MonoBehaviour
     // 선택 가능 여부를 확인한 후 건설 모드를 열고 인벤토리를 닫는다.
     public void StartPlacement()
     {
+        // 지금 있는 곳에 지을 수 없는 종류면 (예: 집 안에서 생산 건물) 알림을 띄우고 건설 모드에 들어가지 않는다
+        if (BuildingRules.BlockIfNotAllowed(buildingData))
+            return;
+
         // 마을당 개수 제한에 걸리면 (예: 플레이어 집은 하나만) 알림을 띄우고 건설 모드에 들어가지 않는다
         if (BuildingLimits.BlockIfReached(buildingData))
             return;

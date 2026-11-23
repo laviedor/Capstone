@@ -176,6 +176,15 @@ public class BuildingPlacement : MonoBehaviour
             return;
         }
 
+        // 지금 있는 곳에 지을 수 없는 종류면 (예: 집 안에서 생산 건물) 미리보기를 띄우지 않고 건설 모드를 끝낸다
+        if (currentBuildingData != null && BuildingRules.BlockIfNotAllowed(currentBuildingData))
+        {
+            isPlaceClickPending = false;
+            SetBuildModeVisuals(false);
+            buildingModeManager.ExitBuildMode();
+            return;
+        }
+
         SetBuildModeVisuals(true);
 
         UpdatePreviewPosition();
@@ -450,6 +459,10 @@ public class BuildingPlacement : MonoBehaviour
             Debug.LogError("건물 설치에 필요한 정보가 없습니다.");
             return false;
         }
+
+        // 지금 있는 곳에 지을 수 없는 종류 (예: 집 안에서 생산 건물)
+        if (BuildingRules.BlockIfNotAllowed(currentBuildingData))
+            return false;
 
         // 마을당 개수 제한 (예: 플레이어 집은 하나만)
         if (BuildingLimits.BlockIfReached(currentBuildingData))

@@ -94,7 +94,14 @@ public class ConstructionDetailUI : MonoBehaviour
 
         bool enough;
 
-        if (data.buildingType == BuildingType.Decoration)
+        if (!BuildingRules.IsAllowedHere(data, out string notHere))
+        {
+            // 지금 있는 곳에 지을 수 없는 종류 (예: 집 안에서 생산 건물)
+            costText.text = notHere;
+            enough = false;
+            buildLabel.text = "여기선 지을 수 없어요";
+        }
+        else if (data.buildingType == BuildingType.Decoration)
         {
             int count = DecorationInventory.Instance != null
                 ? DecorationInventory.Instance.GetCount(data)
