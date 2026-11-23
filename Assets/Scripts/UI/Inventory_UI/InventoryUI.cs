@@ -2,6 +2,8 @@ using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+//test용 tab키 활성화용
+using UnityEngine.InputSystem;
 
 // 인벤토리·건설·탐색 창을 열고 닫는다.
 //   게임은 마우스로만 조작한다: 화면 오른쪽 아래의 아이콘 버튼(QuickMenuHUD)을 누르면 해당 창이 바로 열린다.
@@ -76,6 +78,16 @@ public class InventoryUI : MonoBehaviour
         inventoryWindow.SetActive(false);
 
         QuickMenuHUD.Ensure(this);
+    }
+    private void Update()
+    {
+        if (Keyboard.current == null)
+            return;
+
+        if (Keyboard.current.tabKey.wasPressedThisFrame)
+        {
+            ToggleInventory();
+        }
     }
 
     // 아이콘 버튼에서 호출: 그 창이 열려 있으면 닫고, 아니면 연다

@@ -54,11 +54,26 @@ public class BuildingModeManager : MonoBehaviour
     // 함수 설명: 외부 UI에서 건설 모드를 켜고 건설 도구를 선택한다.
     public void EnterBuildMode()
     {
+        // 리소스 필드에서는 건설 모드 진입 금지
+        if (FieldSceneManager.Instance != null &&
+            FieldSceneManager.Instance.IsInField)
+        {
+            Debug.LogWarning("리소스 필드에서는 건설할 수 없습니다.");
+            return;
+        }
+
         isBuildMode = true;
         currentTool = BuildingTool.Build;
 
-        Debug.Log("건설 모드 ON");
-        Debug.Log("현재 도구 : Build");
+        if (HouseSceneManager.Instance != null &&
+            HouseSceneManager.Instance.IsInsideHouse)
+        {
+            Debug.Log("하우스 인테리어 건설 모드 ON");
+        }
+        else
+        {
+            Debug.Log("마을 건설 모드 ON");
+        }
     }
 
     // 외부 UI에서 철거 모드를 활성화
