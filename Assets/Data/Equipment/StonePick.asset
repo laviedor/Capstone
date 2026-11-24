@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: StonePick
   m_EditorClassIdentifier: 
   itemID: StonePick
-  itemName: "\uB3CC \uACE1\uAD2D\uC774"
-  description: "\uBC14\uC704\uB97C \uAE68\uC11C \uB3CC\uC744 \uBAA8\uC744 \uB54C
-    \uC4F0\uB294 \uACE1\uAD2D\uC774\uC608\uC694."
-  icon: {fileID: 21300000, guid: 0f577b90738354bbb9e47cb217b5f63a, type: 3}
+  itemName: "\ub3cc \uace1\uad2d\uc774"
+  description: "\ubc14\uc704\ub97c \uae68\uc11c \ub3cc\uc744 \ubaa8\uc744 \ub54c \uc4f0\ub294 \uace1\uad2d\uc774\uc608\uc694."
+  icon: {fileID: 21300000, guid: 77ec33ac63714f4cbe94f28be3c7c924, type: 3}
   slot: 3
-  wornSprite: {fileID: 0}
+  wornSprite: {fileID: 21300000, guid: d87eb91f750d468f9abef88a7fa090b9, type: 3}

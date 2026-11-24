@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: StrawHat
   m_EditorClassIdentifier: 
   itemID: StrawHat
-  itemName: "\uBC00\uC9DA\uBAA8\uC790"
-  description: "\uCC59\uC774 \uB113\uC5B4 \uD587\uBCD5 \uC544\uB798\uC5D0\uC11C\uB3C4
-    \uC2DC\uC6D0\uD55C \uBAA8\uC790\uC608\uC694."
-  icon: {fileID: 21300000, guid: 7bd0324c712894e37afc3a597c17fa8a, type: 3}
+  itemName: "\ubc00\uc9da\ubaa8\uc790"
+  description: "\ucc59\uc774 \ub113\uc5b4 \ud587\ubcd5 \uc544\ub798\uc5d0\uc11c\ub3c4 \uc2dc\uc6d0\ud55c \ubaa8\uc790\uc608\uc694."
+  icon: {fileID: 21300000, guid: 7b42694de03d4012ba1c58c666652a93, type: 3}
   slot: 0
-  wornSprite: {fileID: 0}
+  wornSprite: {fileID: 21300000, guid: b08f1687030443dda9d6231858227a5d, type: 3}

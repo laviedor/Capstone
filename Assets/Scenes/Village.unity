@@ -18522,10 +18522,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c7f2fc8b8142c44108b92a1dcb187b94, type: 2}
   - {fileID: 11400000, guid: 2ac7d61fdce49450fb807ebbfaefda1f, type: 2}
   - {fileID: 11400000, guid: 440112acf17e8409bacff6c80706a666, type: 2}
+  - {fileID: 11400000, guid: 0d5408071bde4b918fc5b82c1bc0ab3c, type: 2}
   startingEquipped:
-  - {fileID: 11400000, guid: bfb0a3fef959b41ea91eae8685a8ae64, type: 2}
-  - {fileID: 11400000, guid: 0fa991fd5e8a342d7a5aa730c8032aa2, type: 2}
-  - {fileID: 11400000, guid: 2ac7d61fdce49450fb807ebbfaefda1f, type: 2}
+  - {fileID: 11400000, guid: 09de801d209f5411c9a79511671da4f4, type: 2}
+  - {fileID: 11400000, guid: 0d5408071bde4b918fc5b82c1bc0ab3c, type: 2}
 --- !u!4 &1000574807
 Transform:
   m_ObjectHideFlags: 0

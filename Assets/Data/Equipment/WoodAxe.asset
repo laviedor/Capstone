@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: WoodAxe
   m_EditorClassIdentifier: 
   itemID: WoodAxe
-  itemName: "\uB098\uBB34 \uB3C4\uB07C"
-  description: "\uC232\uC5D0\uC11C \uB098\uBB34\uB97C \uBCA8 \uB54C \uC4F0\uB294
-    \uAE30\uBCF8 \uB3C4\uB07C\uC608\uC694."
-  icon: {fileID: 21300000, guid: 7ab2e6cc926f8446282259de54f5ae7e, type: 3}
+  itemName: "\ub098\ubb34 \ub3c4\ub07c"
+  description: "\uc232\uc5d0\uc11c \ub098\ubb34\ub97c \ubca8 \ub54c \uc4f0\ub294 \ub3c4\ub07c\uc608\uc694."
+  icon: {fileID: 21300000, guid: d86c6dda5dd94575873c462fc6439a54, type: 3}
   slot: 3
-  wornSprite: {fileID: 0}
+  wornSprite: {fileID: 21300000, guid: 6d68953d574d4c3fbf1da8a084213d51, type: 3}

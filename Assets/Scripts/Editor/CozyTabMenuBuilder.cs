@@ -278,6 +278,20 @@ public static class CozyTabMenuBuilder
     {
         EnsureFolder(EquipmentFolder);
 
+        // 이미 장비 에셋이 있으면(착용 그림이 있는 예시 장비 등) 그대로 쓰고 새로 만들지 않는다
+        List<EquipmentItemData> existing = new List<EquipmentItemData>();
+
+        foreach (string guid in AssetDatabase.FindAssets("t:EquipmentItemData", new[] { EquipmentFolder }))
+        {
+            EquipmentItemData item = AssetDatabase.LoadAssetAtPath<EquipmentItemData>(AssetDatabase.GUIDToAssetPath(guid));
+
+            if (item != null)
+                existing.Add(item);
+        }
+
+        if (existing.Count > 0)
+            return existing;
+
         return new List<EquipmentItemData>
         {
             Item("StrawHat", "밀짚모자", EquipmentSlot.Hat, "챙이 넓어 햇볕 아래에서도 시원한 모자예요.",
@@ -338,7 +352,7 @@ public static class CozyTabMenuBuilder
         equipment = go.AddComponent<PlayerEquipment>();
 
         SetRefs(equipment, "startingItems", items.ToArray());
-        SetRefs(equipment, "startingEquipped", new Object[] { items[0], items[2], items[5] });
+        SetRefs(equipment, "startingEquipped", new Object[0]); // 처음에는 아무것도 입지 않음 (씬에서 정한다)
     }
 
     // ===============================================================

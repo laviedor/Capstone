@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: CheckShirt
   m_EditorClassIdentifier: 
   itemID: CheckShirt
-  itemName: "\uCCB4\uD06C \uC154\uCE20"
-  description: "\uD3EC\uADFC\uD55C \uBA74\uC73C\uB85C \uB9CC\uB4E0 \uC77C\uD560 \uB54C
-    \uC785\uB294 \uC154\uCE20\uC608\uC694."
-  icon: {fileID: 21300000, guid: 42c00ed61589d40de864d889e996817a, type: 3}
+  itemName: "\uccb4\ud06c \uc154\uce20"
+  description: "\ube68\uac04 \uaca9\uc790\ubb34\ub2ac\uac00 \ub4e4\uc5b4\uac04 \ub3c4\ud1b0\ud55c \uc154\uce20\uc608\uc694."
+  icon: {fileID: 21300000, guid: b7e44f980d5f40deb77136b8c8db0b74, type: 3}
   slot: 1
-  wornSprite: {fileID: 0}
+  wornSprite: {fileID: 21300000, guid: 0b379e42a6dd4ab8bee2e2e7742df922, type: 3}
