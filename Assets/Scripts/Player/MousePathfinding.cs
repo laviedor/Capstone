@@ -424,14 +424,13 @@ public class MousePathfinding : MonoBehaviour
         bool isWalkable = true;
 
         // 건물 배치 시스템이 존재하면 점유 여부 확인
-        // 마을에서만 일반 건물의 점유 셀을 장애물로 검사한다.
-        bool isVillage =
-            (HouseSceneManager.Instance == null ||
-             !HouseSceneManager.Instance.IsInsideHouse) &&
-            (FieldSceneManager.Instance == null ||
-             !FieldSceneManager.Instance.IsInField);
+        // 마을과 집 안에서 건물의 점유 셀을 장애물로 검사한다 (BuildingPlacement 가 지금 구역의 칸을 본다).
+        // 필드에는 건물이 없다.
+        bool hasBuildings =
+            FieldSceneManager.Instance == null ||
+            !FieldSceneManager.Instance.IsInField;
 
-        if (isVillage && buildingPlacement != null)
+        if (hasBuildings && buildingPlacement != null)
         {
             isWalkable =
                 !buildingPlacement.IsCellOccupied(cellPosition);

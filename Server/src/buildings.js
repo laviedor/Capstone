@@ -4,16 +4,24 @@ const resources = require('./resources');
 const { MAX_BUILDINGS } = require('./config');
 
 // 월드(멀티버스, 개인 마을)에 지어진 건물 DB 처리. 서버를 다시 켜도 남아 있다
-//   건물: { id, type, x, y, owner }
+//   건물: { id, type, x, y, owner, zone }
 //     id: 네트워크 id (지은 클라이언트가 만듦), type: 건물 종류(BuildingData.buildingID),
-//     x, y: 기준 칸, owner: 지은 사람 닉네임
+//     x, y: 기준 칸, owner: 지은 사람 닉네임, zone: 놓인 구역 ('' 마을, 'house' 집 안)
+//   집 안에는 장식과 특수 건물만 놓을 수 있다 (buildings.json 의 decoration / interior)
+//   마을과 집 안은 서로 다른 공간이라 겹침 검사는 같은 구역끼리만 한다
 //   DB 의 village_id 가 월드 id (0 은 멀티버스, 그 외에는 그 유저의 마을), owner_id 는 지은 사람
 //   건설 비용, 철거 환급도 같은 트랜잭션에서 지은 사람의 재화에 반영한다 (resources.js)
 
 const size = type => catalog.get(type) ?? { width: 1, height: 1 };
 
-// 두 건물이 차지하는 칸이 겹치는지 (기준 칸에서 오른쪽, 위쪽으로 width x height 칸)
+const zoneOf = b => b.zone ?? '';
+
+// 집 안에 놓을 수 있는 종류인지 (장식, 특수 건물)
+const interiorAllowed = data => !!(data.decoration || data.interior);
+
+// 두 건물이 차지하는 칸이 겹치는지 (기준 칸에서 오른쪽, 위쪽으로 width x height 칸). 구역이 다르면 겹치지 않는다
 function overlaps(a, b) {
+  if (zoneOf(a) !== zoneOf(b)) return false;
   const sa = size(a.type);
   const sb = size(b.type);
   return a.x < b.x + sb.width && b.x < a.x + sa.width && a.y < b.y + sb.height && b.y < a.y + sa.height;
@@ -22,7 +30,7 @@ function overlaps(a, b) {
 // 월드에 있는 건물 목록 (지은 순서). 서버 건물 데이터에 없는 종류는 뺀다
 async function list(world) {
   const [rows] = await pool.query(
-    `SELECT b.uid AS id, b.building_id AS type, b.x, b.y, u.nickname AS owner
+    `SELECT b.uid AS id, b.building_id AS type, b.x, b.y, b.zone, u.nickname AS owner
        FROM buildings b JOIN users u ON u.id = b.owner_id
       WHERE b.village_id = ?
       ORDER BY b.building_uid`,
@@ -32,17 +40,23 @@ async function list(world) {
 }
 
 // 건설: 비용을 내고 건물을 저장한다
-//   -> 'ok' | 'unknown'(없는 건물 종류) | 'full'(건물이 너무 많음) | 'limit'(마을당 개수 제한, 예: 플레이어 집 1개)
+//   building.zone: 지을 구역 ('' 마을, 'house' 집 안). 채팅 서버가 그 사람이 지금 있는 구역으로 정한다
+//   -> 'ok' | 'unknown'(없는 건물 종류) | 'field'(필드에서는 짓지 않음) | 'interior'(집 안에 놓을 수 없는 종류)
+//      | 'full'(건물이 너무 많음) | 'limit'(마을당 개수 제한, 예: 플레이어 집 1개)
 //      | 'blocked'(다른 건물과 겹침) | 'poor'(자원 부족) | 'duplicate'(이미 있는 id)
 async function build(world, user, building, now = Date.now()) {
   const data = catalog.get(building.type);
   if (!data) return 'unknown';
 
+  const zone = zoneOf(building);
+  if (zone !== '' && zone !== 'house') return 'field';
+  if (zone === 'house' && !interiorAllowed(data)) return 'interior';
+
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
     // FOR UPDATE: 같은 마을에 동시에 짓는 요청이 개수 제한을 함께 통과하지 않도록 잠근다
-    const [rows] = await conn.query('SELECT building_id AS type, x, y FROM buildings WHERE village_id = ? FOR UPDATE', [world]);
+    const [rows] = await conn.query('SELECT building_id AS type, x, y, zone FROM buildings WHERE village_id = ? FOR UPDATE', [world]);
 
     let result = 'ok';
     if (rows.length >= MAX_BUILDINGS) result = 'full';
@@ -56,8 +70,8 @@ async function build(world, user, building, now = Date.now()) {
 
     // harvested_at: 마지막으로 수확한 시각 (harvest.js). 지은 순간부터 수확 주기를 센다
     await conn.query(
-      'INSERT INTO buildings (uid, village_id, owner_id, building_id, x, y, harvested_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [building.id, world, user.id, building.type, building.x, building.y, new Date(now)],
+      'INSERT INTO buildings (uid, village_id, zone, owner_id, building_id, x, y, harvested_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [building.id, world, zone, user.id, building.type, building.x, building.y, new Date(now)],
     );
     await conn.commit();
     return 'ok';
@@ -101,11 +115,11 @@ async function move(world, user, id, x, y) {
   try {
     await conn.beginTransaction();
     const [rows] = await conn.query(
-      'SELECT uid AS id, building_id AS type, x, y, owner_id FROM buildings WHERE village_id = ? FOR UPDATE',
+      'SELECT uid AS id, building_id AS type, x, y, zone, owner_id FROM buildings WHERE village_id = ? FOR UPDATE',
       [world],
     );
     const mine = rows.find(row => row.id === id);
-    const moved = mine && { id, type: mine.type, x, y };
+    const moved = mine && { id, type: mine.type, x, y, zone: zoneOf(mine) };
     if (!mine || mine.owner_id !== user.id || rows.some(row => row !== mine && overlaps(row, moved))) {
       await conn.rollback();
       return null;

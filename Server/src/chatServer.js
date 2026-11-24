@@ -25,6 +25,8 @@ const BUILD_REFUSED = {
   poor: '자원이 부족해 지을 수 없습니다.',
   duplicate: '건물을 짓지 못했습니다. 다시 시도해 주세요.',
   limit: '이 건물은 마을에 더 지을 수 없습니다. (플레이어 집은 마을에 하나만 지을 수 있습니다)',
+  field: '필드에서는 건물을 지을 수 없습니다.',
+  interior: '집 안에는 장식과 특수 건물만 놓을 수 있습니다.',
 };
 
 function startChatServer(port) {
@@ -259,6 +261,8 @@ function startChatServer(port) {
       const user = { id: client.userId, nickname: client.name };
 
       if (msg.t === 'build') {
+        // 지을 구역은 그 사람이 지금 있는 구역 (마을 / 집 안). 클라이언트가 보낸 값은 믿지 않는다
+        msg.zone = client.zone ?? '';
         const result = await buildings.build(world, user, msg);
         if (result !== 'ok') return refuse(client, BUILD_REFUSED[result]);
         console.log(`[건물] ${client.name} 건설 ${msg.type} (${msg.x}, ${msg.y}) 월드 ${world}`);

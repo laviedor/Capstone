@@ -104,6 +104,8 @@ public static class ServerDataExporter
                 sb.Append($"    \"harvestSeconds\": {Number(harvestSeconds)}");
                 // 장식물: 서버가 자원 대신 같은 이름의 장식 아이템 1개를 쓰게 한다 (DecorationInventory 와 같은 규칙)
                 if (decoration) sb.Append(",\n    \"decoration\": true");
+                // 특수 건물: 장식과 함께 집 안에 놓을 수 있다 (서버 buildings.js 가 집 안 건설을 검사)
+                if (data.buildingType == BuildingType.Special) sb.Append(",\n    \"interior\": true");
                 // 마을당 개수 제한 (예: 플레이어 집 1개). 서버 buildings.js 가 건설할 때 검사한다
                 if (data.maxPerVillage > 0) sb.Append($",\n    \"maxPerVillage\": {data.maxPerVillage}");
                 sb.Append("\n  }");

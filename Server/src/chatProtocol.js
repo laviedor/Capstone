@@ -21,7 +21,8 @@ const { MAX_NAME_LENGTH, MAX_CHAT_LENGTH, MAX_CELL, MAX_TOKEN_LENGTH, MAX_ZONE_L
 //                                                  받은 클라이언트는 다시 접속하지 않고 로그아웃해 로그인 화면으로 돌아간다
 //                 { t: 'world', id, name, mine, build }  들어간 월드. name 은 마을 주인 닉네임(멀티버스는 ''),
 //                                                  mine 은 내 마을인지, build 는 여기서 건물을 지을 수 있는지
-//                 { t: 'buildings', list: [{ id, type, x, y, owner }] }  지금 있는 월드의 건물 전부
+//                 { t: 'buildings', list: [{ id, type, x, y, owner, zone }] }  지금 있는 월드의 건물 전부
+//                                                  (zone: '' 마을, 'house' 집 안. 지을 때는 지은 사람이 있던 구역이 된다)
 //                                                  (월드에 들어갈 때, 그리고 요청이 거절되어 화면을 다시 맞출 때)
 //                 { t: 'build', id, type, x, y, owner }, { t: 'demolish', id }, { t: 'move', id, x, y }
 //                                                  같은 월드의 다른 사람이 바꾼 건물 (바꾼 사람에게는 보내지 않음)
@@ -84,7 +85,7 @@ const chat = (name, text) => toLine({ t: 'chat', name, text });
 const kick = () => toLine({ t: 'kick' });
 const world = info => toLine({ t: 'world', id: info.id, name: info.name, mine: info.mine, build: info.build });
 const buildingList = list => toLine({ t: 'buildings', list });
-const build = b => toLine({ t: 'build', id: b.id, type: b.type, x: b.x, y: b.y, owner: b.owner });
+const build = b => toLine({ t: 'build', id: b.id, type: b.type, x: b.x, y: b.y, owner: b.owner, zone: b.zone ?? '' });
 const demolish = id => toLine({ t: 'demolish', id });
 const move = b => toLine({ t: 'move', id: b.id, x: b.x, y: b.y });
 const left = name => toLine({ t: 'left', name });

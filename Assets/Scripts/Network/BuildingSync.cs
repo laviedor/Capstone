@@ -32,6 +32,12 @@ public class BuildingSync : MonoBehaviour
     private readonly Dictionary<string, HarvestState> harvests = new Dictionary<string, HarvestState>(); // 네트워크 ID -> 내 건물의 수확 타이머
     private long world = -1; // 지금 화면에 있는 건물들의 월드 id
 
+    // 집 안에 놓인 건물을 담는 곳. 집 안에 있을 때만 켜진다 (마을 건물은 buildingsParent, 집에 들어가면 마을과 함께 숨겨짐)
+    private Transform houseBuildingsRoot;
+
+    // 집 안 건물을 담을 곳 (BuildingPlacement 가 집 안에 지을 때 씀)
+    public Transform HouseBuildingsRoot => houseBuildingsRoot;
+
     // 내 건물의 수확 타이머
     private class HarvestState
     {
@@ -43,6 +49,19 @@ public class BuildingSync : MonoBehaviour
     void Awake()
     {
         Instance = this;
+
+        houseBuildingsRoot = new GameObject("HouseBuildings").transform;
+        houseBuildingsRoot.SetParent(transform.parent, false);
+        houseBuildingsRoot.gameObject.SetActive(false);
+    }
+
+    // 집 안 건물은 집 안에 있을 때만 보이고 클릭된다
+    void LateUpdate()
+    {
+        bool inHouse = HouseSceneManager.Instance != null && HouseSceneManager.Instance.IsInsideHouse;
+
+        if (houseBuildingsRoot != null && houseBuildingsRoot.gameObject.activeSelf != inHouse)
+            houseBuildingsRoot.gameObject.SetActive(inHouse);
     }
 
     void OnDestroy()
@@ -167,7 +186,7 @@ public class BuildingSync : MonoBehaviour
         switch (m.t)
         {
             case BuildingMessage.Build:
-                Spawn(m.id, m.type, m.x, m.y);
+                Spawn(m.id, m.type, m.x, m.y, m.zone);
                 LayoutChanged?.Invoke();
                 break;
             case BuildingMessage.Demolish:
@@ -192,7 +211,7 @@ public class BuildingSync : MonoBehaviour
         {
             alive.Add(b.id);
             if (!buildings.TryGetValue(b.id, out Building existing))
-                Spawn(b.id, b.type, b.x, b.y);
+                Spawn(b.id, b.type, b.x, b.y, b.zone);
             else if (existing != null && existing.OriginCell != new Vector3Int(b.x, b.y, 0))
                 MoveTo(b.id, b.x, b.y);
         }
@@ -205,7 +224,7 @@ public class BuildingSync : MonoBehaviour
         LayoutChanged?.Invoke();
     }
 
-    void Spawn(string id, string type, int x, int y)
+    void Spawn(string id, string type, int x, int y, string zone)
     {
         if (string.IsNullOrEmpty(id) || buildings.ContainsKey(id)) return;
 
@@ -217,7 +236,10 @@ public class BuildingSync : MonoBehaviour
         }
 
         var cell = new Vector3Int(x, y, 0);
-        Building building = Instantiate(prefab, PositionOf(cell, prefab), Quaternion.identity, buildingsParent);
+        bool inHouse = zone == Building.HouseZone;
+        Transform parent = inHouse ? houseBuildingsRoot : buildingsParent;
+        Building building = Instantiate(prefab, PositionOf(cell, prefab), Quaternion.identity, parent);
+        building.SetZone(zone);
         building.Initialize(cell);
         building.SetBuildingNumber(NextNumber(type));
         StopLocalProduction(building);

@@ -29,15 +29,54 @@ public class GatheringTimer : MonoBehaviour
     private float endTime;
 
     // 중복 관리자가 생기지 않도록 싱글턴을 초기화한다.
+    //   (이미 있으면 이 컴포넌트만 지운다: 오브젝트를 지우면 같은 오브젝트의 채집 UI 패널까지 사라진다)
     private void Awake()
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
+            Destroy(this);
             return;
         }
 
         Instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+    }
+
+    // 채집 타이머가 항상 돌아가도록 보장한다.
+    //   씬의 타이머는 탐색 창 안의 (꺼져 있는) 채집 패널에 붙어 있어서, 창을 열기 전에는 깨어나지 않고 시간이 가지 않는다.
+    //   그래서 그 설정(데코레이션 목록, 플레이어 자원)을 그대로 가진 타이머를 항상 켜져 있는 오브젝트에 따로 만든다.
+    //   채집 탭(GatherTabUI)이 시작할 때 부른다.
+    public static GatheringTimer Ensure()
+    {
+        if (Instance != null)
+            return Instance;
+
+        GatheringTimer source = null;
+
+        foreach (GatheringTimer timer in FindObjectsByType<GatheringTimer>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            source = timer;
+            break;
+        }
+
+        GameObject holder = new GameObject("GatheringTimer (Always On)");
+        GatheringTimer created = holder.AddComponent<GatheringTimer>(); // Awake 에서 Instance 가 된다
+
+        if (source != null)
+        {
+            created.decorationDatabase = source.decorationDatabase;
+            created.playerResources = source.playerResources;
+        }
+
+        if (created.playerResources == null)
+            created.playerResources = FindFirstObjectByType<PlayerResources>();
+
+        return created;
     }
 
     // 매 프레임 남은 시간을 계산하고 종료 시 완료 상태로 전환한다.

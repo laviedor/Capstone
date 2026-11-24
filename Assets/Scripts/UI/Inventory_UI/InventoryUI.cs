@@ -78,6 +78,9 @@ public class InventoryUI : MonoBehaviour
         inventoryWindow.SetActive(false);
 
         QuickMenuHUD.Ensure(this);
+
+        // 탐색 창에 [채집] 탭(자동 채집)을 붙인다
+        GatherTabUI.Ensure(this, fieldPanel, fieldTabButton);
     }
     private void Update()
     {

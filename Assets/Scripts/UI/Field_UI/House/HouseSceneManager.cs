@@ -49,6 +49,9 @@ public class HouseSceneManager : MonoBehaviour
     // 다른 스크립트에서 집 내부 여부를 읽을 수 있는 속성.
     public bool IsInsideHouse => isInsideHouse;
 
+    // 집 내부의 이동·건설 영역 (집 씬을 처음 불러올 때 찾는다). 집 안 건설(BuildingPlacement)이 쓴다
+    public MapBounds InteriorBounds { get; private set; }
+
     // 씬에 동일한 관리자가 둘 이상 존재하지 않도록 인스턴스를 설정한다.
     private void Awake()
     {
@@ -187,6 +190,8 @@ public class HouseSceneManager : MonoBehaviour
             if (interiorBounds != null)
                 break;
         }
+
+        InteriorBounds = interiorBounds;
 
         // 경로 탐색의 이동 가능 영역을 집 내부 경계로 교체한다.
         if (interiorBounds != null && mousePathfinding != null)

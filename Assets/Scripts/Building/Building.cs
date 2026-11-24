@@ -18,6 +18,22 @@ public class Building : MonoBehaviour
     // 변수 설명: 같은 종류 건물들을 구분하기 위한 번호
     private int buildingNumber = 0;
 
+    // 건물이 놓인 구역: "" 마을, "house" 마을 주인 집 안 (서버 buildings.zone 과 같은 값)
+    public const string VillageZone = "";
+    public const string HouseZone = "house";
+
+    private string zone = VillageZone;
+
+    public string Zone => zone;
+
+    public bool IsInHouse => zone == HouseZone;
+
+    // 놓인 구역을 정한다 (BuildingPlacement, BuildingSync 가 설치할 때 부름)
+    public void SetZone(string newZone)
+    {
+        zone = newZone == HouseZone ? HouseZone : VillageZone;
+    }
+
     public bool IsPlaced => isPlaced;
 
     public int BuildingNumber => buildingNumber;

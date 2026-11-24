@@ -12,6 +12,8 @@ const { DEMOLISH_REFUND_RATE } = require('./config');
 //     cost: 건설 비용, harvest: 한 번 수확할 때 받는 양 { 자원: 수량 }, harvestSeconds: 수확 주기(초)
 //     harvest 가 비어 있으면 수확하지 않는 건물 (장식물)
 //     decoration: true 면 장식물. 자원 대신 같은 이름의 장식 아이템 1개를 써서 짓고, 철거하면 1개를 돌려받는다
+//     interior: true 면 특수 건물. 장식물과 함께 집 안에 놓을 수 있다 (생산 건물은 마을에만)
+//     maxPerVillage: 한 마을에 지을 수 있는 최대 개수 (예: 플레이어 집 1)
 //   gathering.json   { nodes: { 노드 종류(프리팹 이름): { item, amount, gatherSeconds, respawnSeconds, count } },
 //                      decorations: [채집 타이머 보상으로 나올 수 있는 장식물 종류] }
 //     count: 필드 하나에 있는 그 종류 노드 수 (채집 횟수 제한에 쓴다)

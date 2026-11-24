@@ -92,9 +92,34 @@ public class BuildingPlacement : MonoBehaviour
     // 변수 설명: 현재 위치에 건물을 설치할 수 있는지 나타내는 값
     private bool canPlace;
 
-    // 이미 건물이 설치된 Grid 칸들
-    // 변수 설명: 건물이 이미 점유한 셀 좌표를 중복 없이 저장하는 집합
-    private HashSet<Vector3Int> occupiedCells = new HashSet<Vector3Int>();
+    // 이미 건물이 설치된 Grid 칸들 (마을과 집 안은 서로 다른 공간이라 따로 기억한다)
+    // 변수 설명: 마을에서 건물이 점유한 셀 좌표 집합
+    private readonly HashSet<Vector3Int> villageOccupiedCells = new HashSet<Vector3Int>();
+    // 변수 설명: 집 안에서 장식·특수 건물이 점유한 셀 좌표 집합
+    private readonly HashSet<Vector3Int> houseOccupiedCells = new HashSet<Vector3Int>();
+
+    // 변수 설명: 지금 있는 구역(마을 / 집 안)의 점유 셀 집합
+    private HashSet<Vector3Int> occupiedCells =>
+        BuildingRules.InHouse ? houseOccupiedCells : villageOccupiedCells;
+
+    // 건물이 놓인 구역의 점유 셀 집합
+    private HashSet<Vector3Int> CellsOf(Building building) =>
+        building != null && building.IsInHouse ? houseOccupiedCells : villageOccupiedCells;
+
+    // 지금 건설 영역으로 쓰는 경계: 집 안이면 집 내부 경계, 아니면 마을 경계
+    private MapBounds ActiveBounds
+    {
+        get
+        {
+            if (BuildingRules.InHouse && HouseSceneManager.Instance.InteriorBounds != null)
+                return HouseSceneManager.Instance.InteriorBounds;
+
+            return mapBounds;
+        }
+    }
+
+    // 지금 맵 전체 격자선이 그려진 경계 (구역을 옮기면 다시 그린다)
+    private MapBounds mapGridBounds;
     // 건물 종류별 마지막으로 사용한 번호
     // 변수 설명: 건물 ID별 마지막 설치 번호를 저장하는 사전
     private Dictionary<string, int> buildingNumberCounters =
@@ -184,6 +209,10 @@ public class BuildingPlacement : MonoBehaviour
             buildingModeManager.ExitBuildMode();
             return;
         }
+
+        // 마을과 집 안을 오가면 맵 전체 격자선을 그 구역의 경계로 다시 그린다
+        if (mapGridBounds != ActiveBounds)
+            CreateMapGrid();
 
         SetBuildModeVisuals(true);
 
@@ -353,7 +382,7 @@ public class BuildingPlacement : MonoBehaviour
         if (currentBuildingData == null)
             return false;
 
-        if (mapBounds == null)
+        if (ActiveBounds == null)
             return false;
 
         for (int x = 0; x < currentBuildingData.width; x++)
@@ -501,11 +530,17 @@ public class BuildingPlacement : MonoBehaviour
 
         // 건물 생성
         // 기존과 달리 placedBuildingsParent를 부모로 지정한다.
+        // 집 안에 지으면 집 안 건물 묶음(집에 있을 때만 보임)에 넣는다
+        bool inHouse = BuildingRules.InHouse;
+        Transform parent = inHouse && BuildingSync.Instance != null && BuildingSync.Instance.HouseBuildingsRoot != null
+            ? BuildingSync.Instance.HouseBuildingsRoot
+            : placedBuildingsParent;
+
         GameObject placedObject = Instantiate(
             buildingPrefab,
             previewObject.transform.position,
             Quaternion.identity,
-            placedBuildingsParent
+            parent
         );
 
         Building placedBuilding =
@@ -532,6 +567,7 @@ public class BuildingPlacement : MonoBehaviour
         placedBuilding.SetBuildingNumber(newNumber);
 
         // 실제 설치 완료 처리
+        placedBuilding.SetZone(inHouse ? Building.HouseZone : Building.VillageZone);
         placedBuilding.Initialize(currentCellPosition);
 
         // 메인 건물(장식 제외)은 30초마다 골드를 수확할 수 있게 한다
@@ -646,11 +682,13 @@ public class BuildingPlacement : MonoBehaviour
         if (building == null)
             return;
 
+        HashSet<Vector3Int> cells = CellsOf(building);
+
         for (int x = 0; x < building.Width; x++)
         {
             for (int y = 0; y < building.Height; y++)
             {
-                occupiedCells.Add(building.OriginCell + new Vector3Int(x, y, 0));
+                cells.Add(building.OriginCell + new Vector3Int(x, y, 0));
             }
         }
     }
@@ -665,6 +703,8 @@ public class BuildingPlacement : MonoBehaviour
         Vector3Int originCell =
             building.OriginCell;
 
+        HashSet<Vector3Int> cells = CellsOf(building);
+
         for (int x = 0; x < building.Width; x++)
         {
             for (int y = 0; y < building.Height; y++)
@@ -673,7 +713,7 @@ public class BuildingPlacement : MonoBehaviour
                     originCell +
                     new Vector3Int(x, y, 0);
 
-                occupiedCells.Remove(cell);
+                cells.Remove(cell);
             }
         }
 
@@ -734,7 +774,9 @@ public class BuildingPlacement : MonoBehaviour
             mapGridRoot = null;
         }
 
-        if (mapBounds == null)
+        mapGridBounds = ActiveBounds;
+
+        if (mapGridBounds == null)
         {
             Debug.LogError("MapBounds가 연결되어 있지 않습니다.");
             return;
@@ -818,7 +860,9 @@ public class BuildingPlacement : MonoBehaviour
     // 함수 설명: 칸 전체가 맵 경계 안에 들어오는지 검사한다. (격자선 안쪽 칸에만 건설 가능)
     bool IsCellInsideBuildArea(Vector3Int cell)
     {
-        if (mapBounds == null)
+        MapBounds bounds = ActiveBounds;
+
+        if (bounds == null)
             return false;
 
         const float epsilon = 0.001f;
@@ -826,18 +870,20 @@ public class BuildingPlacement : MonoBehaviour
         Vector3 cellMin = grid.CellToWorld(cell);
         Vector3 cellMax = grid.CellToWorld(cell + new Vector3Int(1, 1, 0));
 
-        return mapBounds.IsInside(cellMin + new Vector3(epsilon, epsilon, 0f)) &&
-               mapBounds.IsInside(cellMax - new Vector3(epsilon, epsilon, 0f));
+        return bounds.IsInside(cellMin + new Vector3(epsilon, epsilon, 0f)) &&
+               bounds.IsInside(cellMax - new Vector3(epsilon, epsilon, 0f));
     }
 
     // 함수 설명: 건설 가능한 칸들의 최소·최대 셀 좌표를 구한다.
     bool TryGetBuildAreaCellRange(out Vector3Int minCell, out Vector3Int maxCell)
     {
+        MapBounds bounds = ActiveBounds;
+
         Vector3Int searchMin =
-            grid.WorldToCell(mapBounds.Min) - new Vector3Int(1, 1, 0);
+            grid.WorldToCell(bounds.Min) - new Vector3Int(1, 1, 0);
 
         Vector3Int searchMax =
-            grid.WorldToCell(mapBounds.Max) + new Vector3Int(1, 1, 0);
+            grid.WorldToCell(bounds.Max) + new Vector3Int(1, 1, 0);
 
         minCell = new Vector3Int(int.MaxValue, int.MaxValue, 0);
         maxCell = new Vector3Int(int.MinValue, int.MinValue, 0);
@@ -1035,17 +1081,11 @@ public class BuildingPlacement : MonoBehaviour
         return occupied;
     }
 
-    // 현재 일반 건물 건설이 허용되는 공간인지 확인한다.
+    // 현재 건설이 허용되는 공간인지 확인한다.
+    //   마을: 모든 건물 / 집 안: 장식·특수 건물만 (종류 검사는 BuildingRules) / 필드: 건설 금지
     public bool IsVillageBuildAllowed()
     {
-        // 집 내부에서는 일반 건물 건설 금지
-        if (HouseSceneManager.Instance != null &&
-            HouseSceneManager.Instance.IsInsideHouse)
-        {
-            return false;
-        }
-
-        // 리소스 필드에서는 모든 일반 건물 건설 금지
+        // 리소스 필드에서는 모든 건물 건설 금지
         if (FieldSceneManager.Instance != null &&
             FieldSceneManager.Instance.IsInField)
         {
