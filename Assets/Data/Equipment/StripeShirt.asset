@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: StripeShirt
   m_EditorClassIdentifier: 
   itemID: StripeShirt
-  itemName: "\uC904\uBB34\uB2AC \uD2F0\uC154\uCE20"
-  description: "\uD558\uB298\uC0C9 \uC904\uBB34\uB2AC\uAC00 \uB4E4\uC5B4\uAC04 \uAC00\uBCBC\uC6B4
-    \uD2F0\uC154\uCE20\uC608\uC694."
-  icon: {fileID: 21300000, guid: ddc2ca61438a547cdbe9833703bd46b6, type: 3}
+  itemName: "\uc904\ubb34\ub2ac \ud2f0\uc154\uce20"
+  description: "\ud558\ub298\uc0c9 \uc904\ubb34\ub2ac\uac00 \ub4e4\uc5b4\uac04 \uac00\ubcbc\uc6b4 \ud2f0\uc154\uce20\uc608\uc694."
+  icon: {fileID: 21300000, guid: 8e57e24691074ce3b9b55dd9ec480753, type: 3}
   slot: 1
-  wornSprite: {fileID: 0}
+  wornSprite: {fileID: 21300000, guid: be6e3fc3751d463ba003557937ffe702, type: 3}

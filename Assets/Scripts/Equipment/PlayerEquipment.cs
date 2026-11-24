@@ -60,6 +60,20 @@ public class PlayerEquipment : MonoBehaviour
         }
     }
 
+    // 플레이어 캐릭터에 장비 겉모습 표시(PlayerEquipmentVisual)를 붙인다.
+    //   플레이어는 경로 이동(PlayerPathMovement)이 붙은 캐릭터다. 이미 붙어 있으면 그대로 쓴다.
+    private void Start()
+    {
+        PlayerPathMovement player = FindFirstObjectByType<PlayerPathMovement>();
+
+        if (player != null &&
+            player.GetComponent<SpriteRenderer>() != null &&
+            player.GetComponent<PlayerEquipmentVisual>() == null)
+        {
+            player.gameObject.AddComponent<PlayerEquipmentVisual>();
+        }
+    }
+
     // 파괴될 때 싱글턴 참조를 정리한다.
     private void OnDestroy()
     {
