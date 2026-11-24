@@ -40,6 +40,14 @@ module.exports = {
   EXPEDITION_GRACE_MS: 1500, // 채집 타이머 보상을 이만큼 일찍 요청해도 받아 줌 (클라이언트가 먼저 끝났다고 보는 경우의 여유)
   MAX_ZONE_LENGTH: 32,       // 구역 이름 최대 길이
 
+  // 다른 플레이어 표시 (positions.js): 좌표를 UDP 뿐 아니라 채팅 연결(TCP)로도 주고받는다
+  MAX_COORD: 100000,             // 좌표 범위 (-MAX_COORD ~ MAX_COORD)
+  POSITION_MIN_INTERVAL_MS: 40,  // 한 사람이 채팅 연결로 보내는 좌표를 이보다 자주 받지는 않는다
+  LEGACY_RELAY_INTERVAL_MS: 200, // 예전 클라이언트가 UDP 로 보낸 좌표를 채팅 연결로 옮겨 전하는 간격
+  UDP_FRESH_MS: 2500,            // 이 시간 안에 UDP 좌표가 왔으면 그 사람의 UDP 는 살아 있는 것으로 본다 (1초마다 오는 것이 정상)
+  CHAT_IDLE_TIMEOUT_MS: 20000,   // 새 클라이언트(5초마다 ping)의 채팅 연결에서 이 시간 동안 아무것도 오지 않으면 끊긴 것으로 본다
+  CHAT_IDLE_CHECK_MS: 5000,      // 위 검사를 하는 주기
+
   // 로그인
   PUBLIC_URL: (process.env.PUBLIC_URL || '').replace(/\/+$/, ''), // Steam 로그인 후 브라우저가 돌아올 이 서버 주소, 비우면 게임이 접속해 온 주소를 그대로 사용
   STEAM_API_KEY: process.env.STEAM_API_KEY || '', // 있으면 가입할 때 Steam 프로필 이름을 닉네임으로 사용

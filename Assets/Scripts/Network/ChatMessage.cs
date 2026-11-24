@@ -1,7 +1,9 @@
 using System;
 
 // 채팅 연결로 주고받는 메시지 (TCP, 한 줄에 JSON 하나, 서버 chatProtocol.js 참고). 건물 메시지는 BuildingMessage
-//   클라 -> 서버  join    { name, token, world }  접속 후 처음 한 번 (JoinMessage)
+//   클라 -> 서버  join    { name, token, world, v }  접속 후 처음 한 번 (JoinMessage, v: 이 클라이언트가 아는 메시지 버전)
+//                 pos     { w, zn, x, y, z, n }   내 위치 (PosMessage). UDP(NetMessage)로 보내는 좌표를 가끔씩 이 연결로도 보낸다
+//                 ping                            연결 확인 (5초마다). 서버는 pong 으로 답한다
 //                 enter   { world }               월드 이동 (EnterMessage)
 //                 zone    { zone }                월드 안에서 구역 이동 (ZoneMessage: "" 마을, "field" 필드, "house" 집 안)
 //                 gather  { node }                필드의 자원 노드를 캠 (GatherMessage)
@@ -14,6 +16,9 @@ using System;
 //                 kick                            같은 계정이 다른 곳에서 로그인(접속)해 끊김: 이쪽은 로그아웃된다 (LoginUI.ForceLogout)
 //                 world   { id, name, mine, build }  들어간 월드 (WorldMessage)
 //                 left    { name }                같이 보이던 사람이 다른 월드나 구역으로 가거나 접속을 끊음
+//                 players { list }                지금 같은 월드, 같은 구역에 있는 사람들과 그 위치 (PlayersMessage), 들어갈 때마다 옴
+//                 pos     { name, id, x, y, z, n }  같이 있는 사람의 위치 (PosMessage)
+//                 pong                            ping 의 답
 //                 res     { items }               내 재화 전부 (ResourceMessage), 바뀔 때마다 옴
 //                 harvest { list }                내 건물의 수확 타이머 (HarvestMessage), 월드에 들어갈 때와 수확 요청의 결과로 옴
 //                 exp     { area, remaining }     내 채집 타이머 (ExpeditionMessage), 접속할 때와 시작/수령 요청의 결과로 옴
@@ -40,7 +45,12 @@ public class ChatMessage
     public const string Expedition = "exp";
     public const string Harvest = "harvest";
     public const string Discard = "discard";
+    public const string Pos = "pos";
+    public const string Players = "players";
+    public const string Ping = "ping";
+    public const string Pong = "pong";
     public const int MaxTextLength = 200; // 서버 config.js의 MAX_CHAT_LENGTH와 같게 유지
+    public const int Version = 2;         // 이 클라이언트가 아는 메시지 버전 (2: players, pos, ping/pong). 서버 chatProtocol.js 참고
 
     public string t;
     public string name;
@@ -55,6 +65,44 @@ public class JoinMessage
     public string name;
     public string token;
     public long world; // 들어갈 월드 id (0: 멀티버스, 내 유저 id: 내 마을, 친구 유저 id: 친구 마을)
+    public int v = ChatMessage.Version;
+}
+
+// 위치 (pos)
+//   클라 -> 서버: 내 위치. w, zn 은 보낼 때 있던 월드와 구역 (서버가 지금 있는 곳과 다르면 버린다)
+//   서버 -> 클라: 같이 있는 사람(name, 유저 id)의 위치
+//   n 은 보낸 순서: 같은 좌표가 UDP 와 이 연결 두 길로 오가므로, 받는 쪽이 늦게 도착한 예전 것을 버리는 데 쓴다
+[Serializable]
+public class PosMessage
+{
+    public string t = ChatMessage.Pos;
+    public string name;
+    public long id;
+    public long w;
+    public string zn = "";
+    public float x;
+    public float y;
+    public float z;
+    public int n;
+}
+
+// 지금 같은 월드, 같은 구역에 있는 사람들 (서버가 알려 줌: 입장, 월드 이동, 구역 이동 직후)
+[Serializable]
+public class PlayersMessage
+{
+    public string t;
+    public PlayerInfo[] list;
+}
+
+[Serializable]
+public class PlayerInfo
+{
+    public string name;
+    public long id; // 유저 id (로그인하지 않은 접속이면 0)
+    public float x;
+    public float y;
+    public float z;
+    public int n;
 }
 
 // 월드 이동 요청

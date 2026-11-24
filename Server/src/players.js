@@ -4,7 +4,7 @@ const { TIMEOUT_MS, KICKED_TTL_MS } = require('./config');
 // 같은 사용자명이 새 세션으로 들어오면 기존 세션은 끊긴 목록으로 옮김
 class Players {
   constructor() {
-    this.byName = new Map(); // 사용자명 -> { id, name, world, zone, address, port, x, y, z, lastSeen }
+    this.byName = new Map(); // 사용자명 -> { id, name, world, zone, address, port, x, y, z, n, lastSeen }
     this.kicked = new Map(); // 끊긴 세션 ID -> 끊긴 시각
   }
 
@@ -31,6 +31,7 @@ class Players {
       x: msg.x,
       y: msg.y,
       z: msg.z,
+      n: msg.n ?? 0, // 보낸 순서 (새 클라이언트만 붙인다)
       lastSeen: now,
     };
     this.byName.set(msg.name, player);

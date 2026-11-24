@@ -9,10 +9,12 @@ const resources = require('./resources');
 const harvest = require('./harvest');
 const gathering = require('./gathering');
 const catalog = require('./catalog');
-const { MAX_LINE_LENGTH, MULTIVERSE } = require('./config');
+const positions = require('./positions');
+const { MAX_LINE_LENGTH, MULTIVERSE, CHAT_IDLE_TIMEOUT_MS, CHAT_IDLE_CHECK_MS } = require('./config');
 
-// TCP 서버: 채팅, 월드/구역 이동, 건물 변경(건설, 철거, 이동), 건물 수확, 채집, 재화 알림
+// TCP 서버: 채팅, 월드/구역 이동, 건물 변경(건설, 철거, 이동), 건물 수확, 채집, 재화 알림, 같이 있는 사람들의 위치
 //   채팅은 모든 접속자에게, 건물 변경은 같은 월드에 있는 사람에게 전달한다 (worlds.js)
+//   같은 월드, 같은 구역에 있는 사람들의 위치도 이 연결로 알려 준다 (positions.js: UDP 가 막혀도 서로 보이도록)
 //   건물은 DB 에 저장하고(buildings.js) 건설 비용, 철거 환급, 건물 수확(harvest.js)을 서버가 계산해
 //   재화가 바뀔 때마다 그 유저에게 알려 준다
 //   필드의 자원 노드, 채집 타이머의 보상도 서버가 정해서 재화에 더한다 (gathering.js)
@@ -55,6 +57,18 @@ function startChatServer(port) {
 
   const canWrite = client => !client.socket.destroyed;
 
+  // 응답 없는 접속 정리: 새 클라이언트(v2)는 5초마다 ping 을 보내므로, 한동안 아무것도 오지 않으면 끊긴 것이다
+  //   네트워크가 말없이 끊기면 TCP 는 한참 뒤에야 알아차려서, 그동안 그 사람이 같이 있는 것처럼 남는다
+  //   (예전 클라이언트는 ping 을 보내지 않으므로 여기서 끊지 않는다: 가만히 있는 것과 구별할 수 없다)
+  setInterval(() => {
+    const now = Date.now();
+    for (const idle of presence.all()) {
+      if (idle.v < 2 || now - idle.heard <= CHAT_IDLE_TIMEOUT_MS) continue;
+      console.log(`[채팅] ${idle.name} 응답 없음 - 접속 종료`);
+      idle.socket.destroy();
+    }
+  }, CHAT_IDLE_CHECK_MS).unref();
+
   // 지금 가진 재화를 알려 줌
   async function sendResources(client) {
     const amounts = await resources.get(client.userId);
@@ -89,7 +103,10 @@ function startChatServer(port) {
   }
 
   const server = net.createServer(socket => {
-    let client = null; // 입장하면 { socket, name, userId, world, zone }
+    // 입장하면 { socket, name, userId, world, zone, v, pos, posAt, heard }
+    //   v: 클라이언트가 아는 메시지 버전, pos / posAt: 채팅 연결로 알고 있는 위치와 받은 시각 (positions.js),
+    //   heard: 이 연결에서 마지막으로 무언가 받은 시각
+    let client = null;
     let buffer = '';
     let queue = Promise.resolve(); // 받은 줄을 순서대로 처리 (DB 를 기다리는 동안 다음 줄이 앞서지 않게)
     socket.setEncoding('utf8');
@@ -97,6 +114,7 @@ function startChatServer(port) {
     socket.setKeepAlive(true, 10000); // 응답 없는 연결 정리
 
     socket.on('data', chunk => {
+      if (client) client.heard = Date.now(); // 처리가 밀려 있어도 무언가 왔다는 것은 바로 적는다
       buffer += chunk;
       let i;
       while ((i = buffer.indexOf('\n')) >= 0) {
@@ -139,7 +157,9 @@ function startChatServer(port) {
           worlds.disconnect(old); // 같은 계정(사용자명)의 기존 접속 끊기: 그쪽 클라이언트는 로그아웃된다
           console.log(`[채팅] ${name} 중복 접속 - 기존 접속 종료`);
         }
-        client = { socket, name, userId: user ? user.id : null, world: null, zone: '' };
+        client = {
+          socket, name, userId: user ? user.id : null, world: null, zone: '', v: msg.v, pos: null, posAt: 0, heard: Date.now(),
+        };
         presence.add(client);
         console.log(`[채팅] ${name} 입장`);
 
@@ -154,7 +174,12 @@ function startChatServer(port) {
       }
       if (!client || presence.byName(client.name) !== client) return; // 입장하지 않았거나 끊긴 접속
 
-      if (msg.t === 'chat') {
+      if (msg.t === 'pos') {
+        // 채팅 연결로 온 내 위치: 지금 있는 곳(월드, 구역)의 것만 받는다 (옮기는 중에 보낸 예전 곳의 좌표는 버린다)
+        if (msg.world === client.world && msg.zone === client.zone) positions.update(client, msg);
+      } else if (msg.t === 'ping') {
+        if (canWrite(client)) socket.write(chatProtocol.pong());
+      } else if (msg.t === 'chat') {
         console.log(`[채팅] ${client.name}: ${msg.text}`);
         const data = chatProtocol.chat(client.name, msg.text);
         for (const other of presence.all()) other.socket.write(data);

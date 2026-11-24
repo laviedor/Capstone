@@ -4,6 +4,7 @@ const buildings = require('./buildings');
 const harvest = require('./harvest');
 const friends = require('./friends');
 const accounts = require('./accounts');
+const positions = require('./positions');
 const { MULTIVERSE, KICK_GRACE_MS } = require('./config');
 
 // 월드 이동
@@ -11,7 +12,7 @@ const { MULTIVERSE, KICK_GRACE_MS } = require('./config');
 //   내 유저 id: 내 마을. 나만 짓고, 다른 사람은 보이지 않는다 (구경 온 친구만 보임)
 //   친구의 유저 id: 친구 마을. 친구만 들어갈 수 있고 구경만 한다
 // 같은 월드에 있는 사람끼리만 건물 변경(chatServer.js)을 주고받고,
-// 좌표(udpServer.js)는 그 안에서도 같은 구역(마을 / 필드 / 집 안)에 있는 사람끼리만 주고받는다
+// 좌표(udpServer.js, positions.js)는 그 안에서도 같은 구역(마을 / 필드 / 집 안)에 있는 사람끼리만 주고받는다
 
 // 그 월드에 있는 사람들에게 (except 는 빼고)
 function broadcast(world, line, except) {
@@ -29,7 +30,7 @@ async function resolve(client, world) {
   return owner && { id: world, name: owner.nickname, mine: false, build: false };
 }
 
-// client 를 그 월드로 옮기고 월드 정보, 건물 목록, 내 건물의 수확 타이머를 보낸다
+// client 를 그 월드로 옮기고 월드 정보, 건물 목록, 내 건물의 수확 타이머, 그곳에 있는 사람들의 위치를 보낸다
 // 들어갈 수 없는 월드면 false (있던 곳에 그대로 있음)
 async function enter(client, world) {
   const info = await resolve(client, world);
@@ -43,10 +44,12 @@ async function enter(client, world) {
     if (old !== null) leaveView(client); // 있던 곳의 화면에서 바로 사라지도록
     client.world = info.id;
     client.zone = ''; // 다른 월드에는 마을로 들어간다
+    positions.forget(client);
   }
   client.socket.write(chatProtocol.world(info));
   client.socket.write(chatProtocol.buildingList(list));
   client.socket.write(chatProtocol.harvest(timers, true)); // 건물 목록 다음에 보낸다 (목록에 있는 건물의 타이머)
+  positions.snapshot(client); // 월드 정보 다음에 보낸다 (클라이언트는 월드가 바뀌면 보이던 사람들을 지우고 이 목록으로 다시 채운다)
   return true;
 }
 
@@ -56,11 +59,13 @@ function leaveView(client) {
   for (const other of presence.inZone(client.world, client.zone)) if (other !== client) other.socket.write(line);
 }
 
-// 월드 안에서 구역을 옮김 (마을 <-> 필드 / 집 안). 있던 구역의 사람들 화면에서는 사라진다
+// 월드 안에서 구역을 옮김 (마을 <-> 필드 / 집 안). 있던 구역의 사람들 화면에서는 사라지고, 옮긴 구역의 사람들 위치를 받는다
 function setZone(client, zone) {
   if (client.world === null || client.zone === zone) return;
   leaveView(client);
   client.zone = zone;
+  positions.forget(client);
+  positions.snapshot(client);
 }
 
 // 중복 로그인: 같은 계정(사용자명)이 다른 곳에서 로그인하거나 접속했을 때 먼저 있던 접속을 끊는다

@@ -13,6 +13,7 @@ using UnityEngine.UI;
 //               멀티버스 채팅(ChatUI)과 달리 서버 DB 에 남아서, 상대가 접속해 있지 않아도 보낼 수 있고 다음에 열면 이어서 보인다
 //               버튼에는 안 읽은 메시지 수가 괄호로 표시된다: 1:1 채팅 (1)
 //   서버가 채팅 연결(ChatClient)로 알림을 주면 FriendApi 로 새 메시지나 친구 목록, 친구 요청을 다시 받아 온다
+//   다른 플레이어를 우클릭하면 뜨는 메뉴(PlayerContextMenu)도 여기의 목록으로 관계를 보고, 요청/취소/수락/거절/1:1 채팅 열기/친구 삭제를 여기에 맡긴다
 // (await 뒤의 코드는 Unity 메인 스레드에서 이어서 실행됨)
 public class FriendUI : MonoBehaviour
 {
@@ -104,6 +105,119 @@ public class FriendUI : MonoBehaviour
         Refresh(); // 접속해 있지 않은 동안 온 메시지 수, 친구 요청 수를 버튼에 표시
     }
 
+    // ---------- 다른 스크립트에서 쓰는 것 (캐릭터 우클릭 메뉴) ----------
+
+    // 나와 그 사람의 관계
+    public enum Relation
+    {
+        None,            // 친구가 아니고 주고받은 요청도 없음
+        Friend,
+        RequestSent,     // 내가 친구 요청을 보내 두었음 (상대가 수락하기 전)
+        RequestReceived, // 상대가 나에게 친구 요청을 보냈음 (내가 수락, 거절하기 전)
+    }
+
+    public event Action ListChanged; // 친구 목록이나 주고받은 친구 요청을 서버에서 다시 받음
+
+    // 서버에서 목록을 다시 받아 온다 (끝나면 ListChanged)
+    public void RefreshList() => Refresh();
+
+    // 그 사람과의 관계 (지금 가진 목록 기준). 유저 id 를 알면 id 로, 모르면(0) 닉네임으로 찾는다
+    public Relation RelationWith(long userId, string nickname)
+    {
+        if (FindIn(friends, userId, nickname) != null) return Relation.Friend;
+        if (FindIn(incoming, userId, nickname) != null) return Relation.RequestReceived;
+        if (FindIn(outgoing, userId, nickname) != null) return Relation.RequestSent;
+        return Relation.None;
+    }
+
+    static FriendApi.Friend FindIn(FriendApi.Friend[] list, long userId, string nickname)
+    {
+        return Array.Find(list, f => userId > 0 ? f.id == userId : f.nickname == nickname);
+    }
+
+    // 닉네임으로 친구 요청 보내기. 창이 닫혀 있을 수 있으므로 결과는 화면 아래 안내로 알린다
+    public async void RequestFriend(string nickname)
+    {
+        if (string.IsNullOrEmpty(nickname)) return;
+
+        var result = await FriendApi.Add(nickname);
+        if (this == null || LoggedOut(result.Status)) return;
+
+        string text = AddResultText(result, out bool changed);
+        statusText.text = text;
+        Toast.Show(text);
+        if (changed) Refresh();
+    }
+
+    // 그 사람이 보낸 친구 요청 수락. 결과는 화면 아래 안내로 알린다
+    public void AcceptRequestFrom(long userId, string nickname)
+    {
+        FriendApi.Friend from = FindIn(incoming, userId, nickname);
+        if (from == null)
+        {
+            Toast.Show("받은 친구 요청이 없습니다.");
+            Refresh();
+            return;
+        }
+        Accept(from, true);
+    }
+
+    // 그 사람이 보낸 친구 요청 거절. 결과는 화면 아래 안내로 알린다
+    public void RejectRequestFrom(long userId, string nickname)
+    {
+        FriendApi.Friend from = FindIn(incoming, userId, nickname);
+        if (from == null)
+        {
+            Toast.Show("받은 친구 요청이 없습니다.");
+            Refresh();
+            return;
+        }
+        Reject(from, true);
+    }
+
+    // 그 사람에게 보내 둔 친구 요청 취소. 결과는 화면 아래 안내로 알린다
+    public void CancelRequestTo(long userId, string nickname)
+    {
+        FriendApi.Friend to = FindIn(outgoing, userId, nickname);
+        if (to == null)
+        {
+            Toast.Show("보낸 친구 요청이 없습니다.");
+            Refresh();
+            return;
+        }
+        Cancel(to, true);
+    }
+
+    // 그 친구와의 1:1 채팅 화면을 연다
+    public void OpenChatWith(long userId, string nickname)
+    {
+        FriendApi.Friend friend = FindIn(friends, userId, nickname);
+        if (friend == null)
+        {
+            Toast.Show("친구가 아니어서 1:1 채팅을 할 수 없습니다.");
+            Refresh();
+            return;
+        }
+
+        friendPanel.SetActive(true);
+        if (chatPanel != null) chatPanel.SetActive(false);
+        OpenChat(friend);
+        Refresh();
+    }
+
+    // 그 친구를 삭제할지 묻고 (친구 창의 [삭제]와 같은 확인창) 삭제한다. 결과는 화면 아래 안내로 알린다
+    public void RemoveFriend(long userId, string nickname)
+    {
+        FriendApi.Friend friend = FindIn(friends, userId, nickname);
+        if (friend == null)
+        {
+            Toast.Show("이미 친구가 아닙니다.");
+            Refresh();
+            return;
+        }
+        AskRemove(friend, true);
+    }
+
     // chats: [1:1 채팅] 버튼이면 true, [친구] 버튼이면 false. 같은 버튼을 다시 누르면 닫힘
     void TogglePanel(bool chats)
     {
@@ -189,6 +303,7 @@ public class FriendUI : MonoBehaviour
 
         BuildRows();
         UpdateButtonText();
+        ListChanged?.Invoke();
     }
 
     // 목록에서 달라진 것 중 알려 줄 것을 화면 위에 잠깐 띄움: 새로 받은 친구 요청, 내가 보낸 요청을 상대가 수락함
@@ -263,99 +378,105 @@ public class FriendUI : MonoBehaviour
         addButton.interactable = true;
         if (LoggedOut(result.Status)) return;
 
+        statusText.text = AddResultText(result, out bool changed);
+        if (!changed) return;
+
+        nicknameInput.text = "";
+        Refresh();
+    }
+
+    // 친구 요청을 보낸 결과 안내. changed: 요청이 보내졌거나 바로 친구가 되어 목록을 다시 받아야 하는지
+    static string AddResultText(AuthApi.Result<FriendApi.Response> result, out bool changed)
+    {
+        changed = false;
         switch (result.Status == 0 ? null : result.Body?.status)
         {
             case "requested":
-                statusText.text = $"{result.Body.friend.nickname}님에게 친구 요청을 보냈습니다.";
-                nicknameInput.text = "";
-                Refresh();
-                break;
+                changed = true;
+                return $"{result.Body.friend.nickname}님에게 친구 요청을 보냈습니다.";
             case "ok":
                 // 상대가 먼저 나에게 요청을 보내 둔 상태였음
-                statusText.text = $"{result.Body.friend.nickname}님과 친구가 되었습니다.";
-                nicknameInput.text = "";
-                Refresh();
-                break;
+                changed = true;
+                return $"{result.Body.friend.nickname}님과 친구가 되었습니다.";
             case "not_found":
-                statusText.text = "그런 닉네임의 유저가 없습니다.";
-                break;
+                return "그런 닉네임의 유저가 없습니다.";
             case "self":
-                statusText.text = "자기 자신에게는 요청할 수 없습니다.";
-                break;
+                return "자기 자신에게는 요청할 수 없습니다.";
             case "already":
-                statusText.text = "이미 친구입니다.";
-                break;
+                return "이미 친구입니다.";
             case "pending":
-                statusText.text = "이미 친구 요청을 보낸 상대입니다.";
-                break;
+                return "이미 친구 요청을 보낸 상대입니다.";
             case "full":
-                statusText.text = "친구를 더 추가할 수 없습니다.";
-                break;
+                return "친구를 더 추가할 수 없습니다.";
             case "too_many":
-                statusText.text = "친구 요청을 더 보낼 수 없습니다.";
-                break;
+                return "친구 요청을 더 보낼 수 없습니다.";
             case "ambiguous":
-                statusText.text = "같은 닉네임의 유저가 여러 명이라 요청할 수 없습니다.";
-                break;
+                return "같은 닉네임의 유저가 여러 명이라 요청할 수 없습니다.";
             default:
-                statusText.text = ErrorText(result.Status, "친구 요청을 보내지 못했습니다.");
-                break;
+                return ErrorText(result.Status, "친구 요청을 보내지 못했습니다.");
         }
     }
 
     // ---------- 친구 요청 ----------
 
-    // 받은 친구 요청 수락: 서로 친구가 된다
-    async void Accept(FriendApi.Friend from)
+    // 받은 친구 요청 수락: 서로 친구가 된다. announce: 결과를 화면 아래 안내로도 알릴지 (창 밖에서 수락한 경우)
+    async void Accept(FriendApi.Friend from, bool announce = false)
     {
         if (!answering.Add(from.id)) return;
         var result = await FriendApi.Accept(from.id);
         answering.Remove(from.id);
         if (this == null || LoggedOut(result.Status)) return;
 
+        string text;
         switch (result.Status == 0 ? null : result.Body?.status)
         {
             case "ok":
-                statusText.text = $"{from.nickname}님과 친구가 되었습니다.";
+                text = $"{from.nickname}님과 친구가 되었습니다.";
                 break;
             case "none":
-                statusText.text = "이미 취소된 친구 요청입니다.";
+                text = "이미 취소된 친구 요청입니다.";
                 break;
             case "full":
-                statusText.text = "친구를 더 추가할 수 없습니다.";
+                text = "친구를 더 추가할 수 없습니다.";
                 break;
             default:
-                statusText.text = ErrorText(result.Status, "친구 요청을 수락하지 못했습니다.");
+                text = ErrorText(result.Status, "친구 요청을 수락하지 못했습니다.");
                 break;
         }
+        statusText.text = text;
+        if (announce) Toast.Show(text);
         Refresh();
     }
 
-    // 받은 친구 요청 거절
-    async void Reject(FriendApi.Friend from)
+    // 받은 친구 요청 거절. announce: 결과를 화면 아래 안내로도 알릴지 (창 밖에서 거절한 경우)
+    async void Reject(FriendApi.Friend from, bool announce = false)
     {
         if (!answering.Add(from.id)) return;
         var result = await FriendApi.Reject(from.id);
         answering.Remove(from.id);
         if (this == null || LoggedOut(result.Status)) return;
 
-        statusText.text = result.Status == 200
+        string text = result.Status == 200
             ? $"{from.nickname}님의 친구 요청을 거절했습니다."
             : ErrorText(result.Status, "친구 요청을 거절하지 못했습니다.");
+        statusText.text = text;
+        if (announce) Toast.Show(text);
         Refresh();
     }
 
-    // 내가 보낸 친구 요청 취소
-    async void Cancel(FriendApi.Friend to)
+    // 내가 보낸 친구 요청 취소. announce: 결과를 화면 아래 안내로도 알릴지 (창 밖에서 취소한 경우)
+    async void Cancel(FriendApi.Friend to, bool announce = false)
     {
         if (!answering.Add(to.id)) return;
         var result = await FriendApi.Cancel(to.id);
         answering.Remove(to.id);
         if (this == null || LoggedOut(result.Status)) return;
 
-        statusText.text = result.Status == 200
+        string text = result.Status == 200
             ? $"{to.nickname}님에게 보낸 친구 요청을 취소했습니다."
             : ErrorText(result.Status, "친구 요청을 취소하지 못했습니다.");
+        statusText.text = text;
+        if (announce) Toast.Show(text);
         Refresh();
     }
 
@@ -368,19 +489,22 @@ public class FriendUI : MonoBehaviour
         WorldSync.Instance.Enter(friend.id);
     }
 
-    void AskRemove(FriendApi.Friend friend)
+    // announce: 결과를 화면 아래 안내로도 알릴지 (창 밖에서 삭제한 경우)
+    void AskRemove(FriendApi.Friend friend, bool announce = false)
     {
-        dialog.Show($"{friend.nickname}님을\n친구에서 삭제하시겠습니까?", "삭제", () => Remove(friend), "취소");
+        dialog.Show($"{friend.nickname}님을\n친구에서 삭제하시겠습니까?", "삭제", () => Remove(friend, announce), "취소");
     }
 
-    async void Remove(FriendApi.Friend friend)
+    async void Remove(FriendApi.Friend friend, bool announce)
     {
         var result = await FriendApi.Remove(friend.id);
         if (this == null || LoggedOut(result.Status)) return;
 
-        statusText.text = result.Status == 200
+        string text = result.Status == 200
             ? $"{friend.nickname}님을 친구에서 삭제했습니다."
             : ErrorText(result.Status, "친구를 삭제하지 못했습니다.");
+        statusText.text = text;
+        if (announce) Toast.Show(text);
         Refresh();
     }
 

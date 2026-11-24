@@ -7,11 +7,15 @@ using UnityEngine;
 
 // 채팅 서버와의 TCP 통신 (채팅, 월드/구역 이동, 건물 변경, 건물 수확, 채집, 재화, 친구/1:1 채팅 알림): 로그인하면 접속하고, 끊기면 다시 접속
 //   다른 곳에서 같은 계정으로 로그인해 서버가 끊은 경우(kick)에는 다시 접속하지 않고 로그아웃한다
+//   같이 있는 사람들의 위치도 이 연결로 주고받는다 (UDP 가 닿지 않아도 서로 보이도록, RemotePlayerManager / LocalPlayerSync)
+//   연결이 말없이 끊긴 것을 알아차리려고 주기적으로 ping 을 보내고, 한동안 아무것도 오지 않으면 닫고 다시 접속한다
 // (await 뒤의 코드는 Unity 메인 스레드에서 이어서 실행됨)
 public class ChatClient : MonoBehaviour
 {
     [SerializeField] private int chatPort = 7778;
     [SerializeField] private float reconnectDelay = 3f;
+    [SerializeField] private float pingInterval = 5f;    // 이 간격으로 ping 을 보낸다 (서버는 20초 동안 아무것도 안 오면 끊는다)
+    [SerializeField] private float receiveTimeout = 15f; // 이 시간 동안 아무것도 오지 않으면 끊긴 것으로 보고 다시 접속한다
 
     public event Action<ChatMessage> MessageReceived;
     public event Action<BuildingMessage> BuildingReceived; // 건물 변경 (BuildingSync 가 처리)
@@ -25,9 +29,14 @@ public class ChatClient : MonoBehaviour
     public event Action<HarvestMessage> HarvestReceived;    // 내 건물의 수확 타이머 (BuildingSync 가 처리)
     public event Action<string> ServerNotice;               // 서버의 안내 (요청이 거절된 이유, 받은 보상 등)
     public event Action<ExpeditionMessage> ExpeditionReceived; // 내 채집 타이머 (GatherSync 가 처리)
+    public event Action<PlayersMessage> PlayersReceived;    // 지금 같은 월드, 같은 구역에 있는 사람들 (들어갈 때마다 옴)
+    public event Action<PosMessage> PositionReceived;       // 같이 있는 사람의 위치 (이 연결로 온 것)
 
     // 접속할 때 들어갈 월드 id. WorldSync 가 지금 있는 월드로 맞춰 두므로 연결이 끊겼다 다시 붙어도 같은 곳으로 돌아간다
     public long JoinWorld { get; set; }
+
+    // 지금 채팅 서버에 연결되어 있는지 (끊기면 다시 붙을 때까지 false)
+    public bool IsConnected => stream != null;
 
     private static readonly UTF8Encoding Utf8 = new UTF8Encoding(false);
 
@@ -36,6 +45,11 @@ public class ChatClient : MonoBehaviour
     private bool running;
     private bool kicked;
     private bool destroyed;
+    private float lastReceived; // 이 연결에서 마지막으로 무언가 받은 시각 (Time.unscaledTime)
+    private float lastPing;     // 마지막으로 ping 을 보낸 시각
+    private bool pongSeen;      // 이 연결에서 pong 을 받은 적이 있는지 (ping 을 모르는 예전 서버면 응답 없음 검사를 하지 않는다)
+    private readonly ChatMessage ping = new ChatMessage { t = ChatMessage.Ping };
+    private readonly PosMessage position = new PosMessage();
 
     void OnEnable()
     {
@@ -77,6 +91,18 @@ public class ChatClient : MonoBehaviour
     // 장식 아이템 1개 버리기
     public bool SendDiscard(string item) => TryWrite(new DiscardMessage { item = item });
 
+    // 내 위치 (world, zone: 지금 있는 곳, sequence: 보낸 순서). 서버가 같은 곳에 있는 사람들에게 전한다
+    public bool SendPosition(Vector3 p, long world, string zone, int sequence)
+    {
+        position.w = world;
+        position.zn = zone;
+        position.x = p.x;
+        position.y = p.y;
+        position.z = p.z;
+        position.n = sequence;
+        return TryWrite(position);
+    }
+
     bool TryWrite(object msg)
     {
         if (stream == null) return false;
@@ -85,9 +111,33 @@ public class ChatClient : MonoBehaviour
             Write(msg);
             return true;
         }
-        catch (Exception e) when (e is IOException || e is ObjectDisposedException)
+        catch (Exception e) when (e is IOException || e is ObjectDisposedException || e is InvalidOperationException)
         {
             return false;
+        }
+    }
+
+    // 연결 확인: 주기적으로 ping 을 보내고, 한동안 아무것도 오지 않으면 닫는다 (닫으면 Run 이 다시 접속한다)
+    //   네트워크가 말없이 끊기면 TCP 는 오랫동안 알아차리지 못해서, 그동안 화면이 멈춘 채로 접속해 있는 것처럼 보인다
+    void Update()
+    {
+        if (stream == null) return;
+
+        float now = Time.unscaledTime;
+        // 창을 끌거나 장면을 불러오느라 게임이 멈춰 있었으면, 그동안 못 읽은 것일 뿐이므로 다시 기다린다
+        if (Time.unscaledDeltaTime > 2f) lastReceived = now;
+
+        if (pongSeen && now - lastReceived > receiveTimeout)
+        {
+            Debug.LogWarning("채팅 서버에서 응답이 없어 연결을 닫고 다시 접속합니다.");
+            stream = null; // 닫는 중에는 보내지 않는다 (읽고 있던 Run 이 오류로 끝나면서 정리하고 다시 접속한다)
+            tcp.Close();
+            return;
+        }
+        if (now - lastPing >= pingInterval)
+        {
+            lastPing = now;
+            TryWrite(ping);
         }
     }
 
@@ -102,11 +152,13 @@ public class ChatClient : MonoBehaviour
 
         while (!destroyed && !kicked)
         {
-            tcp = new TcpClient();
+            tcp = new TcpClient { NoDelay = true, SendTimeout = 2000 }; // 작은 메시지를 모으지 않고 바로 보낸다 (위치)
             try
             {
                 await tcp.ConnectAsync(host, chatPort);
                 stream = tcp.GetStream();
+                lastReceived = lastPing = Time.unscaledTime;
+                pongSeen = false;
                 Write(new JoinMessage { name = LoginUI.Username, token = AuthApi.Token, world = JoinWorld });
                 if (noticed) Notice?.Invoke("채팅 서버에 다시 연결되었습니다.");
                 wasConnected = true;
@@ -118,9 +170,10 @@ public class ChatClient : MonoBehaviour
                 while ((line = await reader.ReadLineAsync()) != null)
                     Handle(line);
             }
-            catch (Exception e) when (e is SocketException || e is IOException || e is ObjectDisposedException)
+            catch (Exception e) when (e is SocketException || e is IOException || e is ObjectDisposedException ||
+                                      e is InvalidOperationException)
             {
-                // 연결 실패 또는 끊김 - 아래에서 다시 시도
+                // 연결 실패 또는 끊김 (응답이 없어 Update 가 닫은 경우 포함) - 아래에서 다시 시도
             }
             finally
             {
@@ -142,6 +195,8 @@ public class ChatClient : MonoBehaviour
 
     void Handle(string line)
     {
+        lastReceived = Time.unscaledTime;
+
         ChatMessage msg;
         try
         {
@@ -152,7 +207,19 @@ public class ChatClient : MonoBehaviour
             return; // 잘못된 JSON
         }
 
-        if (msg.t == ChatMessage.Chat)
+        if (msg.t == ChatMessage.Pos)
+        {
+            PositionReceived?.Invoke(JsonUtility.FromJson<PosMessage>(line));
+        }
+        else if (msg.t == ChatMessage.Pong)
+        {
+            pongSeen = true;
+        }
+        else if (msg.t == ChatMessage.Players)
+        {
+            PlayersReceived?.Invoke(JsonUtility.FromJson<PlayersMessage>(line));
+        }
+        else if (msg.t == ChatMessage.Chat)
         {
             MessageReceived?.Invoke(msg);
         }
