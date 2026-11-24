@@ -9,7 +9,7 @@ using System;
 //                 exp_claim                       끝난 채집 타이머의 보상 수령
 //                 harvest { id }                  건물 수확 (HarvestMessage)
 //                 discard { item }                장식 아이템 1개 버리기 (DiscardMessage)
-//                 chat    { text }                멀티버스 채팅
+//                 chat    { text }                광장 채팅
 //   서버 -> 클라  chat    { name, text }          어느 월드에 있든 모든 접속자에게 전달
 //                 kick                            같은 계정이 다른 곳에서 로그인(접속)해 끊김: 이쪽은 로그아웃된다 (LoginUI.ForceLogout)
 //                 world   { id, name, mine, build }  들어간 월드 (WorldMessage)
@@ -57,7 +57,7 @@ public class JoinMessage
     public string t = ChatMessage.Join;
     public string name;
     public string token;
-    public long world; // 들어갈 월드 id (0: 멀티버스, 내 유저 id: 내 마을, 친구 유저 id: 친구 마을)
+    public long world; // 들어갈 월드 id (0: 광장, 내 유저 id: 내 마을, 친구 유저 id: 친구 마을)
 }
 
 // 월드 이동 요청
@@ -107,7 +107,7 @@ public class WorldMessage
 {
     public string t;
     public long id;     // 월드 id
-    public string name; // 마을 주인 닉네임 (멀티버스는 "")
+    public string name; // 마을 주인 닉네임 (광장은 "")
     public bool mine;   // 내 마을인지
     public bool build;  // 여기서 건물을 지을 수 있는지 (친구 마을은 구경만)
 }

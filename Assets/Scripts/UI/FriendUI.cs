@@ -10,7 +10,7 @@ using UnityEngine.UI;
 //           친구 목록에서 [방문]으로 그 친구의 마을 구경, [삭제]로 친구 삭제. 보낸 요청은 [취소]할 수 있다
 //           버튼에는 받은 친구 요청 수가 괄호로 표시된다: 친구 (1)
 //   [1:1 채팅]: 대화할 친구를 고르면 그 친구와 둘이서만 주고받는 채팅. 어느 월드에 있든 접속한 모두에게 보이는
-//               멀티버스 채팅(ChatUI)과 달리 서버 DB 에 남아서, 상대가 접속해 있지 않아도 보낼 수 있고 다음에 열면 이어서 보인다
+//               광장 채팅(ChatUI)과 달리 서버 DB 에 남아서, 상대가 접속해 있지 않아도 보낼 수 있고 다음에 열면 이어서 보인다
 //               버튼에는 안 읽은 메시지 수가 괄호로 표시된다: 1:1 채팅 (1)
 //   서버가 채팅 연결(ChatClient)로 알림을 주면 FriendApi 로 새 메시지나 친구 목록, 친구 요청을 다시 받아 온다
 // (await 뒤의 코드는 Unity 메인 스레드에서 이어서 실행됨)
@@ -22,7 +22,7 @@ public class FriendUI : MonoBehaviour
     [SerializeField] private Button dmButton;       // [1:1 채팅]
     [SerializeField] private Text dmButtonText;     // 안 읽은 메시지 수 표시
     [SerializeField] private GameObject friendPanel;
-    [SerializeField] private GameObject chatPanel;  // 멀티버스 채팅창 (같은 자리에 뜨므로 이 창을 열면 닫음)
+    [SerializeField] private GameObject chatPanel;  // 광장 채팅창 (같은 자리에 뜨므로 이 창을 열면 닫음)
 
     [Header("친구 / 대화 상대 목록")]
     [SerializeField] private GameObject listView;

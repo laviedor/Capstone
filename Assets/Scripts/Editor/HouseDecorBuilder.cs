@@ -11,8 +11,8 @@ using Object = UnityEngine.Object;
 //   1. Assets/Sprites/HouseDecor 의 그림(직접 그린 도트, 50px = 1유닛)을 스프라이트로 가져온다
 //      기준점은 차지하는 칸의 가운데라서, 그림 아래쪽이 칸 아래쪽에 맞는다
 //   2. 장식마다 BuildingData(장식, 집 안 전용) 와 프리팹을 만든다 (Assets/Data/HouseDecor, Assets/Prefab/HouseDecor)
-//   3. 장식 목록(DecorationDatabase: 채집 보상으로 나오고, 가지고 있으면 건설 창에 보임)과
-//      BuildingSync 의 프리팹 목록에 넣는다
+//   3. 건설 목록(ConstructionListUI)과 BuildingSync 의 프리팹 목록에 넣는다
+//      가구는 자원(나무·돌·골드)을 내고 바로 놓는다: 집 안에서 건설 창을 열면 보인다 (채집 보상 장식 목록에서는 뺀다)
 //   4. 서버 데이터(buildings.json)를 다시 내보낸다
 //   이름·칸 수는 HouseDecorLayout.json. 여러 번 실행해도 같은 결과가 나온다.
 public static class HouseDecorBuilder
@@ -25,7 +25,7 @@ public static class HouseDecorBuilder
     private const float CellSize = 0.5f;
 
     [Serializable] private class Layout { public float pixelsPerUnit; public Item[] items; }
-    [Serializable] private class Item { public string key, name; public int cw, ch; }
+    [Serializable] private class Item { public string key, name; public int cw, ch; public int[] cost; }
 
     [MenuItem("Tools/Cozy UI/집 장식물 추가")]
     public static void Apply()
@@ -73,7 +73,7 @@ public static class HouseDecorBuilder
             }
 
             AssetDatabase.SaveAssets();
-            Register(database, sync, created);
+            Register(construction, database, sync, created);
             ServerDataExporter.Export();
 
             EditorSceneManager.MarkSceneDirty(sync.gameObject.scene);
@@ -86,7 +86,7 @@ public static class HouseDecorBuilder
 
         Debug.Log($"[집 장식물] 장식 {created.Count}종을 추가했어요. 씬을 저장하고 서버를 재시작해 주세요.");
         EditorUtility.DisplayDialog("집 장식물",
-            $"집 장식물 {created.Count}종을 추가했어요.\n채집 보상으로 얻으면 건설 창에 나타나고, 집 안에만 놓을 수 있어요.\n\n" +
+            $"집 가구 {created.Count}종을 건설 목록에 추가했어요.\n집 안에서 건설 창을 열면 보이고, 자원을 내고 바로 놓을 수 있어요.\n\n" +
             "• 씬을 저장해 주세요.\n• 서버 데이터가 바뀌었으니 서버를 재시작해 주세요.", "확인");
     }
 
@@ -158,7 +158,13 @@ public static class HouseDecorBuilder
         data.houseOnly = true; // 실내 가구: 집 안에만 놓는다
         data.width = item.cw;
         data.height = item.ch;
-        data.constructionCosts = new ResourceAmount[0];
+        // 가격: [자원 종류, 수량, ...] (0 나무, 1 돌, 2 골드). 비용이 있는 장식은 아이템 없이 자원으로 바로 놓는다
+        var costs = new List<ResourceAmount>();
+
+        for (int i = 0; item.cost != null && i + 1 < item.cost.Length; i += 2)
+            costs.Add(new ResourceAmount { resourceType = (ResourceType)item.cost[i], amount = item.cost[i + 1] });
+
+        data.constructionCosts = costs.ToArray();
         data.productions = new ResourceProduction[0];
         data.canInteract = false;
         EditorUtility.SetDirty(data);
@@ -198,31 +204,46 @@ public static class HouseDecorBuilder
         }
     }
 
-    private static void Register(DecorationDatabase database, BuildingSync sync, List<(BuildingData data, GameObject prefab)> created)
+    private static void Register(ConstructionListUI construction, DecorationDatabase database, BuildingSync sync,
+        List<(BuildingData data, GameObject prefab)> created)
     {
-        // 장식 목록 (건설 창에는 가지고 있을 때 보이고, 채집 보상으로도 나온다)
-        SerializedObject db = new SerializedObject(database);
-        SerializedProperty decorations = db.FindProperty("decorations");
+        // 건설 목록 (자원으로 바로 놓는 가구)
+        SerializedObject cl = new SerializedObject(construction);
+        SerializedProperty list = cl.FindProperty("availableBuildings");
 
         foreach (var c in created)
         {
             int index = -1;
 
-            for (int i = 0; i < decorations.arraySize; i++)
+            for (int i = 0; i < list.arraySize; i++)
             {
-                if (decorations.GetArrayElementAtIndex(i).FindPropertyRelative("buildingData").objectReferenceValue == c.data)
+                if (list.GetArrayElementAtIndex(i).FindPropertyRelative("buildingData").objectReferenceValue == c.data)
                     index = i;
             }
 
             if (index < 0)
             {
-                index = decorations.arraySize;
-                decorations.arraySize++;
+                index = list.arraySize;
+                list.arraySize++;
             }
 
-            SerializedProperty entry = decorations.GetArrayElementAtIndex(index);
+            SerializedProperty entry = list.GetArrayElementAtIndex(index);
             entry.FindPropertyRelative("buildingData").objectReferenceValue = c.data;
             entry.FindPropertyRelative("buildingPrefab").objectReferenceValue = c.prefab;
+        }
+
+        cl.ApplyModifiedProperties();
+
+        // 예전에 장식 목록(채집 보상)에 넣었던 가구는 뺀다
+        SerializedObject db = new SerializedObject(database);
+        SerializedProperty decorations = db.FindProperty("decorations");
+
+        for (int i = decorations.arraySize - 1; i >= 0; i--)
+        {
+            Object data = decorations.GetArrayElementAtIndex(i).FindPropertyRelative("buildingData").objectReferenceValue;
+
+            if (created.Exists(c => c.data == data))
+                decorations.DeleteArrayElementAtIndex(i);
         }
 
         db.ApplyModifiedPropertiesWithoutUndo();

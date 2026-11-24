@@ -308,6 +308,13 @@ public class MousePathfinding : MonoBehaviour
             lastClickedDoor = null;
             HouseMovePopup.Hide();
 
+            // 광장에서 집을 눌렀다면 들어가지 않고 안내만 한다
+            if (HouseDoor.FindBlockedEntranceAt(clickPosition))
+            {
+                Toast.Show(HouseDoor.MultiverseMessage);
+                return;
+            }
+
             // 대장간을 눌렀다면 제작 창을 연다 (이동하지 않음)
             foreach (Collider2D hit in hitColliders)
             {

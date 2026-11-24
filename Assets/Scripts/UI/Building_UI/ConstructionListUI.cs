@@ -59,6 +59,7 @@ public class ConstructionListUI : MonoBehaviour
 
         SubscribeInventory();
         RefreshDecorationCards();
+        ApplyFilter(); // 집 안 / 마을에 따라 보이는 카드가 다르다
     }
 
     // 초기 일반 건물 목록을 만들고 장식 목록을 동기화한다.
@@ -302,6 +303,12 @@ public class ConstructionListUI : MonoBehaviour
             case 3: visible = card.Data.buildingType == BuildingType.Decoration; break;
             default: visible = true; break;
         }
+
+        // 지금 있는 곳에 놓을 수 없는 종류는 숨긴다 (집 안: 장식·특수만 / 마을: 집 안 전용 가구 제외)
+        if (BuildingRules.InHouse && !BuildingRules.IsInteriorType(card.Data.buildingType))
+            visible = false;
+        else if (!BuildingRules.InHouse && card.Data.houseOnly)
+            visible = false;
 
         card.gameObject.SetActive(visible);
     }

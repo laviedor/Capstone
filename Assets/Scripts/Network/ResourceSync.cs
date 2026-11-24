@@ -104,7 +104,7 @@ public class ResourceSync : MonoBehaviour
     {
         DecorationInventory inventory = DecorationInventory.Instance;
         BuildingData data = BuildingSync.Instance != null ? BuildingSync.Instance.FindData(id) : null;
-        if (inventory == null || data == null || data.buildingType != BuildingType.Decoration) return;
+        if (inventory == null || data == null || !data.UsesDecorationItem) return;
 
         int have = inventory.GetCount(data);
         if (count > have) inventory.AddDecoration(data, count - have);

@@ -15,7 +15,7 @@ function startUdpServer(port, players) {
     if (!msg) return;
 
     // 어느 월드, 어느 구역에 있는지는 채팅 서버(TCP)에서 확인된 것만 믿는다 (들어갈 수 없는 마을의 좌표를 받아 보지 못하게)
-    //   채팅 서버에 접속해 있지 않은 사용자명은 멀티버스의 마을 구역만 가능
+    //   채팅 서버에 접속해 있지 않은 사용자명은 광장의 마을 구역만 가능
     if (msg.world !== worldOf(msg.name) || msg.zone !== zoneOf(msg.name)) return;
 
     const { rejected, player, prev, kicked } = players.update(msg, rinfo);

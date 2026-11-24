@@ -193,9 +193,12 @@ public class CraftingUI : MonoBehaviour
         if (!IsOpen)
             return;
 
-        // 서버 답이 오지 않으면 잠시 뒤 다시 누를 수 있게
+        // 서버 답이 오지 않으면 알려 주고 다시 누를 수 있게 (서버가 제작을 모르는 옛 버전이면 아무 답도 없다)
         if (pending != null && Time.unscaledTime - pendingSince > 3f)
+        {
             pending = null;
+            Toast.Show("서버에서 답이 없어요. 서버가 최신 버전(제작 기능 포함)으로 실행 중인지 확인해 주세요.");
+        }
 
         Refresh();
 

@@ -152,7 +152,7 @@ public class DemolitionConfirmUI : MonoBehaviour
         buildingIcon.enabled = icon != null;
 
         titleText.text = data.buildingName + Josa(data.buildingName) + " 철거할까요?";
-        detailText.text = data.buildingType == BuildingType.Decoration
+        detailText.text = data.UsesDecorationItem
             ? "장식 아이템 1개가 인벤토리로 돌아와요."
             : RefundText(data);
 

@@ -3,14 +3,14 @@ const catalog = require('./catalog');
 const resources = require('./resources');
 const { MAX_BUILDINGS } = require('./config');
 
-// 월드(멀티버스, 개인 마을)에 지어진 건물 DB 처리. 서버를 다시 켜도 남아 있다
+// 월드(광장, 개인 마을)에 지어진 건물 DB 처리. 서버를 다시 켜도 남아 있다
 //   건물: { id, type, x, y, owner, zone }
 //     id: 네트워크 id (지은 클라이언트가 만듦), type: 건물 종류(BuildingData.buildingID),
 //     x, y: 기준 칸, owner: 지은 사람 닉네임, zone: 놓인 구역 ('' 마을, 'house' 집 안)
 //   집 안에는 장식과 특수 건물만 놓을 수 있다 (buildings.json 의 decoration / interior)
 //   집 안 전용 장식(houseOnly: 침대·난로 같은 실내 가구)은 마을에 놓을 수 없다
 //   마을과 집 안은 서로 다른 공간이라 겹침 검사는 같은 구역끼리만 한다
-//   DB 의 village_id 가 월드 id (0 은 멀티버스, 그 외에는 그 유저의 마을), owner_id 는 지은 사람
+//   DB 의 village_id 가 월드 id (0 은 광장, 그 외에는 그 유저의 마을), owner_id 는 지은 사람
 //   건설 비용, 철거 환급도 같은 트랜잭션에서 지은 사람의 재화에 반영한다 (resources.js)
 
 const size = type => catalog.get(type) ?? { width: 1, height: 1 };

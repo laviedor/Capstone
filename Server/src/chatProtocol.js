@@ -4,9 +4,9 @@ const { MAX_NAME_LENGTH, MAX_CHAT_LENGTH, MAX_CELL, MAX_TOKEN_LENGTH, MAX_ZONE_L
 //   클라 -> 서버  { t: 'join', name, token, world } 접속 후 처음 한 번
 //                                                  token(로그인 세션 토큰)이 맞으면 그 계정의 닉네임으로 입장하고
 //                                                  world(월드 id)로 들어간다. 1:1 채팅, 친구, 재화 알림도 받는다
-//                                                  토큰이 없거나 틀리면 name 으로 멀티버스에 들어가 채팅과 구경만 한다
-//                 { t: 'enter', world }            월드 이동 (0: 멀티버스, 내 유저 id: 내 마을, 친구 유저 id: 친구 마을)
-//                 { t: 'chat', text }              멀티버스 채팅
+//                                                  토큰이 없거나 틀리면 name 으로 광장에 들어가 채팅과 구경만 한다
+//                 { t: 'enter', world }            월드 이동 (0: 광장, 내 유저 id: 내 마을, 친구 유저 id: 친구 마을)
+//                 { t: 'chat', text }              광장 채팅
 //                 { t: 'build', id, type, x, y }    지금 있는 월드에 건물 건설 (id 는 지은 클라이언트가 만듦, x, y 는 기준 칸)
 //                 { t: 'demolish', id }             건물 철거 (내가 지은 건물만)
 //                 { t: 'move', id, x, y }           건물 이동 (내가 지은 건물만)
@@ -21,7 +21,7 @@ const { MAX_NAME_LENGTH, MAX_CHAT_LENGTH, MAX_CELL, MAX_TOKEN_LENGTH, MAX_ZONE_L
 //   서버 -> 클라  { t: 'chat', name, text }        어느 월드에 있든 모든 접속자에게 전달
 //                 { t: 'kick' }                    같은 계정(사용자명)이 다른 곳에서 로그인하거나 접속해 끊김.
 //                                                  받은 클라이언트는 다시 접속하지 않고 로그아웃해 로그인 화면으로 돌아간다
-//                 { t: 'world', id, name, mine, build }  들어간 월드. name 은 마을 주인 닉네임(멀티버스는 ''),
+//                 { t: 'world', id, name, mine, build }  들어간 월드. name 은 마을 주인 닉네임(광장은 ''),
 //                                                  mine 은 내 마을인지, build 는 여기서 건물을 지을 수 있는지
 //                 { t: 'buildings', list: [{ id, type, x, y, owner, zone }] }  지금 있는 월드의 건물 전부
 //                                                  (zone: '' 마을, 'house' 집 안. 지을 때는 지은 사람이 있던 구역이 된다)

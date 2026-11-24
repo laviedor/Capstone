@@ -39,7 +39,7 @@ const CRAFT_REFUSED = {
 };
 
 function startChatServer(port) {
-  // 토큰의 유저 { id, nickname }, 없는 토큰이거나 DB 오류면 null (그래도 멀티버스 채팅은 되도록)
+  // 토큰의 유저 { id, nickname }, 없는 토큰이거나 DB 오류면 null (그래도 광장 채팅은 되도록)
   const findUser = token => accounts.findSessionUser(token).catch(err => {
     console.error('[채팅] 로그인 확인 오류:', err.message);
     return null;
@@ -161,7 +161,7 @@ function startChatServer(port) {
         presence.add(client);
         console.log(`[채팅] ${name} 입장`);
 
-        // 요청한 월드로 (없거나 들어갈 수 없으면 멀티버스)
+        // 요청한 월드로 (없거나 들어갈 수 없으면 광장)
         if (!await worlds.enter(client, msg.world ?? MULTIVERSE)) await worlds.enter(client, MULTIVERSE);
         if (user) {
           notifyFriends(user.id);
@@ -178,7 +178,7 @@ function startChatServer(port) {
         for (const other of presence.all()) other.socket.write(data);
       } else if (msg.t === 'enter') {
         if (await worlds.enter(client, msg.world)) {
-          console.log(`[월드] ${client.name} -> ${msg.world === MULTIVERSE ? '멀티버스' : '마을 #' + msg.world}`);
+          console.log(`[월드] ${client.name} -> ${msg.world === MULTIVERSE ? '광장' : '마을 #' + msg.world}`);
         } else if (canWrite(client)) {
           socket.write(chatProtocol.notice('들어갈 수 없는 곳입니다. 친구의 마을만 방문할 수 있습니다.'));
         }
@@ -192,7 +192,7 @@ function startChatServer(port) {
         await gather(msg);
       } else if (msg.t === 'harvest') {
         if (client.userId === null) return refuse(client, '로그인해야 수확할 수 있습니다.');
-        if (client.world === MULTIVERSE) return refuse(client, '멀티버스의 건물은 수확할 수 없습니다.');
+        if (client.world === MULTIVERSE) return refuse(client, '광장의 건물은 수확할 수 없습니다.');
         await harvestBuilding(msg.id);
       } else if (msg.t === 'discard') {
         if (client.userId === null) return;
@@ -221,12 +221,13 @@ function startChatServer(port) {
           const result = await tiles.set(world, msg.x, msg.y, msg.tile);
           if (result === 'unknown') return refuseTile(client, '바꿀 수 없는 바닥입니다.');
           if (result === 'full') return refuseTile(client, '이 마을에서는 바닥을 더 바꿀 수 없습니다.');
+          if (result === 'nodb') return refuseTile(client, '서버 DB 업데이트가 필요해 바닥을 저장하지 못했습니다.');
           worlds.broadcast(world, chatProtocol.tile(msg.x, msg.y, msg.tile), client);
         });
       } else if (msg.t === 'build' || msg.t === 'demolish' || msg.t === 'move') {
         if (client.userId === null) return refuse(client, '로그인해야 건물을 지을 수 있습니다.');
         if (client.world === MULTIVERSE) {
-          return refuse(client, '멀티버스에서는 건물을 짓거나 철거할 수 없습니다.');
+          return refuse(client, '광장에서는 건물을 짓거나 철거할 수 없습니다.');
         }
         if (client.world !== client.userId) {
           return refuse(client, '친구의 마을에서는 구경만 할 수 있습니다.');

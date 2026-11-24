@@ -231,7 +231,7 @@ router.delete('/auth/me', wrap(async (req, res) => {
   const contactIds = await friends.contactIds(user.id);
   await accounts.deleteUser(user.id);
   for (const id of contactIds) presence.send(id, chatProtocol.friends()); // 친구, 친구 요청을 주고받던 사람들의 목록에서도 사라지도록
-  await worlds.closeVillage(user.id); // 마을을 구경하던 친구는 돌려보내고, 멀티버스에 지은 건물도 화면에서 지움
+  await worlds.closeVillage(user.id); // 마을을 구경하던 친구는 돌려보내고, 광장에 지은 건물도 화면에서 지움
   console.log(`[회원 탈퇴] ${user.nickname} (#${user.id})`);
   res.json({ ok: true });
 }));

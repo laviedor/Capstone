@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// 멀티버스(모두가 같이 쓰는 공용 공간)의 고정 풍경: 분수 광장 바닥, 마을회관, 시장 거리, 농장·목장 소품.
-//   멀티버스에 있을 때만 보이고, 내 마을·친구 마을에서는 숨는다.
+// 광장(모두가 같이 쓰는 공용 공간)의 고정 풍경: 분수 광장 바닥, 마을회관, 시장 거리, 농장·목장 소품.
+//   광장에 있을 때만 보이고, 내 마을·친구 마을에서는 숨는다.
 //   (마을 화면 묶음 VillageVisualRoot 아래에 있어서 필드나 집 안에 들어가도 함께 숨는다)
 //   풍경이 차지하는 칸(건물 자리, 분수)은 길찾기에서 막힌 칸으로 등록해 캐릭터가 지나가지 않게 한다.
-//   메뉴 Tools > Cozy UI > 멀티버스 에셋 가져오기 · 광장 꾸미기 가 만든다 (MultiverseBuilder).
+//   메뉴 Tools > Cozy UI > 광장 에셋 가져오기 · 꾸미기 가 만든다 (MultiverseBuilder).
 public class MultiverseScenery : MonoBehaviour
 {
     // 보이고 숨길 풍경 묶음

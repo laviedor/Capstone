@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // 건물 건설, 철거, 이동을 서버(채팅과 같은 TCP 연결)로 주고받아 같은 월드에 있는 모든 플레이어 화면에 같은 건물이 보이게 함
-//   건물은 서버 DB 에 월드(멀티버스, 각자의 마을)별로 저장된다. 월드에 들어가면 서버가 그 월드의 건물 목록을 보내 준다
+//   건물은 서버 DB 에 월드(광장, 각자의 마을)별로 저장된다. 월드에 들어가면 서버가 그 월드의 건물 목록을 보내 준다
 //   내가 바꾼 것: BuildingPlacement, BuildingDemolition 이 OnLocalBuilt / OnLocalDemolished 를 불러 서버로 보냄
 //     화면에는 먼저 반영하고, 서버가 거절하면(자원 부족, 남의 건물, 구경만 가능한 마을 등) 서버가 다시 보내는 목록으로 되돌린다
 //   다른 사람이 바꾼 것: 서버에서 받아 화면과 점유 칸(겹쳐 짓기 금지, 경로 탐색)에 반영
@@ -18,7 +18,7 @@ public class BuildingSync : MonoBehaviour
     // 서버에서 받은 건물 배치가 바뀜 (목록 수신, 다른 사람의 건설·이동). MousePathfinding 이 플레이어가 건물에 끼지 않게 확인한다
     public static event Action LayoutChanged;
 
-    // 건물이 아닌 것(예: 멀티버스 풍경)이 칸을 막거나 풀었을 때도 같은 알림을 보낸다
+    // 건물이 아닌 것(예: 광장 풍경)이 칸을 막거나 풀었을 때도 같은 알림을 보낸다
     public static void NotifyLayoutChanged() => LayoutChanged?.Invoke();
 
     private const float HarvestTolerance = 1f; // 화면의 수확 타이머가 서버와 이만큼(초) 넘게 어긋나면 맞춘다
@@ -121,7 +121,7 @@ public class BuildingSync : MonoBehaviour
             harvests[id] = new HarvestState { harvest = harvest, readyAt = Time.realtimeSinceStartup + harvest.RemainingTime };
 
         // 장식물은 장식 아이템 1개를 써서 짓는다: 줄어든 1개가 버린 것으로 서버에 가지 않게 알려 둔다
-        if (building.Data != null && building.Data.buildingType == BuildingType.Decoration && ResourceSync.Instance != null)
+        if (building.Data != null && building.Data.UsesDecorationItem && ResourceSync.Instance != null)
             ResourceSync.Instance.OnDecorationPlaced(building.Data);
     }
 
@@ -130,10 +130,10 @@ public class BuildingSync : MonoBehaviour
     //   false 면 수확하지 않는다: 서버에 연결되어 있지 않거나, 서버가 내 건물이라고 알려 준 적이 없는 건물
     public bool OnLocalHarvest(BuildingHarvest harvest)
     {
-        // 멀티버스는 공용 공간이라 건물을 수확할 수 없다 (서버도 거절한다)
+        // 광장은 공용 공간이라 건물을 수확할 수 없다 (서버도 거절한다)
         if (world == WorldSync.Multiverse)
         {
-            Toast.Show("멀티버스의 건물은 수확할 수 없습니다.");
+            Toast.Show("광장의 건물은 수확할 수 없습니다.");
             return false;
         }
 
@@ -254,7 +254,7 @@ public class BuildingSync : MonoBehaviour
     //   남은 시간은 Update 가 BuildingHarvest 에 반영한다 (방금 붙인 BuildingHarvest 는 Start 에서 타이머를 처음으로 되돌리므로)
     void OnHarvestTimers(HarvestMessage m)
     {
-        // 멀티버스는 공용 공간이라 수확하지 않는다: 서버가 예전 버전이라 타이머를 보내도 무시하고 수확 버튼을 모두 뗀다
+        // 광장은 공용 공간이라 수확하지 않는다: 서버가 예전 버전이라 타이머를 보내도 무시하고 수확 버튼을 모두 뗀다
         bool multiverse = world == WorldSync.Multiverse;
         HarvestTimer[] list = multiverse ? new HarvestTimer[0] : m.list ?? new HarvestTimer[0];
 
@@ -328,7 +328,7 @@ public class BuildingSync : MonoBehaviour
     {
         buildingPlacement.ReleaseBuildingCells(building);
         BuildingData data = building.Data;
-        if (data != null && data.buildingType == BuildingType.Decoration)
+        if (data != null && data.UsesDecorationItem)
         {
             if (DecorationInventory.Instance != null) DecorationInventory.Instance.AddDecoration(data, 1);
         }

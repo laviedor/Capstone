@@ -8,14 +8,14 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using Object = UnityEngine.Object;
 
-// 팀원이 준 건물·장식 시트를 건설 창에 추가하고, 멀티버스를 분수 광장으로 꾸민다.
-//   메뉴: Tools > Cozy UI > 멀티버스 에셋 가져오기 · 광장 꾸미기
+// 팀원이 준 건물·장식 시트를 건설 창에 추가하고, 광장을 분수 광장으로 꾸민다.
+//   메뉴: Tools > Cozy UI > 광장 에셋 가져오기 · 꾸미기
 //   1. MultiverseSheet.png 를 건물·장식별로 잘라 스프라이트로 만든다 (위치·크기·칸 수는 MultiverseLayout.json)
 //      그림의 기준점은 건물이 차지하는 칸의 가운데라서, 그림 아래쪽이 칸 아래쪽에 맞는다
 //   2. 건물·장식마다 BuildingData 와 프리팹을 만든다 (Assets/Data/Multiverse, Assets/Prefab/Multiverse)
 //   3. 건물은 건설 목록(ConstructionListUI), 장식은 장식 목록(DecorationDatabase: 채집 보상으로도 나옴)에 넣고,
 //      서버에서 받은 건물을 화면에 만들 수 있게 BuildingSync 의 프리팹 목록에도 넣는다
-//   4. 멀티버스 풍경을 마을 화면 아래에 만든다 (MultiverseScenery: 멀티버스에서만 보임)
+//   4. 광장 풍경을 마을 화면 아래에 만든다 (MultiverseScenery: 광장에서만 보임)
 //      바닥: 벽돌 포장 광장과 동서 큰길·남북 길 타일맵 (잔디 위에 깔리고, 잔디와 닿는 곳은 돌 테두리 타일)
 //      소품: 분수, 분수 둘레 돌 링, 가로등, 벤치, 화단, 나무, 덤불, 꽃 (직접 그린 도트 그림)
 //      바닥 모양과 소품 위치는 MultiversePlaza.json (분수·가로등 등이 막는 칸도 여기 들어 있다)
@@ -43,14 +43,14 @@ public static class MultiverseBuilder
     [Serializable] private class Layout { public float sheetPixelsPerUnit; public Piece[] pieces; }
     [Serializable] private class Piece { public string key, name; public int type, x, y, w, h, cw, ch; public int[] cost, prod; }
 
-    // 멀티버스 광장: floor = 포장 칸과 타일 이름, props = 소품 (발 위치, 크기 배율, 막는 칸 [x, y, x, y, ...])
+    // 광장: floor = 포장 칸과 타일 이름, props = 소품 (발 위치, 크기 배율, 막는 칸 [x, y, x, y, ...])
     [Serializable] private class PlazaLayout { public float pixelsPerUnit; public FloorCell[] floor; public Prop[] props; public SpriteSetting[] spriteSettings; }
     // 소품마다 다른 가져오기 설정 (예: 분수 아래 돌 고리는 바닥 타일과 같은 도트 크기·또렷한 픽셀)
     [Serializable] private class SpriteSetting { public string sprite; public float pixelsPerUnit; public bool point; }
     [Serializable] private class FloorCell { public int x, y; public string tile; }
     [Serializable] private class Prop { public string sprite; public float x, y, scale; public int[] blockedFlat; }
 
-    [MenuItem("Tools/Cozy UI/멀티버스 에셋 가져오기 · 광장 꾸미기")]
+    [MenuItem("Tools/Cozy UI/광장 에셋 가져오기 · 꾸미기")]
     public static void Apply()
     {
         FieldSceneManager field = Object.FindFirstObjectByType<FieldSceneManager>(FindObjectsInactive.Include);
@@ -59,13 +59,13 @@ public static class MultiverseBuilder
 
         if (field == null || construction == null || sync == null)
         {
-            EditorUtility.DisplayDialog("멀티버스",
+            EditorUtility.DisplayDialog("광장",
                 "열린 씬에서 FieldSceneManager, ConstructionListUI, BuildingSync 를 찾지 못했어요.\n마을이 있는 씬(SampleScene)을 열고 다시 실행해 주세요.", "확인");
             return;
         }
 
-        if (!EditorUtility.DisplayDialog("멀티버스",
-                "팀원 에셋으로 건물·장식을 만들어 건설 창에 추가하고, 멀티버스 광장을 꾸며요.\n" +
+        if (!EditorUtility.DisplayDialog("광장",
+                "팀원 에셋으로 건물·장식을 만들어 건설 창에 추가하고, 광장을 꾸며요.\n" +
                 "서버 데이터(Server/data/buildings.json)도 다시 내보내요.\n\n실행하기 전에 git 커밋으로 백업해 두는 걸 권장해요.",
                 "만들기", "취소"))
         {
@@ -76,10 +76,10 @@ public static class MultiverseBuilder
         {
             Layout layout = JsonUtility.FromJson<Layout>(File.ReadAllText(LayoutPath, System.Text.Encoding.UTF8));
 
-            EditorUtility.DisplayProgressBar("멀티버스", "그림 자르는 중…", 0.1f);
+            EditorUtility.DisplayProgressBar("광장", "그림 자르는 중…", 0.1f);
             Dictionary<string, Sprite> sprites = SliceSheet(layout);
 
-            EditorUtility.DisplayProgressBar("멀티버스", "건물·장식 만드는 중…", 0.35f);
+            EditorUtility.DisplayProgressBar("광장", "건물·장식 만드는 중…", 0.35f);
             Material material = ReferenceMaterial();
             var created = new List<(Piece piece, BuildingData data, GameObject prefab)>();
 
@@ -87,7 +87,7 @@ public static class MultiverseBuilder
             {
                 if (!sprites.TryGetValue(piece.key, out Sprite sprite))
                 {
-                    Debug.LogWarning("[멀티버스] 잘라 낸 그림이 없어 건너뜀: " + piece.key);
+                    Debug.LogWarning("[광장] 잘라 낸 그림이 없어 건너뜀: " + piece.key);
                     continue;
                 }
 
@@ -98,13 +98,13 @@ public static class MultiverseBuilder
 
             AssetDatabase.SaveAssets();
 
-            EditorUtility.DisplayProgressBar("멀티버스", "건설 창에 등록하는 중…", 0.6f);
+            EditorUtility.DisplayProgressBar("광장", "건설 창에 등록하는 중…", 0.6f);
             Register(construction, sync, created);
 
-            EditorUtility.DisplayProgressBar("멀티버스", "광장 꾸미는 중…", 0.75f);
+            EditorUtility.DisplayProgressBar("광장", "광장 꾸미는 중…", 0.75f);
             BuildScenery(field, material);
 
-            EditorUtility.DisplayProgressBar("멀티버스", "서버 데이터 내보내는 중…", 0.9f);
+            EditorUtility.DisplayProgressBar("광장", "서버 데이터 내보내는 중…", 0.9f);
             ServerDataExporter.Export();
 
             EditorSceneManager.MarkSceneDirty(field.gameObject.scene);
@@ -112,9 +112,9 @@ public static class MultiverseBuilder
 
             int buildings = created.Count(c => c.piece.type != (int)BuildingType.Decoration);
             int decorations = created.Count - buildings;
-            Debug.Log($"[멀티버스] 건물 {buildings}종, 장식 {decorations}종을 추가하고 멀티버스 광장을 꾸몄어요. 씬을 저장하고 서버를 재시작해 주세요.");
-            EditorUtility.DisplayDialog("멀티버스",
-                $"건물 {buildings}종, 장식 {decorations}종을 추가하고 멀티버스 광장을 꾸몄어요.\n\n" +
+            Debug.Log($"[광장] 건물 {buildings}종, 장식 {decorations}종을 추가하고 광장을 꾸몄어요. 씬을 저장하고 서버를 재시작해 주세요.");
+            EditorUtility.DisplayDialog("광장",
+                $"건물 {buildings}종, 장식 {decorations}종을 추가하고 광장을 꾸몄어요.\n\n" +
                 "• 씬을 저장해 주세요.\n• 서버 데이터가 바뀌었으니 서버를 재시작해 주세요.", "확인");
         }
         finally
@@ -345,7 +345,7 @@ public static class MultiverseBuilder
         return -1;
     }
 
-    // ----- 멀티버스 풍경 -----
+    // ----- 광장 풍경 -----
 
     private static void BuildScenery(FieldSceneManager field, Material material)
     {
@@ -372,7 +372,7 @@ public static class MultiverseBuilder
             Undo.DestroyObjectImmediate(old.gameObject);
 
         GameObject root = new GameObject(SceneryName);
-        Undo.RegisterCreatedObjectUndo(root, "멀티버스 풍경");
+        Undo.RegisterCreatedObjectUndo(root, "광장 풍경");
         root.transform.SetParent(parent, false);
         root.transform.position = Vector3.zero;
 
@@ -437,7 +437,7 @@ public static class MultiverseBuilder
             cells.GetArrayElementAtIndex(index++).vector3IntValue = cell;
 
         so.ApplyModifiedPropertiesWithoutUndo();
-        content.SetActive(false); // 멀티버스에 들어가면 켜진다
+        content.SetActive(false); // 광장에 들어가면 켜진다
     }
 
     // 바닥 타일 그림: 100px = 1유닛(한 칸 50px), 흐림 없음, 타일 사이 틈 없음 -> Tile 에셋
@@ -454,7 +454,7 @@ public static class MultiverseBuilder
 
             if (sprite == null)
             {
-                Debug.LogWarning("[멀티버스] 바닥 타일 그림이 없어요: " + path);
+                Debug.LogWarning("[광장] 바닥 타일 그림이 없어요: " + path);
                 continue;
             }
 
@@ -494,7 +494,7 @@ public static class MultiverseBuilder
             if (sprite != null)
                 result[name] = sprite;
             else
-                Debug.LogWarning("[멀티버스] 소품 그림이 없어요: " + path);
+                Debug.LogWarning("[광장] 소품 그림이 없어요: " + path);
         }
 
         return result;

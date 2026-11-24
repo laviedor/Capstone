@@ -102,10 +102,10 @@ public class BuildingPlacement : MonoBehaviour
     private HashSet<Vector3Int> occupiedCells =>
         BuildingRules.InHouse ? houseOccupiedCells : villageOccupiedCells;
 
-    // 멀티버스 풍경(MultiverseScenery)이 막아 둔 마을 칸. 풍경이 숨으면 이 칸들만 다시 비운다
+    // 광장 풍경(MultiverseScenery)이 막아 둔 마을 칸. 풍경이 숨으면 이 칸들만 다시 비운다
     private readonly HashSet<Vector3Int> sceneryCells = new HashSet<Vector3Int>();
 
-    // 멀티버스 풍경이 차지하는 칸을 막거나(on) 푼다. 건물과 같은 점유 칸으로 다뤄서 길찾기·설치에서 막힌다
+    // 광장 풍경이 차지하는 칸을 막거나(on) 푼다. 건물과 같은 점유 칸으로 다뤄서 길찾기·설치에서 막힌다
     public void SetSceneryCells(IEnumerable<Vector3Int> cells, bool on)
     {
         if (on)
@@ -1059,8 +1059,8 @@ public class BuildingPlacement : MonoBehaviour
         if (currentBuildingData == null)
             return false;
 
-        // 데코레이션은 보유 수량을 검사
-        if (currentBuildingData.buildingType == BuildingType.Decoration)
+        // 데코레이션은 보유 수량을 검사 (자원으로 사는 장식은 일반 건물처럼 자원 검사)
+        if (currentBuildingData.UsesDecorationItem)
         {
             if (DecorationInventory.Instance == null)
             {
@@ -1097,8 +1097,8 @@ public class BuildingPlacement : MonoBehaviour
         if (currentBuildingData == null)
             return;
 
-        // 데코레이션은 아이템 1개 소비
-        if (currentBuildingData.buildingType == BuildingType.Decoration)
+        // 데코레이션은 아이템 1개 소비 (자원으로 사는 장식은 일반 건물처럼 자원 차감)
+        if (currentBuildingData.UsesDecorationItem)
         {
             if (DecorationInventory.Instance == null ||
                 !DecorationInventory.Instance.TryConsumeDecoration(currentBuildingData))

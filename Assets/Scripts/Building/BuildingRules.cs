@@ -4,7 +4,7 @@
 //              집 안 전용(BuildingData.houseOnly: 침대·난로 같은 실내 가구)은 집 안에만 놓을 수 있다
 //   필드      : 짓지 않는다
 //   건설 창의 상세 정보·건설 시작(카드)·실제 설치(BuildingPlacement)에서 모두 이 규칙으로 확인한다.
-//   (멀티버스·친구 마을의 건설 금지는 WorldSync, 마을당 개수 제한은 BuildingLimits 가 따로 확인한다)
+//   (광장·친구 마을의 건설 금지는 WorldSync, 마을당 개수 제한은 BuildingLimits 가 따로 확인한다)
 public static class BuildingRules
 {
     public const string HouseOnlyMessage = "집 안에는 장식과 특수 건물만 놓을 수 있어요.";

@@ -206,7 +206,7 @@ public class BuildingDemolition : MonoBehaviour
     // 함수 설명: 외부에서 지정한 건물에 대한 철거 확인을 요청한다.
     public void RequestDemolition(Building building)
     {
-        // 친구 마을, 멀티버스에서는 철거할 수 없다: 알림을 띄우고 취소
+        // 친구 마을, 광장에서는 철거할 수 없다: 알림을 띄우고 취소
         if (WorldSync.BlockBuildingChange())
             return;
 
@@ -318,7 +318,7 @@ public class BuildingDemolition : MonoBehaviour
         if (selectedBuilding == null)
             return;
 
-        // 확인창이 열린 사이에 친구 마을이나 멀티버스로 옮겼으면 철거하지 않는다
+        // 확인창이 열린 사이에 친구 마을이나 광장으로 옮겼으면 철거하지 않는다
         if (WorldSync.BlockBuildingChange())
         {
             ClearSelection();
@@ -338,9 +338,9 @@ public class BuildingDemolition : MonoBehaviour
         BuildingData data = buildingToDestroy.Data;
 
         // 건물 종류에 따라 환급 방식 구분
-        if (data.buildingType == BuildingType.Decoration)
+        if (data.UsesDecorationItem)
         {
-            // 데코레이션은 아이템 1개 반환
+            // 데코레이션은 아이템 1개 반환 (자원으로 산 장식은 일반 건물처럼 자원 환급)
             if (!RefundDecoration(buildingToDestroy))
                 return;
         }

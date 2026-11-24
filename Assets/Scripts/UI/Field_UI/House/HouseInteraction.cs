@@ -27,6 +27,8 @@ public class HouseInteraction : HouseDoor
 
     public override string ActionLabel => isExitPoint ? "나가기" : "이동";
 
+    public override bool IsEntrance => !isExitPoint;
+
     private void Awake()
     {
         if (isExitPoint)

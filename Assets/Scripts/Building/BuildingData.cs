@@ -43,13 +43,18 @@ public class BuildingData : ScriptableObject
 
     [Header("Placement Limit")]
     // 변수 설명: 한 마을에 지을 수 있는 최대 개수 (0 이면 제한 없음). 예) 플레이어 집 = 1
-    //           건물은 내 마을에만 지을 수 있으므로(멀티버스, 친구 마을은 건설 불가) 사실상 '내 마을에 N개까지'다
+    //           건물은 내 마을에만 지을 수 있으므로(광장, 친구 마을은 건설 불가) 사실상 '내 마을에 N개까지'다
     //           서버도 같은 값으로 검사한다 (Tools > Export Server Data 로 내보내기)
     [Min(0)] public int maxPerVillage = 0;
 
     // 변수 설명: 집 안에만 놓을 수 있는 장식인지 (예: 침대, 난로처럼 실내 가구). 켜면 마을 바깥에는 놓을 수 없다
     //           서버도 같은 값으로 검사한다 (Tools > Export Server Data 로 내보내기)
     public bool houseOnly;
+
+    // 장식 아이템(채집 보상 등으로 얻어 인벤토리에 있는 것)을 1개 써서 놓는 장식인지.
+    //   장식인데 건설 비용이 적혀 있으면(예: 집 안 가구) 일반 건물처럼 자원을 내고 바로 놓는다 (철거하면 자원 90% 환급)
+    public bool UsesDecorationItem =>
+        buildingType == BuildingType.Decoration && (constructionCosts == null || constructionCosts.Length == 0);
 
     [Header("Interaction")]
     // 변수 설명: 상호작용 가능한 건물인지 나타내는 설정값

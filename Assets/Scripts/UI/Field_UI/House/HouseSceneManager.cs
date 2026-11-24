@@ -75,6 +75,13 @@ public class HouseSceneManager : MonoBehaviour
         if (isTransitioning || isInsideHouse)
             return;
 
+        // 광장(공용 공간)에서는 집에 들어가지 않는다
+        if (HouseDoor.InMultiverse)
+        {
+            Toast.Show(HouseDoor.MultiverseMessage);
+            return;
+        }
+
         // 필드에 있는 동안 집 입장 방지
         if (FieldSceneManager.Instance != null &&
             FieldSceneManager.Instance.IsInField)
