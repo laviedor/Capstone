@@ -47,6 +47,10 @@ public class BuildingData : ScriptableObject
     //           서버도 같은 값으로 검사한다 (Tools > Export Server Data 로 내보내기)
     [Min(0)] public int maxPerVillage = 0;
 
+    // 변수 설명: 집 안에만 놓을 수 있는 장식인지 (예: 침대, 난로처럼 실내 가구). 켜면 마을 바깥에는 놓을 수 없다
+    //           서버도 같은 값으로 검사한다 (Tools > Export Server Data 로 내보내기)
+    public bool houseOnly;
+
     [Header("Interaction")]
     // 변수 설명: 상호작용 가능한 건물인지 나타내는 설정값
     public bool canInteract;

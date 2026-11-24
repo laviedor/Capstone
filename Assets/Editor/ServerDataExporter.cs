@@ -108,6 +108,8 @@ public static class ServerDataExporter
                 if (data.buildingType == BuildingType.Special) sb.Append(",\n    \"interior\": true");
                 // 마을당 개수 제한 (예: 플레이어 집 1개). 서버 buildings.js 가 건설할 때 검사한다
                 if (data.maxPerVillage > 0) sb.Append($",\n    \"maxPerVillage\": {data.maxPerVillage}");
+                // 집 안 전용 장식 (침대·난로 같은 실내 가구). 서버 buildings.js 가 마을에 놓지 못하게 검사한다
+                if (data.houseOnly) sb.Append(",\n    \"houseOnly\": true");
                 sb.Append("\n  }");
                 entries.Add(sb.ToString());
             }

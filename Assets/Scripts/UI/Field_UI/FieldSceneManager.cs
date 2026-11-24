@@ -20,6 +20,9 @@ public class FieldSceneManager : MonoBehaviour
     // 필드로 이동할 때 숨기고 돌아오면 다시 표시할 마을 바닥입니다.
     [SerializeField] private GameObject villageTilemap;
 
+    // 마을 바닥 타일맵 (삽으로 바꾼 칸은 그 위에 덧칠한다: GroundTileLayer)
+    public GameObject VillageTilemap => villageTilemap;
+
     [Header("플레이어 (비어 있으면 자동으로 찾음)")]
     // 필드에 들어가기 전 마을 위치를 저장했다가 돌아올 때 되돌릴 플레이어입니다.
     [SerializeField] private Transform player;

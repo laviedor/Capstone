@@ -227,6 +227,13 @@ public class MousePathfinding : MonoBehaviour
             return;
         }
 
+        // 바닥 바꾸기 모드(삽) 중에는 좌클릭이 칸 바꾸기용이고, 제작 창이 떠 있는 동안에도 이동하지 않는다
+        if (TilePainter.IsActive || CraftingUI.IsOpen)
+        {
+            isLeftClickPending = false;
+            return;
+        }
+
         // 좌클릭을 누른 위치를 기록해 두고, 뗄 때 클릭인지 드래그인지 판정한다
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
@@ -300,6 +307,18 @@ public class MousePathfinding : MonoBehaviour
 
             lastClickedDoor = null;
             HouseMovePopup.Hide();
+
+            // 대장간을 눌렀다면 제작 창을 연다 (이동하지 않음)
+            foreach (Collider2D hit in hitColliders)
+            {
+                Building building = hit.GetComponentInParent<Building>();
+
+                if (CraftingRecipes.IsCraftingStation(building) && building.IsPlaced)
+                {
+                    CraftingUI.Open();
+                    return;
+                }
+            }
 
             foreach (Collider2D hit in hitColliders)
             {

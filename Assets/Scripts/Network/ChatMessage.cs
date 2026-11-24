@@ -40,6 +40,9 @@ public class ChatMessage
     public const string Expedition = "exp";
     public const string Harvest = "harvest";
     public const string Discard = "discard";
+    public const string Craft = "craft";   // 대장간에서 도구 만들기
+    public const string Tile = "tile";     // 바닥 한 칸 바꾸기 (보낼 때), 다른 사람이 바꾼 한 칸 (받을 때)
+    public const string Tiles = "tiles";   // 지금 월드의 바뀐 바닥 칸 전부
     public const int MaxTextLength = 200; // 서버 config.js의 MAX_CHAT_LENGTH와 같게 유지
 
     public string t;
@@ -151,6 +154,31 @@ public class DiscardMessage
 {
     public string t = ChatMessage.Discard;
     public string item; // 장식물 건물 종류 (BuildingData.buildingID)
+}
+
+// 대장간에서 도구 만들기 (결과는 서버가 재화와 안내로 알려 준다)
+[Serializable]
+public class CraftMessage
+{
+    public string t = ChatMessage.Craft;
+    public string item; // 만들 도구 (CraftingRecipes 의 id, 예: shovel)
+}
+
+// 바닥 한 칸 (보낼 때: 내 마을의 그 칸을 바꿈 / 받을 때: 같은 월드의 다른 사람이 바꿈)
+[Serializable]
+public class TileMessage
+{
+    public string t = ChatMessage.Tile;
+    public int x, y;    // 바닥 타일맵의 칸 좌표
+    public string tile; // 바닥 종류 (GroundTileLayer.Dirt 등, Grass 면 기본 잔디로 되돌림)
+}
+
+// 지금 월드의 바뀐 바닥 칸 전부 (목록에 없는 칸은 잔디)
+[Serializable]
+public class TileListMessage
+{
+    public string t;
+    public TileMessage[] list;
 }
 
 // 1:1 채팅 알림 (dm)

@@ -18,6 +18,9 @@ public class BuildingSync : MonoBehaviour
     // 서버에서 받은 건물 배치가 바뀜 (목록 수신, 다른 사람의 건설·이동). MousePathfinding 이 플레이어가 건물에 끼지 않게 확인한다
     public static event Action LayoutChanged;
 
+    // 건물이 아닌 것(예: 멀티버스 풍경)이 칸을 막거나 풀었을 때도 같은 알림을 보낸다
+    public static void NotifyLayoutChanged() => LayoutChanged?.Invoke();
+
     private const float HarvestTolerance = 1f; // 화면의 수확 타이머가 서버와 이만큼(초) 넘게 어긋나면 맞춘다
 
     [SerializeField] private ChatClient chatClient;

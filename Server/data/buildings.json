@@ -1,4 +1,48 @@
 {
+  "animal_chicken": {
+    "name": "닭",
+    "width": 1,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true
+  },
+  "animal_cow": {
+    "name": "젖소",
+    "width": 1,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true
+  },
+  "animal_pig": {
+    "name": "아기 돼지",
+    "width": 1,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true
+  },
+  "animal_sheep": {
+    "name": "양",
+    "width": 1,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true
+  },
+  "barn": {
+    "name": "빨간 헛간",
+    "width": 6,
+    "height": 2,
+    "cost": { "stone": 30, "wood": 150 },
+    "harvest": { "wood": 15 },
+    "harvestSeconds": 30
+  },
   "blacksmith": {
     "name": "Blacksmith",
     "width": 4,
@@ -6,6 +50,105 @@
     "cost": { "stone": 100, "wood": 50 },
     "harvest": { "stone": 10 },
     "harvestSeconds": 30
+  },
+  "cart": {
+    "name": "나무 수레",
+    "width": 3,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true
+  },
+  "decor_bed": {
+    "name": "퀼트 침대",
+    "width": 4,
+    "height": 2,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true,
+    "houseOnly": true
+  },
+  "decor_bookshelf": {
+    "name": "원목 책장",
+    "width": 3,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true,
+    "houseOnly": true
+  },
+  "decor_catbed": {
+    "name": "낮잠 고양이",
+    "width": 2,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true,
+    "houseOnly": true
+  },
+  "decor_clock": {
+    "name": "괘종시계",
+    "width": 1,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true,
+    "houseOnly": true
+  },
+  "decor_gramophone": {
+    "name": "축음기 서랍장",
+    "width": 2,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true,
+    "houseOnly": true
+  },
+  "decor_lamp": {
+    "name": "스탠드 조명",
+    "width": 1,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true,
+    "houseOnly": true
+  },
+  "decor_monstera": {
+    "name": "몬스테라 화분",
+    "width": 2,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true,
+    "houseOnly": true
+  },
+  "decor_sofa": {
+    "name": "포근한 소파",
+    "width": 4,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true,
+    "houseOnly": true
+  },
+  "decor_stove": {
+    "name": "무쇠 난로",
+    "width": 2,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true,
+    "houseOnly": true
   },
   "decoration_tree_01": {
     "name": "작은 나무",
@@ -15,6 +158,110 @@
     "harvest": {},
     "harvestSeconds": 0,
     "decoration": true
+  },
+  "fence_white": {
+    "name": "흰 울타리 (가로)",
+    "width": 3,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true
+  },
+  "fence_white_pen": {
+    "name": "흰 울타리 우리",
+    "width": 3,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true
+  },
+  "fence_white_post": {
+    "name": "흰 울타리 (세로)",
+    "width": 1,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true
+  },
+  "fence_wood": {
+    "name": "나무 울타리 (가로)",
+    "width": 3,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true
+  },
+  "fence_wood_pen": {
+    "name": "나무 울타리 우리",
+    "width": 3,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true
+  },
+  "fence_wood_post": {
+    "name": "나무 울타리 (세로)",
+    "width": 1,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true
+  },
+  "flower_box": {
+    "name": "꽃 화분상자",
+    "width": 2,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true
+  },
+  "forge": {
+    "name": "화덕 대장간",
+    "width": 8,
+    "height": 2,
+    "cost": { "stone": 150, "wood": 80 },
+    "harvest": { "stone": 12 },
+    "harvestSeconds": 30
+  },
+  "hay_shed": {
+    "name": "건초 창고",
+    "width": 4,
+    "height": 2,
+    "cost": { "wood": 70 },
+    "harvest": { "wood": 8 },
+    "harvestSeconds": 30
+  },
+  "market_shop": {
+    "name": "잡화점",
+    "width": 6,
+    "height": 2,
+    "cost": { "stone": 40, "wood": 120 },
+    "harvest": { "gold": 15 },
+    "harvestSeconds": 30
+  },
+  "market_stall": {
+    "name": "시장 가판대",
+    "width": 4,
+    "height": 2,
+    "cost": { "wood": 60 },
+    "harvest": { "gold": 8 },
+    "harvestSeconds": 30
+  },
+  "notice_board": {
+    "name": "게시판",
+    "width": 6,
+    "height": 2,
+    "cost": { "wood": 50 },
+    "harvest": { "gold": 5 },
+    "harvestSeconds": 30,
+    "interior": true
   },
   "player_house": {
     "name": "Player House",
@@ -31,6 +278,58 @@
     "height": 4,
     "cost": { "stone": 50, "wood": 100 },
     "harvest": { "gold": 10 },
+    "harvestSeconds": 30
+  },
+  "sign_small": {
+    "name": "작은 표지판",
+    "width": 1,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true
+  },
+  "signpost": {
+    "name": "이정표",
+    "width": 2,
+    "height": 1,
+    "cost": {},
+    "harvest": {},
+    "harvestSeconds": 0,
+    "decoration": true
+  },
+  "stable": {
+    "name": "마구간",
+    "width": 6,
+    "height": 2,
+    "cost": { "stone": 40, "wood": 140 },
+    "harvest": { "gold": 12 },
+    "harvestSeconds": 30
+  },
+  "town_hall": {
+    "name": "마을회관",
+    "width": 8,
+    "height": 2,
+    "cost": { "gold": 500, "stone": 300, "wood": 300 },
+    "harvest": { "gold": 30 },
+    "harvestSeconds": 30,
+    "interior": true
+  },
+  "well": {
+    "name": "우물",
+    "width": 3,
+    "height": 2,
+    "cost": { "stone": 80 },
+    "harvest": { "stone": 6 },
+    "harvestSeconds": 30,
+    "interior": true
+  },
+  "windmill": {
+    "name": "풍차",
+    "width": 3,
+    "height": 2,
+    "cost": { "stone": 50, "wood": 100 },
+    "harvest": { "wood": 12 },
     "harvestSeconds": 30
   }
 }

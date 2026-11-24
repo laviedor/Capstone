@@ -9,6 +9,8 @@ const resources = require('./resources');
 const harvest = require('./harvest');
 const gathering = require('./gathering');
 const catalog = require('./catalog');
+const crafting = require('./crafting');
+const tiles = require('./tiles');
 const { MAX_LINE_LENGTH, MULTIVERSE } = require('./config');
 
 // TCP 서버: 채팅, 월드/구역 이동, 건물 변경(건설, 철거, 이동), 건물 수확, 채집, 재화 알림
@@ -27,6 +29,13 @@ const BUILD_REFUSED = {
   limit: '이 건물은 마을에 더 지을 수 없습니다. (플레이어 집은 마을에 하나만 지을 수 있습니다)',
   field: '필드에서는 건물을 지을 수 없습니다.',
   interior: '집 안에는 장식과 특수 건물만 놓을 수 있습니다.',
+  houseOnly: '이 장식은 집 안에만 놓을 수 있습니다.',
+};
+
+const CRAFT_REFUSED = {
+  unknown: '만들 수 없는 아이템입니다.',
+  have: '이미 가지고 있습니다.',
+  poor: '자원이 부족해 만들 수 없습니다.',
 };
 
 function startChatServer(port) {
@@ -71,6 +80,15 @@ function startChatServer(port) {
     client.socket.write(chatProtocol.buildingList(list));
     client.socket.write(chatProtocol.harvest(timers, true));
     if (client.userId !== null) await sendResources(client);
+  }
+
+  // 바닥 변경을 거절: 이유를 알려 주고, 미리 바꿔 둔 화면을 서버 상태로 되돌리게 지금 월드의 바닥 칸을 다시 보낸다
+  async function refuseTile(client, text) {
+    if (!canWrite(client)) return;
+    const list = client.world === null ? [] : await tiles.list(client.world);
+    if (!canWrite(client)) return;
+    client.socket.write(chatProtocol.notice(text));
+    client.socket.write(chatProtocol.tileList(list));
   }
 
   // 채집 타이머 상태를 알려 줌 (진행 중이면 남은 시간, 끝났으면 0, 없으면 장소가 '')
@@ -182,6 +200,29 @@ function startChatServer(port) {
         if (await resources.discard(client.userId, msg.item)) console.log(`[재화] ${client.name} 장식 버림 ${msg.item}`);
         else if (canWrite(client)) socket.write(chatProtocol.notice('버릴 수 없는 아이템입니다.'));
         await sendResources(client);
+      } else if (msg.t === 'craft') {
+        if (client.userId === null) return refuse(client, '로그인해야 만들 수 있습니다.');
+        const result = await crafting.craft(client.userId, msg.item);
+        if (result === 'ok') {
+          const recipe = catalog.recipe(msg.item);
+          console.log(`[제작] ${client.name} ${msg.item}`);
+          if (canWrite(client)) socket.write(chatProtocol.notice(`${recipe.name}을(를) 만들었습니다.`));
+        } else if (canWrite(client)) {
+          socket.write(chatProtocol.notice(CRAFT_REFUSED[result]));
+        }
+        await sendResources(client);
+      } else if (msg.t === 'tile') {
+        if (client.userId === null) return refuseTile(client, '로그인해야 바닥을 바꿀 수 있습니다.');
+        if (client.world !== client.userId) return refuseTile(client, '내 마을에서만 바닥을 바꿀 수 있습니다.');
+        if ((client.zone ?? '') !== '') return refuseTile(client, '마을 바깥에서만 바닥을 바꿀 수 있습니다.');
+        if (!await crafting.has(client.userId, crafting.SHOVEL)) return refuseTile(client, '삽이 있어야 바닥을 바꿀 수 있습니다.');
+        const world = client.world;
+        await inWorldOrder(world, async () => {
+          const result = await tiles.set(world, msg.x, msg.y, msg.tile);
+          if (result === 'unknown') return refuseTile(client, '바꿀 수 없는 바닥입니다.');
+          if (result === 'full') return refuseTile(client, '이 마을에서는 바닥을 더 바꿀 수 없습니다.');
+          worlds.broadcast(world, chatProtocol.tile(msg.x, msg.y, msg.tile), client);
+        });
       } else if (msg.t === 'build' || msg.t === 'demolish' || msg.t === 'move') {
         if (client.userId === null) return refuse(client, '로그인해야 건물을 지을 수 있습니다.');
         if (client.world === MULTIVERSE) {

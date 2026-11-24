@@ -6,6 +6,7 @@ using UnityEngine;
 //   재화는 서버의 값이 기준이다: 건설 비용, 철거 환급, 건물 수확, 채집 보상을 서버가 계산하고 바뀔 때마다 전부 알려 준다
 //   BuildingPlacement, BuildingDemolition, BuildingHarvest, ResourceNode, GatheringTimer 가 화면에 먼저 반영해 둔 값도 서버 값으로 맞춰진다
 //   장식물은 서버 인벤토리에 장식물 건물 종류(buildingID)와 같은 이름의 아이템으로 들어 있다
+//   대장간에서 만든 도구(예: shovel)는 ToolInventory 에 넣는다
 //   장식물을 버리면(플레이어 탭의 [버리기]) 화면에서 먼저 1개가 줄어든다: 서버가 모르는 채로 줄어든 장식물은 버린 것으로 서버에 알린다
 public class ResourceSync : MonoBehaviour
 {
@@ -78,6 +79,8 @@ public class ResourceSync : MonoBehaviour
             {
                 if (TryGetType(item.id, out ResourceType type))
                     SetAmount(type, item.n);
+                else if (CraftingRecipes.Find(item.id) != null)
+                    ToolInventory.Ensure().SetCount(item.id, item.n); // 대장간에서 만든 도구 (예: 삽)
                 else
                     SetDecorationCount(item.id, item.n);
             }

@@ -1,0 +1,7 @@
+{
+  "shovel": {
+    "name": "삽",
+    "cost": { "wood": 40, "stone": 20 },
+    "max": 1
+  }
+}

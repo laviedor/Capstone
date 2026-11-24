@@ -1,0 +1,841 @@
+fileFormatVersion: 2
+guid: 0382748dc0574413db94158ea15ac234
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8324583964262839964
+    second: MultiverseSheet_0
+  - first:
+      213: 7811426764725125680
+    second: MultiverseSheet_1
+  - first:
+      213: -8094440744604266630
+    second: MultiverseSheet_2
+  - first:
+      213: -9037168176113083762
+    second: MultiverseSheet_3
+  - first:
+      213: 7794686892892823579
+    second: MultiverseSheet_4
+  - first:
+      213: 8963658462771049535
+    second: MultiverseSheet_5
+  - first:
+      213: 3071305577433752131
+    second: MultiverseSheet_6
+  - first:
+      213: -2659230110382335444
+    second: MultiverseSheet_7
+  - first:
+      213: -7221341637920037545
+    second: MultiverseSheet_8
+  - first:
+      213: -1787894419202878638
+    second: MultiverseSheet_9
+  - first:
+      213: -5582833820720343275
+    second: MultiverseSheet_10
+  - first:
+      213: 4168834050536368736
+    second: MultiverseSheet_11
+  - first:
+      213: 670817863151424568
+    second: MultiverseSheet_12
+  - first:
+      213: 799794240923608691
+    second: MultiverseSheet_13
+  - first:
+      213: 2716705892035625226
+    second: MultiverseSheet_14
+  - first:
+      213: -2815273635962372803
+    second: MultiverseSheet_15
+  - first:
+      213: -6224099042731159374
+    second: MultiverseSheet_16
+  - first:
+      213: -2112977208012976313
+    second: MultiverseSheet_17
+  - first:
+      213: 6511720625832470553
+    second: MultiverseSheet_18
+  - first:
+      213: 4231173284385142850
+    second: MultiverseSheet_19
+  - first:
+      213: 5822641668783979042
+    second: MultiverseSheet_20
+  - first:
+      213: -1353090822823288392
+    second: MultiverseSheet_21
+  - first:
+      213: 1039190131516571799
+    second: MultiverseSheet_22
+  - first:
+      213: 5510860216611222983
+    second: MultiverseSheet_23
+  - first:
+      213: -6836492636591512338
+    second: MultiverseSheet_24
+  - first:
+      213: -8296553354907479114
+    second: market_shop
+  - first:
+      213: -8756001355153261547
+    second: forge
+  - first:
+      213: 8995758569524779709
+    second: town_hall
+  - first:
+      213: -5521130737796374665
+    second: windmill
+  - first:
+      213: 1587338089879714814
+    second: market_stall
+  - first:
+      213: -6847935165863209887
+    second: barn
+  - first:
+      213: -7957721894625414248
+    second: stable
+  - first:
+      213: 7032131227818722396
+    second: well
+  - first:
+      213: 1821618813099534017
+    second: hay_shed
+  - first:
+      213: -7922390207881341140
+    second: notice_board
+  - first:
+      213: -4509827946893641608
+    second: fence_white_post
+  - first:
+      213: -140610173599119474
+    second: fence_white
+  - first:
+      213: 2586150905872041667
+    second: fence_white_pen
+  - first:
+      213: 2971216779766206733
+    second: fence_wood_post
+  - first:
+      213: 699246070090933718
+    second: fence_wood
+  - first:
+      213: 2658646768518894791
+    second: fence_wood_pen
+  - first:
+      213: 5642030061596706357
+    second: animal_cow
+  - first:
+      213: -9064625083788452728
+    second: animal_pig
+  - first:
+      213: -4636854116513354292
+    second: animal_chicken
+  - first:
+      213: 244210704853929510
+    second: animal_sheep
+  - first:
+      213: 2148930228126153120
+    second: cart
+  - first:
+      213: 8204838960441077397
+    second: sign_small
+  - first:
+      213: -4717346142681913232
+    second: flower_box
+  - first:
+      213: 7858231787107266175
+    second: signpost
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 30
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: market_shop
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 251
+        width: 95
+        height: 102
+      alignment: 9
+      pivot: {x: 0.5, y: 0.14705883}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6b31aa44ea8bcdc80800000000000000
+      internalID: -8296553354907479114
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: forge
+      rect:
+        serializedVersion: 2
+        x: 126
+        y: 251
+        width: 118
+        height: 102
+      alignment: 9
+      pivot: {x: 0.5, y: 0.14705883}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 51c3045a82f6c7680800000000000000
+      internalID: -8756001355153261547
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: town_hall
+      rect:
+        serializedVersion: 2
+        x: 289
+        y: 254
+        width: 124
+        height: 90
+      alignment: 9
+      pivot: {x: 0.5, y: 0.16666667}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dba53b5e1ca57dc70800000000000000
+      internalID: 8995758569524779709
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: windmill
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 161
+        width: 51
+        height: 63
+      alignment: 9
+      pivot: {x: 0.5, y: 0.23809524}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 77f182f98d00163b0800000000000000
+      internalID: -5521130737796374665
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: market_stall
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 160
+        width: 67
+        height: 61
+      alignment: 9
+      pivot: {x: 0.5, y: 0.24590164}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: efb3ab9259b570610800000000000000
+      internalID: 1587338089879714814
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: barn
+      rect:
+        serializedVersion: 2
+        x: 184
+        y: 160
+        width: 88
+        height: 77
+      alignment: 9
+      pivot: {x: 0.5, y: 0.19480519}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 16451d1af3f37f0a0800000000000000
+      internalID: -6847935165863209887
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stable
+      rect:
+        serializedVersion: 2
+        x: 22
+        y: 81
+        width: 92
+        height: 65
+      alignment: 9
+      pivot: {x: 0.5, y: 0.23076923}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 893f081491e709190800000000000000
+      internalID: -7957721894625414248
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: well
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 82
+        width: 46
+        height: 50
+      alignment: 9
+      pivot: {x: 0.5, y: 0.3}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c5401180816279160800000000000000
+      internalID: 7032131227818722396
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hay_shed
+      rect:
+        serializedVersion: 2
+        x: 190
+        y: 84
+        width: 60
+        height: 45
+      alignment: 9
+      pivot: {x: 0.5, y: 0.33333334}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1c667feb8a0b74910800000000000000
+      internalID: 1821618813099534017
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: notice_board
+      rect:
+        serializedVersion: 2
+        x: 266
+        y: 75
+        width: 94
+        height: 56
+      alignment: 9
+      pivot: {x: 0.5, y: 0.26785713}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c27133f94140e0290800000000000000
+      internalID: -7922390207881341140
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fence_white_post
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 177
+        width: 7
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15625}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 878764b506fd961c0800000000000000
+      internalID: -4509827946893641608
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fence_white
+      rect:
+        serializedVersion: 2
+        x: 314
+        y: 209
+        width: 46
+        height: 16
+      alignment: 9
+      pivot: {x: 0.5, y: 0.46875}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8781d6cac37c0ef0800000000000000
+      internalID: -140610173599119474
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fence_white_pen
+      rect:
+        serializedVersion: 2
+        x: 314
+        y: 164
+        width: 47
+        height: 40
+      alignment: 9
+      pivot: {x: 0.5, y: 0.1875}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c6ce000c8ad3e320800000000000000
+      internalID: 2586150905872041667
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fence_wood_post
+      rect:
+        serializedVersion: 2
+        x: 379
+        y: 175
+        width: 7
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15625}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d0115a44be1eb3920800000000000000
+      internalID: 2971216779766206733
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fence_wood
+      rect:
+        serializedVersion: 2
+        x: 395
+        y: 207
+        width: 46
+        height: 16
+      alignment: 9
+      pivot: {x: 0.5, y: 0.46875}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6d5ab52989834b900800000000000000
+      internalID: 699246070090933718
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fence_wood_pen
+      rect:
+        serializedVersion: 2
+        x: 395
+        y: 164
+        width: 47
+        height: 40
+      alignment: 9
+      pivot: {x: 0.5, y: 0.1875}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c41fcc562965e420800000000000000
+      internalID: 2658646768518894791
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: animal_cow
+      rect:
+        serializedVersion: 2
+        x: 300
+        y: 144
+        width: 16
+        height: 12
+      alignment: 9
+      pivot: {x: 0.5, y: 0.625}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5360c81c2748c4e40800000000000000
+      internalID: 5642030061596706357
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: animal_pig
+      rect:
+        serializedVersion: 2
+        x: 326
+        y: 144
+        width: 15
+        height: 10
+      alignment: 9
+      pivot: {x: 0.5, y: 0.75}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 88c91b2438bf33280800000000000000
+      internalID: -9064625083788452728
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: animal_chicken
+      rect:
+        serializedVersion: 2
+        x: 353
+        y: 144
+        width: 10
+        height: 10
+      alignment: 9
+      pivot: {x: 0.5, y: 0.75}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ccde9e58fb596afb0800000000000000
+      internalID: -4636854116513354292
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: animal_sheep
+      rect:
+        serializedVersion: 2
+        x: 376
+        y: 144
+        width: 14
+        height: 11
+      alignment: 9
+      pivot: {x: 0.5, y: 0.6818182}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 62e8a29975c936300800000000000000
+      internalID: 244210704853929510
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cart
+      rect:
+        serializedVersion: 2
+        x: 29
+        y: 35
+        width: 46
+        height: 27
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2777778}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a9fe8e28a882dd10800000000000000
+      internalID: 2148930228126153120
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sign_small
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 35
+        width: 17
+        height: 31
+      alignment: 9
+      pivot: {x: 0.5, y: 0.24193548}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 59e206c30917dd170800000000000000
+      internalID: 8204838960441077397
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: flower_box
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 34
+        width: 31
+        height: 21
+      alignment: 9
+      pivot: {x: 0.5, y: 0.35714287}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 078a2e24dae988eb0800000000000000
+      internalID: -4717346142681913232
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: signpost
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 27
+        width: 32
+        height: 42
+      alignment: 9
+      pivot: {x: 0.5, y: 0.17857143}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f7e2639fc2c0e0d60800000000000000
+      internalID: 7858231787107266175
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      MultiverseSheet_0: 8324583964262839964
+      MultiverseSheet_1: 7811426764725125680
+      MultiverseSheet_10: -5582833820720343275
+      MultiverseSheet_11: 4168834050536368736
+      MultiverseSheet_12: 670817863151424568
+      MultiverseSheet_13: 799794240923608691
+      MultiverseSheet_14: 2716705892035625226
+      MultiverseSheet_15: -2815273635962372803
+      MultiverseSheet_16: -6224099042731159374
+      MultiverseSheet_17: -2112977208012976313
+      MultiverseSheet_18: 6511720625832470553
+      MultiverseSheet_19: 4231173284385142850
+      MultiverseSheet_2: -8094440744604266630
+      MultiverseSheet_20: 5822641668783979042
+      MultiverseSheet_21: -1353090822823288392
+      MultiverseSheet_22: 1039190131516571799
+      MultiverseSheet_23: 5510860216611222983
+      MultiverseSheet_24: -6836492636591512338
+      MultiverseSheet_3: -9037168176113083762
+      MultiverseSheet_4: 7794686892892823579
+      MultiverseSheet_5: 8963658462771049535
+      MultiverseSheet_6: 3071305577433752131
+      MultiverseSheet_7: -2659230110382335444
+      MultiverseSheet_8: -7221341637920037545
+      MultiverseSheet_9: -1787894419202878638
+      animal_chicken: -4636854116513354292
+      animal_cow: 5642030061596706357
+      animal_pig: -9064625083788452728
+      animal_sheep: 244210704853929510
+      barn: -6847935165863209887
+      cart: 2148930228126153120
+      fence_white: -140610173599119474
+      fence_white_pen: 2586150905872041667
+      fence_white_post: -4509827946893641608
+      fence_wood: 699246070090933718
+      fence_wood_pen: 2658646768518894791
+      fence_wood_post: 2971216779766206733
+      flower_box: -4717346142681913232
+      forge: -8756001355153261547
+      hay_shed: 1821618813099534017
+      market_shop: -8296553354907479114
+      market_stall: 1587338089879714814
+      notice_board: -7922390207881341140
+      sign_small: 8204838960441077397
+      signpost: 7858231787107266175
+      stable: -7957721894625414248
+      town_hall: 8995758569524779709
+      well: 7032131227818722396
+      windmill: -5521130737796374665
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

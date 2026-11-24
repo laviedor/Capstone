@@ -8,6 +8,7 @@ const { MAX_BUILDINGS } = require('./config');
 //     id: 네트워크 id (지은 클라이언트가 만듦), type: 건물 종류(BuildingData.buildingID),
 //     x, y: 기준 칸, owner: 지은 사람 닉네임, zone: 놓인 구역 ('' 마을, 'house' 집 안)
 //   집 안에는 장식과 특수 건물만 놓을 수 있다 (buildings.json 의 decoration / interior)
+//   집 안 전용 장식(houseOnly: 침대·난로 같은 실내 가구)은 마을에 놓을 수 없다
 //   마을과 집 안은 서로 다른 공간이라 겹침 검사는 같은 구역끼리만 한다
 //   DB 의 village_id 가 월드 id (0 은 멀티버스, 그 외에는 그 유저의 마을), owner_id 는 지은 사람
 //   건설 비용, 철거 환급도 같은 트랜잭션에서 지은 사람의 재화에 반영한다 (resources.js)
@@ -42,6 +43,7 @@ async function list(world) {
 // 건설: 비용을 내고 건물을 저장한다
 //   building.zone: 지을 구역 ('' 마을, 'house' 집 안). 채팅 서버가 그 사람이 지금 있는 구역으로 정한다
 //   -> 'ok' | 'unknown'(없는 건물 종류) | 'field'(필드에서는 짓지 않음) | 'interior'(집 안에 놓을 수 없는 종류)
+//      | 'houseOnly'(집 안에만 놓는 장식을 마을에 놓으려 함)
 //      | 'full'(건물이 너무 많음) | 'limit'(마을당 개수 제한, 예: 플레이어 집 1개)
 //      | 'blocked'(다른 건물과 겹침) | 'poor'(자원 부족) | 'duplicate'(이미 있는 id)
 async function build(world, user, building, now = Date.now()) {
@@ -51,6 +53,7 @@ async function build(world, user, building, now = Date.now()) {
   const zone = zoneOf(building);
   if (zone !== '' && zone !== 'house') return 'field';
   if (zone === 'house' && !interiorAllowed(data)) return 'interior';
+  if (zone === '' && data.houseOnly) return 'houseOnly';
 
   const conn = await pool.getConnection();
   try {

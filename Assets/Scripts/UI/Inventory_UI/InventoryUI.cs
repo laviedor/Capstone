@@ -81,6 +81,9 @@ public class InventoryUI : MonoBehaviour
 
         // 탐색 창에 [채집] 탭(자동 채집)을 붙인다
         GatherTabUI.Ensure(this, fieldPanel, fieldTabButton);
+
+        // 건설 창에 [타일] 탭(삽으로 바닥 바꾸기)을 붙인다
+        TileTabUI.Ensure(this, buildingPanel, buildingTabButton);
     }
     private void Update()
     {

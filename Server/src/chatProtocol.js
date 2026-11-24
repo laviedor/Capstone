@@ -16,6 +16,8 @@ const { MAX_NAME_LENGTH, MAX_CHAT_LENGTH, MAX_CELL, MAX_TOKEN_LENGTH, MAX_ZONE_L
 //                 { t: 'exp_claim' }                끝난 채집 타이머의 보상 수령
 //                 { t: 'harvest', id }              건물 수확 (지금 있는 월드의 내 건물, 수확 주기가 지난 것만)
 //                 { t: 'discard', item }            장식 아이템 1개 버리기 (item: 장식물 건물 종류)
+//                 { t: 'craft', item }              대장간에서 도구 만들기 (item: crafting.json 의 이름, 예: shovel)
+//                 { t: 'tile', x, y, tile }         내 마을 바닥 한 칸 바꾸기 (삽이 있어야 함. tile: 'dirt' 흙, 'grass' 잔디로 되돌림)
 //   서버 -> 클라  { t: 'chat', name, text }        어느 월드에 있든 모든 접속자에게 전달
 //                 { t: 'kick' }                    같은 계정(사용자명)이 다른 곳에서 로그인하거나 접속해 끊김.
 //                                                  받은 클라이언트는 다시 접속하지 않고 로그아웃해 로그인 화면으로 돌아간다
@@ -38,6 +40,9 @@ const { MAX_NAME_LENGTH, MAX_CHAT_LENGTH, MAX_CELL, MAX_TOKEN_LENGTH, MAX_ZONE_L
 //                 { t: 'dm', sender }              친구(유저 id sender)가 1:1 채팅을 보냄. 그 사람에게만 가고
 //                                                  내용은 HTTP 로 받아 간다 (friendRoutes.js)
 //                 { t: 'friends' }                 친구 목록, 친구 요청, 친구의 접속 상태가 바뀜 (목록을 다시 받아 가라는 알림)
+//                 { t: 'tiles', list: [{ x, y, tile }] }  지금 있는 월드의 바뀐 바닥 칸 전부 (목록에 없는 칸은 잔디)
+//                                                  (월드에 들어갈 때, 그리고 바닥 변경이 거절되어 화면을 다시 맞출 때)
+//                 { t: 'tile', x, y, tile }        같은 월드의 다른 사람이 바꾼 바닥 한 칸 (바꾼 사람에게는 보내지 않음)
 
 const isId = v => typeof v === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(v);
 const isCell = v => Number.isInteger(v) && Math.abs(v) <= MAX_CELL;
@@ -75,6 +80,8 @@ function parse(line) {
   if (m.t === 'exp_claim') return { t: 'exp_claim' };
   if (m.t === 'harvest' && isId(m.id)) return { t: 'harvest', id: m.id };
   if (m.t === 'discard' && isId(m.item)) return { t: 'discard', item: m.item };
+  if (m.t === 'craft' && isId(m.item)) return { t: 'craft', item: m.item };
+  if (m.t === 'tile' && isCell(m.x) && isCell(m.y) && isId(m.tile)) return { t: 'tile', x: m.x, y: m.y, tile: m.tile };
   return null;
 }
 
@@ -95,7 +102,10 @@ const expedition = (area, remaining) => toLine({ t: 'exp', area, remaining });
 const notice = text => toLine({ t: 'notice', text });
 const dm = senderId => toLine({ t: 'dm', sender: senderId });
 const friends = () => toLine({ t: 'friends' });
+const tileList = list => toLine({ t: 'tiles', list });
+const tile = (x, y, type) => toLine({ t: 'tile', x, y, tile: type });
 
 module.exports = {
   parse, chat, kick, world, buildingList, build, demolish, move, left, resources, harvest, expedition, notice, dm, friends,
+  tileList, tile,
 };

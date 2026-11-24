@@ -14,10 +14,12 @@ const { DEMOLISH_REFUND_RATE } = require('./config');
 //     decoration: true 면 장식물. 자원 대신 같은 이름의 장식 아이템 1개를 써서 짓고, 철거하면 1개를 돌려받는다
 //     interior: true 면 특수 건물. 장식물과 함께 집 안에 놓을 수 있다 (생산 건물은 마을에만)
 //     maxPerVillage: 한 마을에 지을 수 있는 최대 개수 (예: 플레이어 집 1)
+//     houseOnly: true 면 집 안 전용 장식 (침대·난로 같은 실내 가구). 마을에는 놓을 수 없다
 //   gathering.json   { nodes: { 노드 종류(프리팹 이름): { item, amount, gatherSeconds, respawnSeconds, count } },
 //                      decorations: [채집 타이머 보상으로 나올 수 있는 장식물 종류] }
 //     count: 필드 하나에 있는 그 종류 노드 수 (채집 횟수 제한에 쓴다)
 //   expeditions.json { 채집 장소 이름: { seconds: 걸리는 시간, gold: 골드 보상, decorationChance: 장식물이 나올 확률 } }
+//   crafting.json    { 제작 아이템: { name, cost, max } }  대장간에서 만드는 도구 (예: 삽). 서버에서 직접 고치는 파일
 //   자원 이름은 소문자 (wood, stone, gold)
 const dataDir = path.join(__dirname, '..', 'data');
 const read = file => JSON.parse(fs.readFileSync(path.join(dataDir, file), 'utf8'));
@@ -34,6 +36,9 @@ const buildings = read('buildings.json');
 const gathering = readOptional('gathering.json', {});
 const nodes = gathering.nodes ?? {};
 const expeditions = readOptional('expeditions.json', {});
+// 제작법 (대장간): crafting.json { 아이템: { name, cost: { 자원: 수량 }, max: 가질 수 있는 최대 개수 } }
+//   서버가 직접 관리하는 파일이다 (Unity 에서 내보내지 않음). 클라이언트 CraftingRecipes.cs 의 값과 같게 유지한다
+const recipes = readOptional('crafting.json', {});
 
 const isAmounts = v => v && typeof v === 'object' && Object.values(v).every(n => Number.isInteger(n) && n > 0);
 const isPositive = n => Number.isFinite(n) && n > 0;
@@ -51,6 +56,10 @@ for (const [id, n] of Object.entries(nodes)) {
   const ok = typeof n.item === 'string' && Number.isInteger(n.amount) && n.amount > 0
     && isPositive(n.gatherSeconds) && isPositive(n.respawnSeconds) && Number.isInteger(n.count) && n.count > 0;
   if (!ok) throw new Error(`data/gathering.json: 노드 '${id}' 의 값이 올바르지 않습니다`);
+}
+for (const [item, r] of Object.entries(recipes)) {
+  const ok = isAmounts(r.cost) && Number.isInteger(r.max) && r.max > 0;
+  if (!ok) throw new Error(`data/crafting.json: '${item}' 의 값이 올바르지 않습니다`);
 }
 for (const [area, e] of Object.entries(expeditions)) {
   const ok = isPositive(e.seconds) && Number.isInteger(e.gold) && e.gold >= 0
@@ -103,4 +112,6 @@ module.exports = {
   decorationRewards,
   node: id => own(nodes, id),
   expedition: area => own(expeditions, area),
+  recipe: item => own(recipes, item),
+  craftables: Object.keys(recipes),
 };

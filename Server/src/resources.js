@@ -5,9 +5,10 @@ const { STARTING_RESOURCES, MAX_RESOURCE } = require('./config');
 // 유저의 재화 DB 처리. 서버의 값이 기준이고, 바뀔 때마다 채팅 서버가 그 유저에게 알려 준다 (chatServer.js)
 //   gold 는 users.gold 에, 그 밖의 자원(wood, stone, ...)과 장식 아이템은 inventory 에 item_id 별로 저장한다
 //   장식 아이템의 item_id 는 장식물 건물 종류(buildingID)와 같다
+//   대장간에서 만든 도구(예: 삽)도 inventory 에 그 이름(shovel)으로 들어간다 (crafting.js)
 
 // 항상 알려 주는 자원과 장식 아이템 (가진 적이 없어도 0 으로)
-const ITEMS = [...new Set([...Object.keys(STARTING_RESOURCES), ...catalog.items, ...catalog.decorations])];
+const ITEMS = [...new Set([...Object.keys(STARTING_RESOURCES), ...catalog.items, ...catalog.decorations, ...catalog.craftables])];
 
 // 지금 가진 재화 { wood, stone, gold, ... }, 없는 유저면 null
 async function get(userId, conn = pool) {

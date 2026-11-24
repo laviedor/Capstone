@@ -64,6 +64,11 @@ public class ConstructionListUI : MonoBehaviour
     // 초기 일반 건물 목록을 만들고 장식 목록을 동기화한다.
     private void Start()
     {
+        // 건물 카드 목록을 마우스로 끌 때 방향을 반대로 (오른쪽으로 끌면 목록이 왼쪽으로 지나간다)
+        //   켜지는 도중에 컴포넌트를 바꾸지 않도록 Start 에서 한 번만 바꾼다
+        if (content != null)
+            ReversedDragScrollRect.Replace(content.GetComponentInParent<UnityEngine.UI.ScrollRect>(true));
+
         CreateBuildingList();
         SubscribeInventory();
         RefreshDecorationCards();
