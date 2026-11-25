@@ -29,6 +29,8 @@ public class PlayerTabUI : MonoBehaviour
     [SerializeField] private CharacterPreviewUI characterPreview;
     [SerializeField] private Button unequipAllButton;
 
+    // 인벤토리 격자: 처음에 보이는 칸(6 x 3)은 씬에 있는 칸을 쓰고, 칸이 모자라면 한 줄(6칸)씩 늘려 위아래로 스크롤한다.
+    //   개수 제한은 없다 (가진 만큼 줄이 늘어난다)
     [Header("Inventory Grid")]
     [SerializeField] private InventorySlotUI[] inventorySlots;
     [SerializeField] private ChipGroupUI filterChips;
@@ -55,6 +57,21 @@ public class PlayerTabUI : MonoBehaviour
     // 선택한 항목의 키 (EquipmentItemData 또는 BuildingData)
     private object selectedKey;
 
+    // 격자 한 줄의 칸 수
+    private const int Columns = 6;
+    // 칸이 잘리는 경계를 카드 테두리 안쪽으로 이만큼 들인다
+    private const float GridInset = 3f;
+
+    // 지금 쓰는 모든 칸 (씬의 칸 + 늘린 칸)
+    private readonly List<InventorySlotUI> slots = new List<InventorySlotUI>();
+    private RectTransform gridContent;
+    private ScrollRect gridScroll;
+    private Vector2 slotOrigin;   // 첫 칸의 위치 (격자 왼쪽 위 기준)
+    private Vector2 slotStep;     // 칸 사이 간격 (가로, 세로)
+    private Vector2 slotSize;
+    private int baseRows;         // 처음에 보이는 줄 수
+    private int lastFilter = -1;
+
     private PlayerEquipment subscribedEquipment;
     private DecorationInventory subscribedDecorations;
     private bool initialized;
@@ -67,11 +84,17 @@ public class PlayerTabUI : MonoBehaviour
 
         initialized = true;
 
-        for (int i = 0; i < inventorySlots.Length; i++)
+        foreach (InventorySlotUI slot in inventorySlots ?? new InventorySlotUI[0])
         {
-            inventorySlots[i].Init(i);
-            inventorySlots[i].OnClicked += OnInventorySlotClicked;
+            if (slot == null)
+                continue;
+
+            slot.Init(slots.Count);
+            slot.OnClicked += OnInventorySlotClicked;
+            slots.Add(slot);
         }
+
+        SetupGridScroll();
 
         foreach (EquipmentSlotUI slotUI in equipmentSlots)
             slotUI.OnClicked += OnEquipmentSlotClicked;
@@ -179,12 +202,25 @@ public class PlayerTabUI : MonoBehaviour
         if (characterPreview != null)
             characterPreview.Refresh(equipment);
 
-        // 인벤토리 격자
-        for (int i = 0; i < inventorySlots.Length; i++)
+        // 인벤토리 격자: 필요한 줄 수만큼 칸을 늘리고(최소 처음 줄 수), 분류를 바꾸면 맨 위로
+        EnsureRows(Mathf.Max(baseRows, Mathf.CeilToInt(visibleEntries.Count / (float)Columns)));
+
+        if (filter != lastFilter)
         {
+            lastFilter = filter;
+
+            if (gridScroll != null)
+                gridScroll.verticalNormalizedPosition = 1f;
+        }
+
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (!slots[i].gameObject.activeSelf)
+                continue;
+
             if (i >= visibleEntries.Count)
             {
-                inventorySlots[i].ShowEmpty();
+                slots[i].ShowEmpty();
                 continue;
             }
 
@@ -192,7 +228,7 @@ public class PlayerTabUI : MonoBehaviour
             bool isEquipped =
                 entry.IsEquipment && equipment != null && equipment.IsEquipped(entry.equipment);
 
-            inventorySlots[i].Show(
+            slots[i].Show(
                 entry.Icon,
                 entry.count,
                 isEquipped,
@@ -201,9 +237,149 @@ public class PlayerTabUI : MonoBehaviour
         }
 
         if (countText != null)
-            countText.text = allEntries.Count + " / " + inventorySlots.Length;
+            countText.text = allEntries.Count + "개";
 
         ShowDetail(selected, equipment);
+    }
+
+    // 격자 카드 안에 스크롤 영역을 만들고 씬의 칸들을 그 안으로 옮긴다.
+    //   카드(격자) = 스크롤 (마우스 휠, 끌기) / Viewport = 카드 안쪽에서 칸을 잘라 보이는 영역 / Content = 칸들이 놓이는 판
+    private void SetupGridScroll()
+    {
+        if (slots.Count == 0 || gridScroll != null)
+            return;
+
+        RectTransform first = (RectTransform)slots[0].transform;
+        RectTransform grid = first.parent as RectTransform;
+
+        if (grid == null)
+            return;
+
+        // 씬의 칸 배치에서 첫 칸 위치, 칸 간격, 칸 크기를 읽는다 (왼쪽 위 기준, 아래로 +)
+        slotOrigin = new Vector2(first.anchoredPosition.x, -first.anchoredPosition.y);
+        slotSize = first.rect.size;
+        slotStep = new Vector2(
+            slots.Count > 1 ? ((RectTransform)slots[1].transform).anchoredPosition.x - first.anchoredPosition.x : slotSize.x + 3f,
+            slots.Count > Columns ? first.anchoredPosition.y - ((RectTransform)slots[Columns].transform).anchoredPosition.y : slotSize.y + 4f);
+        baseRows = Mathf.Max(1, Mathf.CeilToInt(slots.Count / (float)Columns));
+
+        GameObject viewportGo = new GameObject("Viewport", typeof(RectTransform), typeof(RectMask2D));
+        RectTransform viewport = (RectTransform)viewportGo.transform;
+        viewport.SetParent(grid, false);
+        viewport.anchorMin = Vector2.zero;
+        viewport.anchorMax = Vector2.one;
+        viewport.offsetMin = new Vector2(0f, GridInset);
+        viewport.offsetMax = new Vector2(0f, -GridInset);
+
+        GameObject contentGo = new GameObject("Content", typeof(RectTransform));
+        gridContent = (RectTransform)contentGo.transform;
+        gridContent.SetParent(viewport, false);
+        gridContent.anchorMin = new Vector2(0f, 1f);
+        gridContent.anchorMax = new Vector2(1f, 1f);
+        gridContent.pivot = new Vector2(0.5f, 1f);
+        gridContent.anchoredPosition = Vector2.zero;
+
+        foreach (InventorySlotUI slot in slots)
+            slot.transform.SetParent(gridContent, false);
+
+        gridScroll = grid.gameObject.AddComponent<ScrollRect>();
+        gridScroll.content = gridContent;
+        gridScroll.viewport = viewport;
+        gridScroll.horizontal = false;
+        gridScroll.vertical = true;
+        gridScroll.movementType = ScrollRect.MovementType.Clamped;
+        gridScroll.scrollSensitivity = 20f;
+        gridScroll.verticalScrollbar = CreateScrollbar(grid);
+        gridScroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
+
+        // 끌기·휠을 받을 수 있게 카드 그림이 마우스를 받도록
+        Graphic background = grid.GetComponent<Graphic>();
+
+        if (background != null)
+            background.raycastTarget = true;
+
+        EnsureRows(baseRows);
+    }
+
+    // 격자 오른쪽의 얇은 스크롤 막대 (칸이 넘칠 때만 보인다)
+    private static Scrollbar CreateScrollbar(RectTransform grid)
+    {
+        Color ink = new Color(0.43f, 0.30f, 0.22f, 1f);
+
+        GameObject barGo = new GameObject("Scrollbar", typeof(RectTransform), typeof(Image), typeof(Scrollbar));
+        RectTransform bar = (RectTransform)barGo.transform;
+        bar.SetParent(grid, false);
+        bar.anchorMin = new Vector2(1f, 0f);
+        bar.anchorMax = new Vector2(1f, 1f);
+        bar.pivot = new Vector2(1f, 0.5f);
+        bar.sizeDelta = new Vector2(4f, -16f);
+        bar.anchoredPosition = new Vector2(-3f, 0f);
+        barGo.GetComponent<Image>().color = new Color(ink.r, ink.g, ink.b, 0.12f);
+
+        GameObject areaGo = new GameObject("Sliding Area", typeof(RectTransform));
+        RectTransform area = (RectTransform)areaGo.transform;
+        area.SetParent(bar, false);
+        area.anchorMin = Vector2.zero;
+        area.anchorMax = Vector2.one;
+        area.offsetMin = area.offsetMax = Vector2.zero;
+
+        GameObject handleGo = new GameObject("Handle", typeof(RectTransform), typeof(Image));
+        RectTransform handle = (RectTransform)handleGo.transform;
+        handle.SetParent(area, false);
+        handle.offsetMin = handle.offsetMax = Vector2.zero;
+        Image handleImage = handleGo.GetComponent<Image>();
+        handleImage.color = new Color(ink.r, ink.g, ink.b, 0.55f);
+
+        Scrollbar scrollbar = barGo.GetComponent<Scrollbar>();
+        scrollbar.direction = Scrollbar.Direction.BottomToTop;
+        scrollbar.handleRect = handle;
+        scrollbar.targetGraphic = handleImage;
+        return scrollbar;
+    }
+
+    // 격자를 rows 줄로 맞춘다: 칸이 모자라면 첫 칸을 복제해 늘리고, 남는 칸은 숨긴다. 판 높이도 맞춘다
+    private void EnsureRows(int rows)
+    {
+        if (slots.Count == 0)
+            return;
+
+        int needed = rows * Columns;
+
+        while (slots.Count < needed)
+        {
+            InventorySlotUI clone = Instantiate(slots[0], slots[0].transform.parent);
+            clone.name = "Slot_" + slots.Count.ToString("00");
+            clone.Init(slots.Count);
+            clone.OnClicked += OnInventorySlotClicked;
+            slots.Add(clone);
+        }
+
+        for (int i = 0; i < slots.Count; i++)
+        {
+            bool active = i < needed;
+
+            if (slots[i].gameObject.activeSelf != active)
+                slots[i].gameObject.SetActive(active);
+
+            if (gridContent == null)
+                continue;
+
+            RectTransform rt = (RectTransform)slots[i].transform;
+            int col = i % Columns;
+            int row = i / Columns;
+            rt.anchorMin = rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot = new Vector2(0f, 1f);
+            rt.anchoredPosition = new Vector2(
+                slotOrigin.x + col * slotStep.x,
+                -(slotOrigin.y - GridInset + row * slotStep.y));
+        }
+
+        if (gridContent != null)
+        {
+            // 위 여백 + 줄들 + 아래 여백(위와 같게)
+            float pad = slotOrigin.y - GridInset;
+            gridContent.sizeDelta = new Vector2(0f, pad * 2f + (rows - 1) * slotStep.y + slotSize.y);
+        }
     }
 
     // 보유 장비와 보유 장식을 하나의 목록으로 만든다.
@@ -369,6 +545,13 @@ public class PlayerTabUI : MonoBehaviour
 
         if (entry.IsEquipment)
         {
+            // 대장간에서 만든 도구(삽)는 서버에 저장된 것이라 버리지 않는다
+            if (ToolInventory.IsCraftedTool(entry.equipment))
+            {
+                Toast.Show("대장간에서 만든 도구는 버릴 수 없어요.");
+                return;
+            }
+
             if (PlayerEquipment.Instance != null)
                 PlayerEquipment.Instance.RemoveItem(entry.equipment);
         }

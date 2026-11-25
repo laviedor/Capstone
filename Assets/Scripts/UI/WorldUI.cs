@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-// 화면 오른쪽 위 도구 줄의 오른쪽 끝: 지금 있는 곳(멀티버스 / 내 마을 / 친구 마을)과 [내 마을], [멀티버스] 이동 버튼
+// 화면 오른쪽 위 도구 줄의 오른쪽 끝: 지금 있는 곳(광장 / 내 마을 / 친구 마을)과 [내 마을], [광장] 이동 버튼
 // 화면 아래 가운데: 잠깐 떴다 사라지는 안내(Toast, 서버가 요청을 거절한 이유 등)
 //   화면 가운데는 Tab 메뉴(인벤토리)가 차지하므로 가리지 않는 자리에 둔다 (게임 창은 가로로 길고 낮다)
 //   건설·철거 모드에는 같은 자리에 건설 안내 막대(BuildModeHUD)가 뜨므로, 겹치는 동안에는 안내를 그 막대 바로 위로 올린다
@@ -38,6 +38,10 @@ public class WorldUI : MonoBehaviour
         HideNotice();
         homeButton.onClick.AddListener(worldSync.GoHome);
         multiverseButton.onClick.AddListener(worldSync.GoMultiverse);
+
+        // 공용 공간의 이름은 '광장' (씬에 저장된 버튼 글자가 예전 이름이어도 여기서 맞춘다)
+        Text label = multiverseButton.GetComponentInChildren<Text>(true);
+        if (label != null) label.text = "광장";
     }
 
     void OnEnable()

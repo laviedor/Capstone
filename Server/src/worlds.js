@@ -1,6 +1,7 @@
 const chatProtocol = require('./chatProtocol');
 const presence = require('./presence');
 const buildings = require('./buildings');
+const tiles = require('./tiles');
 const harvest = require('./harvest');
 const friends = require('./friends');
 const accounts = require('./accounts');
@@ -8,7 +9,7 @@ const positions = require('./positions');
 const { MULTIVERSE, KICK_GRACE_MS } = require('./config');
 
 // 월드 이동
-//   월드 0: 멀티버스. 누구나 들어가지만 건물은 짓거나 철거할 수 없다 (구경과 채팅만)
+//   월드 0: 광장. 누구나 들어가지만 건물은 짓거나 철거할 수 없다 (구경과 채팅만)
 //   내 유저 id: 내 마을. 나만 짓고, 다른 사람은 보이지 않는다 (구경 온 친구만 보임)
 //   친구의 유저 id: 친구 마을. 친구만 들어갈 수 있고 구경만 한다
 // 같은 월드에 있는 사람끼리만 건물 변경(chatServer.js)을 주고받고,
@@ -19,10 +20,10 @@ function broadcast(world, line, except) {
   for (const client of presence.inWorld(world)) if (client !== except) client.socket.write(line);
 }
 
-// client 가 들어갈 수 있는 월드면 { id, name: 마을 주인 닉네임(멀티버스는 ''), mine: 내 마을인지, build: 지을 수 있는지 }
+// client 가 들어갈 수 있는 월드면 { id, name: 마을 주인 닉네임(광장은 ''), mine: 내 마을인지, build: 지을 수 있는지 }
 async function resolve(client, world) {
   if (world === MULTIVERSE) return { id: MULTIVERSE, name: '', mine: false, build: false };
-  if (client.userId === null) return null; // 로그인하지 않은 접속은 멀티버스만
+  if (client.userId === null) return null; // 로그인하지 않은 접속은 광장만
   if (world === client.userId) return { id: world, name: client.name, mine: true, build: true };
 
   if (!await friends.areFriends(client.userId, world)) return null;
@@ -30,12 +31,13 @@ async function resolve(client, world) {
   return owner && { id: world, name: owner.nickname, mine: false, build: false };
 }
 
-// client 를 그 월드로 옮기고 월드 정보, 건물 목록, 내 건물의 수확 타이머, 그곳에 있는 사람들의 위치를 보낸다
+// client 를 그 월드로 옮기고 월드 정보, 건물 목록, 내 건물의 수확 타이머, 바뀐 바닥 칸, 그곳에 있는 사람들의 위치를 보낸다
 // 들어갈 수 없는 월드면 false (있던 곳에 그대로 있음)
 async function enter(client, world) {
   const info = await resolve(client, world);
   if (!info) return false;
   const list = await buildings.list(info.id);
+  const tileList = await tiles.list(info.id);
   const timers = client.userId === null ? [] : await harvest.timers(info.id, client.userId);
   if (client.socket.destroyed) return false; // 확인하는 사이에 끊김
 
@@ -49,6 +51,7 @@ async function enter(client, world) {
   client.socket.write(chatProtocol.world(info));
   client.socket.write(chatProtocol.buildingList(list));
   client.socket.write(chatProtocol.harvest(timers, true)); // 건물 목록 다음에 보낸다 (목록에 있는 건물의 타이머)
+  client.socket.write(chatProtocol.tileList(tileList));     // 삽으로 바꾼 바닥 칸
   positions.snapshot(client); // 월드 정보 다음에 보낸다 (클라이언트는 월드가 바뀌면 보이던 사람들을 지우고 이 목록으로 다시 채운다)
   return true;
 }
@@ -99,7 +102,7 @@ async function evict(ownerId, visitorId) {
   await enter(visitor, visitorId);
 }
 
-// 탈퇴한 유저의 마을에 있던 사람들을 자기 마을로 돌려보내고, 멀티버스에서 그 유저의 건물을 지운다
+// 탈퇴한 유저의 마을에 있던 사람들을 자기 마을로 돌려보내고, 광장에서 그 유저의 건물을 지운다
 //   (그 유저와 건물이 DB 에서 지워진 뒤에 호출)
 async function closeVillage(userId) {
   for (const client of presence.inWorld(userId)) {

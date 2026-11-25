@@ -73,7 +73,9 @@ public static class ServerDataExporter
             var entries = new List<string>();
             foreach (BuildingData data in datas.Values)
             {
-                bool decoration = data.buildingType == BuildingType.Decoration;
+                // decoration: 장식 아이템 1개로 짓는 장식. 자원으로 사는 장식(집 안 가구)은 일반 건물처럼 비용을 내되 수확은 없다
+                bool decoration = data.UsesDecorationItem;
+                bool noHarvest = data.buildingType == BuildingType.Decoration;
                 var cost = new SortedDictionary<string, int>(System.StringComparer.Ordinal);
                 foreach (ResourceAmount amount in data.constructionCosts ?? new ResourceAmount[0])
                     Add(cost, amount.resourceType, amount.amount);
@@ -81,7 +83,7 @@ public static class ServerDataExporter
                 // 수확: BuildingHarvest.SetupRewards 와 같은 규칙 (생산 목록, 비어 있으면 기본값). 장식물은 수확하지 않는다
                 var harvest = new SortedDictionary<string, int>(System.StringComparer.Ordinal);
                 float harvestSeconds = 0f;
-                if (!decoration)
+                if (!noHarvest)
                 {
                     HarvestSettings settings = harvestOnPrefab.TryGetValue(data.buildingID, out BuildingHarvest onPrefab)
                         ? ReadHarvest(onPrefab) ?? defaults
@@ -105,9 +107,11 @@ public static class ServerDataExporter
                 // 장식물: 서버가 자원 대신 같은 이름의 장식 아이템 1개를 쓰게 한다 (DecorationInventory 와 같은 규칙)
                 if (decoration) sb.Append(",\n    \"decoration\": true");
                 // 특수 건물: 장식과 함께 집 안에 놓을 수 있다 (서버 buildings.js 가 집 안 건설을 검사)
-                if (data.buildingType == BuildingType.Special) sb.Append(",\n    \"interior\": true");
+                if (data.buildingType == BuildingType.Special || (noHarvest && !decoration)) sb.Append(",\n    \"interior\": true");
                 // 마을당 개수 제한 (예: 플레이어 집 1개). 서버 buildings.js 가 건설할 때 검사한다
                 if (data.maxPerVillage > 0) sb.Append($",\n    \"maxPerVillage\": {data.maxPerVillage}");
+                // 집 안 전용 장식 (침대·난로 같은 실내 가구). 서버 buildings.js 가 마을에 놓지 못하게 검사한다
+                if (data.houseOnly) sb.Append(",\n    \"houseOnly\": true");
                 sb.Append("\n  }");
                 entries.Add(sb.ToString());
             }
@@ -182,7 +186,7 @@ public static class ServerDataExporter
             foreach (DecorationDatabase.DecorationEntry entry in database.decorations)
             {
                 if (entry == null || entry.buildingData == null || entry.buildingPrefab == null) continue;
-                if (entry.buildingData.buildingType != BuildingType.Decoration) continue;
+                if (!entry.buildingData.UsesDecorationItem) continue;
                 Building building = entry.buildingPrefab.GetComponent<Building>();
                 if (building == null || building.Data != entry.buildingData) continue;
                 decorations.Add(entry.buildingData.buildingID);

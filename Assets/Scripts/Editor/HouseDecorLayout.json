@@ -1,0 +1,111 @@
+{
+ "pixelsPerUnit": 50,
+ "items": [
+  {
+   "key": "decor_bed",
+   "name": "퀼트 침대",
+   "cw": 4,
+   "ch": 2,
+   "cost": [
+    0,
+    60,
+    2,
+    200
+   ]
+  },
+  {
+   "key": "decor_bookshelf",
+   "name": "원목 책장",
+   "cw": 3,
+   "ch": 1,
+   "cost": [
+    0,
+    50,
+    2,
+    150
+   ]
+  },
+  {
+   "key": "decor_sofa",
+   "name": "포근한 소파",
+   "cw": 4,
+   "ch": 1,
+   "cost": [
+    0,
+    30,
+    2,
+    250
+   ]
+  },
+  {
+   "key": "decor_stove",
+   "name": "무쇠 난로",
+   "cw": 2,
+   "ch": 1,
+   "cost": [
+    1,
+    60,
+    2,
+    200
+   ]
+  },
+  {
+   "key": "decor_clock",
+   "name": "괘종시계",
+   "cw": 1,
+   "ch": 1,
+   "cost": [
+    0,
+    30,
+    2,
+    300
+   ]
+  },
+  {
+   "key": "decor_lamp",
+   "name": "스탠드 조명",
+   "cw": 1,
+   "ch": 1,
+   "cost": [
+    0,
+    10,
+    2,
+    100
+   ]
+  },
+  {
+   "key": "decor_monstera",
+   "name": "몬스테라 화분",
+   "cw": 2,
+   "ch": 1,
+   "cost": [
+    2,
+    80
+   ]
+  },
+  {
+   "key": "decor_catbed",
+   "name": "낮잠 고양이",
+   "cw": 2,
+   "ch": 1,
+   "cost": [
+    0,
+    20,
+    2,
+    150
+   ]
+  },
+  {
+   "key": "decor_gramophone",
+   "name": "축음기 서랍장",
+   "cw": 2,
+   "ch": 1,
+   "cost": [
+    0,
+    40,
+    2,
+    350
+   ]
+  }
+ ]
+}

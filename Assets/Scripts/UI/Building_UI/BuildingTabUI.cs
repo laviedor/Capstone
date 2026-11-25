@@ -42,7 +42,7 @@ public class BuildingTabUI : MonoBehaviour
     // 철거 모드로 들어간다: Tab 창을 닫고 건설 모드를 철거 도구로 켠다
     public void StartDemolition()
     {
-        // 친구 마을, 멀티버스에서는 철거할 수 없다
+        // 친구 마을, 광장에서는 철거할 수 없다
         if (WorldSync.BlockBuildingChange())
             return;
 

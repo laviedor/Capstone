@@ -31,6 +31,8 @@ public class ChatClient : MonoBehaviour
     public event Action<ExpeditionMessage> ExpeditionReceived; // 내 채집 타이머 (GatherSync 가 처리)
     public event Action<PlayersMessage> PlayersReceived;    // 지금 같은 월드, 같은 구역에 있는 사람들 (들어갈 때마다 옴)
     public event Action<PosMessage> PositionReceived;       // 같이 있는 사람의 위치 (이 연결로 온 것)
+    public event Action<TileListMessage> TilesReceived;        // 지금 월드의 바뀐 바닥 칸 전부 (GroundTileLayer 가 처리)
+    public event Action<TileMessage> TileReceived;             // 다른 사람이 바꾼 바닥 한 칸 (GroundTileLayer 가 처리)
 
     // 접속할 때 들어갈 월드 id. WorldSync 가 지금 있는 월드로 맞춰 두므로 연결이 끊겼다 다시 붙어도 같은 곳으로 돌아간다
     public long JoinWorld { get; set; }
@@ -102,6 +104,12 @@ public class ChatClient : MonoBehaviour
         position.n = sequence;
         return TryWrite(position);
     }
+
+    // 대장간에서 도구 만들기 (만든 도구와 쓴 자원은 ResourcesReceived 로 알려 준다)
+    public bool SendCraft(string item) => TryWrite(new CraftMessage { item = item });
+
+    // 내 마을 바닥 한 칸 바꾸기 (거절되면 서버가 TilesReceived 로 바닥 전체를 다시 보낸다)
+    public bool SendTile(int x, int y, string tile) => TryWrite(new TileMessage { x = x, y = y, tile = tile });
 
     bool TryWrite(object msg)
     {
@@ -264,6 +272,14 @@ public class ChatClient : MonoBehaviour
         else if (msg.t == ChatMessage.Expedition)
         {
             ExpeditionReceived?.Invoke(JsonUtility.FromJson<ExpeditionMessage>(line));
+        }
+        else if (msg.t == ChatMessage.Tiles)
+        {
+            TilesReceived?.Invoke(JsonUtility.FromJson<TileListMessage>(line));
+        }
+        else if (msg.t == ChatMessage.Tile)
+        {
+            TileReceived?.Invoke(JsonUtility.FromJson<TileMessage>(line));
         }
     }
 

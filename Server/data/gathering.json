@@ -4,5 +4,5 @@
     "FieldTree": { "item": "wood", "amount": 10, "gatherSeconds": 3, "respawnSeconds": 30, "count": 2 },
     "FireldGold": { "item": "gold", "amount": 10, "gatherSeconds": 4, "respawnSeconds": 35, "count": 2 }
   },
-  "decorations": ["decoration_tree_01"]
+  "decorations": ["animal_chicken", "animal_cow", "animal_pig", "animal_sheep", "cart", "decor_bed", "decor_bookshelf", "decor_catbed", "decor_clock", "decor_gramophone", "decor_lamp", "decor_monstera", "decor_sofa", "decor_stove", "decoration_tree_01", "fence_white", "fence_white_pen", "fence_white_post", "fence_wood", "fence_wood_pen", "fence_wood_post", "flower_box", "sign_small", "signpost"]
 }

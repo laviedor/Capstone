@@ -148,8 +148,8 @@ public class BuildingCardUI : MonoBehaviour
             return;
         }
 
-        // 데코레이션은 보유 수량 확인
-        if (buildingData.buildingType == BuildingType.Decoration)
+        // 데코레이션은 보유 수량 확인 (자원으로 사는 장식은 일반 건물처럼)
+        if (buildingData.UsesDecorationItem)
         {
             if (DecorationInventory.Instance == null ||
                 DecorationInventory.Instance.GetCount(buildingData) <= 0)
@@ -179,8 +179,8 @@ public class BuildingCardUI : MonoBehaviour
         if (buildingData == null || buildingCostText == null)
             return;
 
-        // 데코레이션은 보유 수량 표시
-        if (buildingData.buildingType == BuildingType.Decoration)
+        // 데코레이션은 보유 수량 표시 (자원으로 사는 장식은 건설 비용 표시)
+        if (buildingData.UsesDecorationItem)
         {
             int count = 0;
 

@@ -1,10 +1,10 @@
 using System;
 using UnityEngine;
 
-// 지금 있는 월드 관리: 멀티버스(모두가 같이 있는 곳), 내 마을, 친구 마을(구경만)
+// 지금 있는 월드 관리: 광장(모두가 같이 있는 곳), 내 마을, 친구 마을(구경만)
 //   이동은 서버(채팅 연결)에 요청하고, 서버가 들어간 월드를 알려 주면 화면을 그 월드로 바꾼다
 //   건물은 서버가 이어서 보내는 목록으로 BuildingSync 가 다시 채우고, 다른 플레이어는 같은 월드에 있는 사람만 보인다
-//   월드 id: 0 은 멀티버스, 그 외에는 그 유저(id)의 마을 (서버 worlds.js 참고)
+//   월드 id: 0 은 광장, 그 외에는 그 유저(id)의 마을 (서버 worlds.js 참고)
 //   월드 안에는 구역이 있다: 마을, 필드(FieldSceneManager), 집 안(HouseSceneManager). 필드나 집에 들어가면 서버에 알려서
 //   같은 구역에 있는 사람끼리만 서로 보이게 한다 (필드와 집은 마을과 같은 좌표를 쓰므로 섞이면 안 된다)
 public class WorldSync : MonoBehaviour
@@ -20,7 +20,7 @@ public class WorldSync : MonoBehaviour
     [SerializeField] private BuildingModeManager buildingModeManager;
 
     public long Current { get; private set; } = -1;     // 지금 있는 월드 id (서버가 알려 주기 전에는 -1)
-    public string OwnerName { get; private set; } = ""; // 마을 주인 닉네임 (멀티버스는 "")
+    public string OwnerName { get; private set; } = ""; // 마을 주인 닉네임 (광장은 "")
     public bool IsMine { get; private set; }            // 내 마을인지
     public bool CanBuild { get; private set; }          // 여기서 건물을 지을 수 있는지 (친구 마을은 구경만)
     public string Zone { get; private set; } = "";      // 월드 안의 구역: "" 마을, "field" 필드, "house" 집 안
@@ -28,12 +28,12 @@ public class WorldSync : MonoBehaviour
     public bool Entered => Current >= 0;
     public bool InMultiverse => Current == Multiverse;
 
-    // 여기서 건물을 짓거나 철거, 이동할 수 없는지 (친구 마을은 구경만, 멀티버스는 건물을 바꿀 수 없음)
+    // 여기서 건물을 짓거나 철거, 이동할 수 없는지 (친구 마을은 구경만, 광장은 건물을 바꿀 수 없음)
     public bool BuildingLocked => Entered && (!CanBuild || InMultiverse);
 
     // 건물을 바꿀 수 없을 때 띄우는 알림
     public string BuildingLockedMessage =>
-        InMultiverse ? "멀티버스에서는 건물을 짓거나 철거할 수 없습니다." : "친구의 마을에서는 구경만 할 수 있습니다.";
+        InMultiverse ? "광장에서는 건물을 짓거나 철거할 수 없습니다." : "친구의 마을에서는 구경만 할 수 있습니다.";
 
     // 지금 월드에서 건물을 바꿀 수 없으면 알림을 띄우고 true (건설, 철거를 시작하기 전에 부른다)
     public static bool BlockBuildingChange()
@@ -51,7 +51,7 @@ public class WorldSync : MonoBehaviour
         get
         {
             if (!Entered) return "접속 중...";
-            string place = InMultiverse ? "멀티버스" : IsMine ? "내 마을" : OwnerName + "님의 마을 (구경 중)";
+            string place = InMultiverse ? "광장" : IsMine ? "내 마을" : OwnerName + "님의 마을 (구경 중)";
             if (Zone == "field") place += " - 필드";
             else if (Zone == "house") place += " - 집 안";
             return place;
@@ -152,7 +152,7 @@ public class WorldSync : MonoBehaviour
     {
         UpdateZone();
 
-        // 친구 마을, 멀티버스에서는 건설 모드를 켤 수 없다 (서버도 건설, 철거 요청을 거절한다)
+        // 친구 마을, 광장에서는 건설 모드를 켤 수 없다 (서버도 건설, 철거 요청을 거절한다)
         if (!BuildingLocked || !buildingModeManager.IsBuildMode) return;
 
         buildingModeManager.SendMessage("ToggleBuildMode", SendMessageOptions.DontRequireReceiver);

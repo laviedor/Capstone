@@ -15,3 +15,49 @@ MonoBehaviour:
   decorations:
   - buildingData: {fileID: 11400000, guid: 05f149a258cfd694898438c1376722d0, type: 2}
     buildingPrefab: {fileID: 3310230836794409792, guid: caf9176c2f1dc2e4a8bf1e0fb5a678c0, type: 3}
+  - buildingData: {fileID: 11400000, guid: df60ab323cfb64eed8526d76fe501dd6, type: 2}
+    buildingPrefab: {fileID: 5140996635647419109, guid: 9f01e0d27166947c9a711395e29d2cc9, type: 3}
+  - buildingData: {fileID: 11400000, guid: 3a513fde78f2a4353aec585c50fb56f9, type: 2}
+    buildingPrefab: {fileID: 6913785127144465038, guid: a5b78692a035b489db2a904772794b6e, type: 3}
+  - buildingData: {fileID: 11400000, guid: c279ae0c4859a4e5aaf39d1cbcf8815a, type: 2}
+    buildingPrefab: {fileID: 7634918141697520669, guid: de8defff8e59847d7ae5eda4fcf9b707, type: 3}
+  - buildingData: {fileID: 11400000, guid: e7df055b570394a3ca081b6908bfda6b, type: 2}
+    buildingPrefab: {fileID: 7613140998588688968, guid: df661aa84ca3547d4b018af26007cabe, type: 3}
+  - buildingData: {fileID: 11400000, guid: 3a266546dd53b4680884608535f20194, type: 2}
+    buildingPrefab: {fileID: 2545289376526231619, guid: d4287f9ae02d1496681ddfbca40fcd61, type: 3}
+  - buildingData: {fileID: 11400000, guid: de36b6e6ea61f4cdab54943a1f3a9522, type: 2}
+    buildingPrefab: {fileID: 7269213943815294583, guid: 615182fce827045d6a0b1a58b6e05e13, type: 3}
+  - buildingData: {fileID: 11400000, guid: b941c85cfa46e4c9fb35a49f84b60f19, type: 2}
+    buildingPrefab: {fileID: 5250168618528922130, guid: 88fd999a86b654cd98e93ea47b184fae, type: 3}
+  - buildingData: {fileID: 11400000, guid: 4a4a479ea43c24a8d95d2d79ea726454, type: 2}
+    buildingPrefab: {fileID: 7612306138593372571, guid: 5eefeeb73fecd4eb8b6fa353ce1a0b8e, type: 3}
+  - buildingData: {fileID: 11400000, guid: 0854bb6321a864023aab6182b0f481fd, type: 2}
+    buildingPrefab: {fileID: 7300494780819464458, guid: d84f62354de9d4d16a741d5497570226, type: 3}
+  - buildingData: {fileID: 11400000, guid: 20ac39e59da8a4ad0b4441609cec8afd, type: 2}
+    buildingPrefab: {fileID: 3335787033925445520, guid: f552d2f00e25240b589de69279956521, type: 3}
+  - buildingData: {fileID: 11400000, guid: f8dd32509f2a84ba5b31f84f0f51d906, type: 2}
+    buildingPrefab: {fileID: 1623620814286623856, guid: 9957108d8838e45ab8defcacf975949f, type: 3}
+  - buildingData: {fileID: 11400000, guid: 9ce252de2a35e4a3e8410d1fb05a0f1e, type: 2}
+    buildingPrefab: {fileID: 872690331747103971, guid: 187a66d5a823d4e85a5e50d8ca9fd416, type: 3}
+  - buildingData: {fileID: 11400000, guid: ef27312da0b354911a1603b15961e457, type: 2}
+    buildingPrefab: {fileID: 5413807368894095297, guid: 27c31e1e6c6c1415ea0edb83e0dc7f06, type: 3}
+  - buildingData: {fileID: 11400000, guid: c90e4545a4a6c4e2c9b8abd7bd4ed7c9, type: 2}
+    buildingPrefab: {fileID: 6561351966849642571, guid: 90a25d499420b4565aadb0079cb3d6bf, type: 3}
+  - buildingData: {fileID: 11400000, guid: 755ea863780d2492786d025d1c99f264, type: 2}
+    buildingPrefab: {fileID: 7113395990141439631, guid: 9f3d5958fbbfd4725a301b697e1cf37d, type: 3}
+  - buildingData: {fileID: 11400000, guid: 09cf77f9cfbf1432fa415b2ec59fdaec, type: 2}
+    buildingPrefab: {fileID: 7045854603112355241, guid: 6a91912cec8a14c789568b8ba6f64be5, type: 3}
+  - buildingData: {fileID: 11400000, guid: df045375c307540d1bac632f3a0b8b7e, type: 2}
+    buildingPrefab: {fileID: 1538379337268388968, guid: 869a6518faca24910989a3de74a3cde9, type: 3}
+  - buildingData: {fileID: 11400000, guid: 591232e8e4cf74846a9dca6cdd8972ef, type: 2}
+    buildingPrefab: {fileID: 7219633066750421154, guid: 2441fe8a96d934d00b52714a2e48e7f5, type: 3}
+  - buildingData: {fileID: 11400000, guid: 70fc4879c59ff413d8c01e00c257efdf, type: 2}
+    buildingPrefab: {fileID: 6652432623240689315, guid: b5f388a669ce64f138d546b348b9932d, type: 3}
+  - buildingData: {fileID: 11400000, guid: 1852121194f4b4dd6815f29cfb5a31df, type: 2}
+    buildingPrefab: {fileID: 8829705579916060943, guid: 41bca5fa49d8b480a8c4db3e151adc5d, type: 3}
+  - buildingData: {fileID: 11400000, guid: ec3760d1ccaf349e1b4bc5a1480d688e, type: 2}
+    buildingPrefab: {fileID: 27957558555430303, guid: d1d531a126995419ea62d1e977687a17, type: 3}
+  - buildingData: {fileID: 11400000, guid: 6deb86074a6da416fbb7f295fbbf3dab, type: 2}
+    buildingPrefab: {fileID: 6764480987087864984, guid: d96376acfa85f44e9bfece6348f2ff68, type: 3}
+  - buildingData: {fileID: 11400000, guid: a09e84595bb684db7a53e06965c7ea84, type: 2}
+    buildingPrefab: {fileID: 8577856087567541417, guid: 0c0345e148e994a2cbb095fa977b4d9c, type: 3}

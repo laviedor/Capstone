@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4b5734dbf76b714c9bbd69053d0d5fc, type: 3}
+  m_Name: fence_white
+  m_EditorClassIdentifier: 
+  buildingID: fence_white
+  buildingName: "\uD770 \uC6B8\uD0C0\uB9AC (\uAC00\uB85C)"
+  buildingIcon: {fileID: -140610173599119474, guid: 0382748dc0574413db94158ea15ac234, type: 3}
+  buildingType: 2
+  width: 3
+  height: 1
+  constructionCosts: []
+  maxPerVillage: 0
+  canInteract: 0
+  productions: []
+  productionInterval: 30

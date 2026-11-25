@@ -102,6 +102,63 @@ public class BuildingPlacement : MonoBehaviour
     private HashSet<Vector3Int> occupiedCells =>
         BuildingRules.InHouse ? houseOccupiedCells : villageOccupiedCells;
 
+    // 광장 풍경(MultiverseScenery)이 막아 둔 마을 칸. 풍경이 숨으면 이 칸들만 다시 비운다
+    private readonly HashSet<Vector3Int> sceneryCells = new HashSet<Vector3Int>();
+
+    // 광장 풍경이 차지하는 칸을 막거나(on) 푼다. 건물과 같은 점유 칸으로 다뤄서 길찾기·설치에서 막힌다
+    public void SetSceneryCells(IEnumerable<Vector3Int> cells, bool on)
+    {
+        if (on)
+        {
+            foreach (Vector3Int cell in cells)
+            {
+                if (villageOccupiedCells.Add(cell))
+                    sceneryCells.Add(cell);
+            }
+        }
+        else
+        {
+            foreach (Vector3Int cell in sceneryCells)
+                villageOccupiedCells.Remove(cell);
+
+            sceneryCells.Clear();
+        }
+    }
+
+    // 집 안의 고정된 물건(출구 문 등)이 막아 둔 칸. 그 물건이 숨으면 이 칸들만 다시 비운다
+    private readonly HashSet<Vector3Int> houseSceneryCells = new HashSet<Vector3Int>();
+
+    // 집 안의 고정된 물건이 차지하는 월드 영역(min ~ max)을 막거나(on) 푼다.
+    //   건물과 같은 점유 칸으로 다뤄서 집 안 설치·길찾기에서 막힌다
+    public void SetHouseSceneryArea(Vector2 min, Vector2 max, bool on)
+    {
+        if (!on || grid == null)
+        {
+            foreach (Vector3Int cell in houseSceneryCells)
+                houseOccupiedCells.Remove(cell);
+
+            houseSceneryCells.Clear();
+
+            if (!on)
+                return;
+        }
+
+        const float Edge = 0.001f; // 경계에 딱 맞는 칸은 넣지 않는다
+        Vector3Int from = grid.WorldToCell(new Vector3(min.x + Edge, min.y + Edge, 0f));
+        Vector3Int to = grid.WorldToCell(new Vector3(max.x - Edge, max.y - Edge, 0f));
+
+        for (int x = from.x; x <= to.x; x++)
+        {
+            for (int y = from.y; y <= to.y; y++)
+            {
+                Vector3Int cell = new Vector3Int(x, y, 0);
+
+                if (houseOccupiedCells.Add(cell))
+                    houseSceneryCells.Add(cell);
+            }
+        }
+    }
+
     // 건물이 놓인 구역의 점유 셀 집합
     private HashSet<Vector3Int> CellsOf(Building building) =>
         building != null && building.IsInHouse ? houseOccupiedCells : villageOccupiedCells;
@@ -1002,8 +1059,8 @@ public class BuildingPlacement : MonoBehaviour
         if (currentBuildingData == null)
             return false;
 
-        // 데코레이션은 보유 수량을 검사
-        if (currentBuildingData.buildingType == BuildingType.Decoration)
+        // 데코레이션은 보유 수량을 검사 (자원으로 사는 장식은 일반 건물처럼 자원 검사)
+        if (currentBuildingData.UsesDecorationItem)
         {
             if (DecorationInventory.Instance == null)
             {
@@ -1040,8 +1097,8 @@ public class BuildingPlacement : MonoBehaviour
         if (currentBuildingData == null)
             return;
 
-        // 데코레이션은 아이템 1개 소비
-        if (currentBuildingData.buildingType == BuildingType.Decoration)
+        // 데코레이션은 아이템 1개 소비 (자원으로 사는 장식은 일반 건물처럼 자원 차감)
+        if (currentBuildingData.UsesDecorationItem)
         {
             if (DecorationInventory.Instance == null ||
                 !DecorationInventory.Instance.TryConsumeDecoration(currentBuildingData))

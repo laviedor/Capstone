@@ -9,7 +9,7 @@ using UnityEngine.UI;
 // 네트워크 UI(로그인 창, 오른쪽 위 도구 줄, 계정 메뉴, 채팅창, 친구 창, 확인 창, 안내)를
 // 팀의 Tab 메뉴와 같은 모양으로 만든다: 메뉴 Tools > Apply Cozy Style To Network UI
 //   팀이 만든 스프라이트(Assets/UI/Cozy/Generated)와 같은 글꼴(D2Coding)을 쓰고, 배치도 여기서 정한다
-//     오른쪽 위 한 줄: [친구] [1:1 채팅] [멀티버스 채팅] [톱니바퀴] [현재 위치 | 내 마을 | 멀티버스]
+//     오른쪽 위 한 줄: [친구] [1:1 채팅] [광장 채팅] [톱니바퀴] [현재 위치 | 내 마을 | 광장]
 //     톱니바퀴를 누르면 계정 메뉴(유저명, [로그아웃], [회원 탈퇴])가 열린다
 //     채팅창과 친구 창은 도구 줄 바로 아래에 열린다
 //   SampleScene 을 열어 둔 상태에서 실행한다. 여러 번 실행해도 결과가 같다
@@ -166,7 +166,7 @@ public static class NetworkUiStyler
         world.SetSiblingIndex(4);
     }
 
-    // 도구 줄의 버튼 (친구, 1:1 채팅, 멀티버스 채팅)
+    // 도구 줄의 버튼 (친구, 1:1 채팅, 광장 채팅)
     private static Button ToolButton(Button button, RectTransform bar, float width)
     {
         RectTransform rect = (RectTransform)button.transform;
@@ -177,7 +177,7 @@ public static class NetworkUiStyler
         return button;
     }
 
-    // [내 마을], [멀티버스]: 갈 수 있으면 밝은 칩, 지금 있는 곳이면(누를 수 없음) 짙은 칩. 글자색은 WorldUI 가 바꾼다
+    // [내 마을], [광장]: 갈 수 있으면 밝은 칩, 지금 있는 곳이면(누를 수 없음) 짙은 칩. 글자색은 WorldUI 가 바꾼다
     private static void Destination(Button button, float x)
     {
         RectTransform rect = (RectTransform)button.transform;

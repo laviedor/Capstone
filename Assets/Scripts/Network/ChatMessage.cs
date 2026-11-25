@@ -11,7 +11,7 @@ using System;
 //                 exp_claim                       끝난 채집 타이머의 보상 수령
 //                 harvest { id }                  건물 수확 (HarvestMessage)
 //                 discard { item }                장식 아이템 1개 버리기 (DiscardMessage)
-//                 chat    { text }                멀티버스 채팅
+//                 chat    { text }                광장 채팅
 //   서버 -> 클라  chat    { name, text }          어느 월드에 있든 모든 접속자에게 전달
 //                 kick                            같은 계정이 다른 곳에서 로그인(접속)해 끊김: 이쪽은 로그아웃된다 (LoginUI.ForceLogout)
 //                 world   { id, name, mine, build }  들어간 월드 (WorldMessage)
@@ -49,6 +49,9 @@ public class ChatMessage
     public const string Players = "players";
     public const string Ping = "ping";
     public const string Pong = "pong";
+    public const string Craft = "craft";   // 대장간에서 도구 만들기
+    public const string Tile = "tile";     // 바닥 한 칸 바꾸기 (보낼 때), 다른 사람이 바꾼 한 칸 (받을 때)
+    public const string Tiles = "tiles";   // 지금 월드의 바뀐 바닥 칸 전부
     public const int MaxTextLength = 200; // 서버 config.js의 MAX_CHAT_LENGTH와 같게 유지
     public const int Version = 2;         // 이 클라이언트가 아는 메시지 버전 (2: players, pos, ping/pong). 서버 chatProtocol.js 참고
 
@@ -64,7 +67,7 @@ public class JoinMessage
     public string t = ChatMessage.Join;
     public string name;
     public string token;
-    public long world; // 들어갈 월드 id (0: 멀티버스, 내 유저 id: 내 마을, 친구 유저 id: 친구 마을)
+    public long world; // 들어갈 월드 id (0: 광장, 내 유저 id: 내 마을, 친구 유저 id: 친구 마을)
     public int v = ChatMessage.Version;
 }
 
@@ -152,7 +155,7 @@ public class WorldMessage
 {
     public string t;
     public long id;     // 월드 id
-    public string name; // 마을 주인 닉네임 (멀티버스는 "")
+    public string name; // 마을 주인 닉네임 (광장은 "")
     public bool mine;   // 내 마을인지
     public bool build;  // 여기서 건물을 지을 수 있는지 (친구 마을은 구경만)
 }
@@ -199,6 +202,31 @@ public class DiscardMessage
 {
     public string t = ChatMessage.Discard;
     public string item; // 장식물 건물 종류 (BuildingData.buildingID)
+}
+
+// 대장간에서 도구 만들기 (결과는 서버가 재화와 안내로 알려 준다)
+[Serializable]
+public class CraftMessage
+{
+    public string t = ChatMessage.Craft;
+    public string item; // 만들 도구 (CraftingRecipes 의 id, 예: shovel)
+}
+
+// 바닥 한 칸 (보낼 때: 내 마을의 그 칸을 바꿈 / 받을 때: 같은 월드의 다른 사람이 바꿈)
+[Serializable]
+public class TileMessage
+{
+    public string t = ChatMessage.Tile;
+    public int x, y;    // 바닥 타일맵의 칸 좌표
+    public string tile; // 바닥 종류 (GroundTileLayer.Dirt 등, Grass 면 기본 잔디로 되돌림)
+}
+
+// 지금 월드의 바뀐 바닥 칸 전부 (목록에 없는 칸은 잔디)
+[Serializable]
+public class TileListMessage
+{
+    public string t;
+    public TileMessage[] list;
 }
 
 // 1:1 채팅 알림 (dm)

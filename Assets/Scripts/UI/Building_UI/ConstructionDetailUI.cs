@@ -101,7 +101,7 @@ public class ConstructionDetailUI : MonoBehaviour
             enough = false;
             buildLabel.text = "여기선 지을 수 없어요";
         }
-        else if (data.buildingType == BuildingType.Decoration)
+        else if (data.UsesDecorationItem)
         {
             int count = DecorationInventory.Instance != null
                 ? DecorationInventory.Instance.GetCount(data)

@@ -59,11 +59,17 @@ public class ConstructionListUI : MonoBehaviour
 
         SubscribeInventory();
         RefreshDecorationCards();
+        ApplyFilter(); // 집 안 / 마을에 따라 보이는 카드가 다르다
     }
 
     // 초기 일반 건물 목록을 만들고 장식 목록을 동기화한다.
     private void Start()
     {
+        // 건물 카드 목록을 마우스로 끌 때 방향을 반대로 (오른쪽으로 끌면 목록이 왼쪽으로 지나간다)
+        //   켜지는 도중에 컴포넌트를 바꾸지 않도록 Start 에서 한 번만 바꾼다
+        if (content != null)
+            ReversedDragScrollRect.Replace(content.GetComponentInParent<UnityEngine.UI.ScrollRect>(true));
+
         CreateBuildingList();
         SubscribeInventory();
         RefreshDecorationCards();
@@ -297,6 +303,12 @@ public class ConstructionListUI : MonoBehaviour
             case 3: visible = card.Data.buildingType == BuildingType.Decoration; break;
             default: visible = true; break;
         }
+
+        // 지금 있는 곳에 놓을 수 없는 종류는 숨긴다 (집 안: 장식·특수만 / 마을: 집 안 전용 가구 제외)
+        if (BuildingRules.InHouse && !BuildingRules.IsInteriorType(card.Data.buildingType))
+            visible = false;
+        else if (!BuildingRules.InHouse && card.Data.houseOnly)
+            visible = false;
 
         card.gameObject.SetActive(visible);
     }
