@@ -20,6 +20,7 @@ public class RemotePlayerManager : MonoBehaviour
     private readonly List<string> expired = new List<string>();
     private readonly HashSet<string> present = new HashSet<string>();
     private BuildingModeManager buildingMode;
+    private int rightClickTakenFrame = -1; // 이 프레임까지의 우클릭은 다른 기능이 쓴다 (RightClickTaken)
 
     void Start()
     {
@@ -126,6 +127,20 @@ public class RemotePlayerManager : MonoBehaviour
         OpenMenuOnRightClick();
     }
 
+    // 우클릭을 다른 기능이 쓰고 있는지: 건설·철거 모드, 바닥 바꾸기 모드(TilePainter), 제작 창(CraftingUI)은 우클릭으로 끝낸다
+    bool RightClickTaken()
+    {
+        if (buildingMode == null) buildingMode = FindFirstObjectByType<BuildingModeManager>();
+        return (buildingMode != null && buildingMode.IsBuildMode) || TilePainter.IsActive || CraftingUI.IsOpen;
+    }
+
+    void LateUpdate()
+    {
+        // 그 기능을 끝내는 바로 그 우클릭에 메뉴까지 뜨지 않도록, 방금까지 켜져 있었으면 다음 프레임의 우클릭도 넘긴다
+        // (그 기능의 Update 가 이 스크립트보다 먼저 돌아 이미 꺼진 뒤여도 걸러지게)
+        if (players.Count > 0 && RightClickTaken()) rightClickTakenFrame = Time.frameCount + 1;
+    }
+
     void RemoveExpired()
     {
         foreach (string playerName in expired)
@@ -143,9 +158,8 @@ public class RemotePlayerManager : MonoBehaviour
         if (mouse == null || !mouse.rightButton.wasPressedThisFrame || players.Count == 0) return;
         if (string.IsNullOrEmpty(LoginUI.Username) || UIInput.IsPointerOverUI()) return;
 
-        // 건설·철거 모드에서는 우클릭이 그 모드를 끝내는 데 쓰인다
-        if (buildingMode == null) buildingMode = FindFirstObjectByType<BuildingModeManager>();
-        if (buildingMode != null && buildingMode.IsBuildMode) return;
+        // 건설·철거 모드, 바닥 바꾸기 모드, 제작 창에서는 우클릭이 그것을 끝내는 데 쓰인다
+        if (Time.frameCount <= rightClickTakenFrame || RightClickTaken()) return;
 
         Camera view = Camera.main;
         if (view == null) return;

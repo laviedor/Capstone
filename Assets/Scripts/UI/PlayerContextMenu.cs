@@ -13,7 +13,7 @@ using UnityEngine.UI;
 //   친구 목록과 요청은 친구 창(FriendUI)이 가진 것을 쓰고, 실제 요청/취소/수락/거절/채팅 열기/삭제도 FriendUI 가 한다
 //   (친구 삭제만 친구 창의 [삭제]와 같이 확인창에서 한 번 더 묻는다. 나머지는 친구 창에서처럼 누르면 바로 한다)
 //   Tab 메뉴와 같은 모양으로 실행 중에 만든다 (CozyRuntimeUI). 씬에 따로 놓지 않아도 처음 쓸 때 스스로 만들어진다
-//   다른 곳을 누르거나 Esc, Tab 메뉴, 건설 모드를 켜거나 그 사람이 떠나면 사라진다
+//   다른 곳을 누르거나 Esc, Tab 메뉴, 건설 모드, 바닥 바꾸기 모드, 제작 창을 켜거나 그 사람이 떠나면 사라진다
 public class PlayerContextMenu : MonoBehaviour
 {
     private const float PanelWidth = 132f;     // 버튼이 하나일 때의 메뉴 폭
@@ -264,7 +264,8 @@ public class PlayerContextMenu : MonoBehaviour
 
         if (inventoryUI == null) inventoryUI = FindFirstObjectByType<InventoryUI>();
         if (buildingModeManager == null) buildingModeManager = FindFirstObjectByType<BuildingModeManager>();
-        if ((inventoryUI != null && inventoryUI.IsOpen) || (buildingModeManager != null && buildingModeManager.IsBuildMode))
+        if ((inventoryUI != null && inventoryUI.IsOpen) || (buildingModeManager != null && buildingModeManager.IsBuildMode) ||
+            TilePainter.IsActive || CraftingUI.IsOpen)
         {
             Close();
             return;
