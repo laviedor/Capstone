@@ -1,14 +1,17 @@
 const dgram = require('dgram');
 const protocol = require('./protocol');
 const presence = require('./presence');
+const positions = require('./positions');
 const { MULTIVERSE } = require('./config');
 
 // UDP 게임 통신: 플레이어 좌표를 받아 같은 월드, 같은 구역에 있는 다른 플레이어들에게 전달
+//   UDP 는 닿지 않아도 알 수 없으므로, 같은 좌표가 채팅 연결(TCP)로도 오간다 (positions.js). 여기는 자주 오는 부드러운 움직임을 맡는다
 function startUdpServer(port, players) {
   const socket = dgram.createSocket('udp4');
   const send = (text, to) => socket.send(text, to.port, to.address);
   const worldOf = name => presence.worldOfName(name) ?? MULTIVERSE;
   const zoneOf = name => presence.zoneOfName(name);
+  positions.attachUdp(players, send); // UDP 가 죽은 새 클라이언트의 좌표를 예전 클라이언트에게 UDP 로 전할 때 쓴다
 
   socket.on('message', (buf, rinfo) => {
     const msg = protocol.parse(buf);
@@ -36,6 +39,9 @@ function startUdpServer(port, players) {
     for (const other of players.others(player.name, player.world, player.zone)) {
       if (worldOf(other.name) === player.world && zoneOf(other.name) === player.zone) send(data, other);
     }
+
+    // 예전 클라이언트의 좌표는 채팅 연결을 아는 사람들에게도 전한다 (그 사람들의 UDP 수신이 막혀 있어도 보이도록)
+    positions.fromUdp(player);
   });
 
   socket.on('error', err => console.error('UDP 오류:', err.message));
