@@ -17,6 +17,8 @@ const { POSITION_MIN_INTERVAL_MS, LEGACY_RELAY_INTERVAL_MS, UDP_FRESH_MS } = req
 //     UDP 가 죽은 새 클라이언트가 채팅 연결로 보낸 좌표 -> 예전 클라이언트에게 UDP 로 (relayToLegacy)
 //
 //   client.pos: 채팅 연결로 알고 있는 그 사람의 위치 { x, y, z, n } (지금 있는 곳에서 아직 받은 적이 없으면 null)
+//   client.look: 그 사람의 겉모습 { hat, top, bottom, tool } (착용한 장비 id, 보낸 적이 없으면 null)
+//     들어올 때 받는 목록(players)에 같이 들어가고, 바꾸거나 다른 곳에 들어가면 그곳 사람들에게 look 으로 알린다
 
 const knows = client => client.v >= 2; // players, pos 메시지를 아는 클라이언트인지
 
@@ -28,6 +30,7 @@ function attachUdp(players, send) {
 
 const info = client => ({
   name: client.name, id: client.userId ?? 0, x: client.pos.x, y: client.pos.y, z: client.pos.z, n: client.pos.n,
+  look: client.look ?? undefined,
 });
 
 // client 와 같은 곳에 있는 사람들 중 이 메시지를 아는 클라이언트에게
@@ -98,4 +101,16 @@ function udpLost(name) {
   tell(client, chatProtocol.left(client.name));
 }
 
-module.exports = { attachUdp, snapshot, update, forget, fromUdp, udpLost };
+// client 의 겉모습을 같은 곳의 사람들에게 알린다 (장비를 바꿨을 때, 다른 월드·구역에 들어갔을 때)
+function announceLook(client) {
+  if (!client.look || client.world === null) return;
+  tell(client, chatProtocol.look(client.name, client.look));
+}
+
+// 겉모습이 바뀌었다고 받았을 때
+function setLook(client, look) {
+  client.look = look;
+  announceLook(client);
+}
+
+module.exports = { attachUdp, snapshot, update, forget, fromUdp, udpLost, announceLook, setLook };

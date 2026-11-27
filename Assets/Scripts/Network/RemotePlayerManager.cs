@@ -8,6 +8,7 @@ using UnityEngine.InputSystem;
 //     UDP(NetworkClient): 더 자주 오는 좌표. 움직임이 부드럽지만, 가는 길이나 오는 길이 막히면 아무것도 오지 않는다
 //   채팅 연결로 확인된 사람은 서버가 떠났다고 알려 줄 때까지 화면에 둔다 (UDP 가 막혀 있어도 사라지지 않는다)
 //   UDP 로만 아는 사람(예전 클라이언트)은 예전처럼 한동안 소식이 없으면 지운다
+//   겉모습(착용한 장비)도 채팅 연결로 온다: 들어갈 때의 목록(players)에 같이 오고, 바꾸면 look 으로 온다 (RemoteEquipmentVisual 이 그린다)
 //   다른 플레이어를 우클릭하면 친구 추가·요청 취소 / 요청 수락·거절 / 1:1 채팅·친구 삭제 메뉴를 띄운다 (PlayerContextMenu)
 public class RemotePlayerManager : MonoBehaviour
 {
@@ -19,6 +20,8 @@ public class RemotePlayerManager : MonoBehaviour
     private readonly Dictionary<string, RemotePlayer> players = new Dictionary<string, RemotePlayer>();
     private readonly List<string> expired = new List<string>();
     private readonly HashSet<string> present = new HashSet<string>();
+    // 사람마다 마지막으로 알게 된 겉모습 (그 사람이 화면에 나타나기 전에 먼저 올 수도 있어서 따로 기억한다)
+    private readonly Dictionary<string, LookInfo> looks = new Dictionary<string, LookInfo>();
     private BuildingModeManager buildingMode;
     private int rightClickTakenFrame = -1; // 이 프레임까지의 우클릭은 다른 기능이 쓴다 (RightClickTaken)
 
@@ -39,6 +42,7 @@ public class RemotePlayerManager : MonoBehaviour
         chatClient.PlayerLeft += Remove;
         chatClient.PlayersReceived += OnPlayers;
         chatClient.PositionReceived += OnPosition;
+        chatClient.LookReceived += OnLook;
     }
 
     void OnDisable()
@@ -47,6 +51,7 @@ public class RemotePlayerManager : MonoBehaviour
         chatClient.PlayerLeft -= Remove;
         chatClient.PlayersReceived -= OnPlayers;
         chatClient.PositionReceived -= OnPosition;
+        chatClient.LookReceived -= OnLook;
     }
 
     // 다른 월드나 구역으로 갔거나 접속을 끊은 사람을 바로 지움
@@ -87,6 +92,7 @@ public class RemotePlayerManager : MonoBehaviour
         {
             if (string.IsNullOrEmpty(info.name)) continue;
             present.Add(info.name);
+            if (info.look != null) looks[info.name] = info.look;
             Place(info.name, info.id, new Vector3(info.x, info.y, info.z), info.n, true);
         }
 
@@ -99,6 +105,15 @@ public class RemotePlayerManager : MonoBehaviour
         RemoveExpired();
     }
 
+    // 같이 있는 사람이 장비를 바꿨거나 이곳에 왔을 때: 그 사람의 옷을 바꿔 그린다
+    void OnLook(LookMessage m)
+    {
+        if (m == null || string.IsNullOrEmpty(m.name) || m.look == null) return;
+
+        looks[m.name] = m.look;
+        if (players.TryGetValue(m.name, out RemotePlayer player)) player.ApplyLook(m.look);
+    }
+
     void Place(string playerName, long userId, Vector3 position, int sequence, bool reliable)
     {
         if (string.IsNullOrEmpty(playerName) || playerName == LoginUI.Username) return;
@@ -108,6 +123,13 @@ public class RemotePlayerManager : MonoBehaviour
             player = Instantiate(remotePlayerPrefab, transform);
             player.Init(playerName, position);
             players.Add(playerName, player);
+
+            // 이미 알고 있는 겉모습이 있으면 나타날 때부터 그 옷으로
+            if (looks.TryGetValue(playerName, out LookInfo look)) player.ApplyLook(look);
+        }
+        else if (reliable && looks.TryGetValue(playerName, out LookInfo look) && !player.HasLook(look))
+        {
+            player.ApplyLook(look);
         }
         player.Apply(position, sequence, userId, reliable);
     }

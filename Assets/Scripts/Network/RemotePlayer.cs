@@ -44,6 +44,30 @@ public class RemotePlayer : MonoBehaviour
         target = position;
     }
 
+    private LookInfo appliedLook;
+
+    // 이 겉모습을 이미 그리고 있는지
+    public bool HasLook(LookInfo look) => look != null && look.SameAs(appliedLook);
+
+    // 그 사람이 입은 장비를 캐릭터에 겹쳐 그린다 (서버가 알려 준 겉모습)
+    public void ApplyLook(LookInfo look)
+    {
+        appliedLook = look;
+
+        if (body == null)
+            body = GetComponentInChildren<SpriteRenderer>();
+
+        if (body == null)
+            return;
+
+        RemoteEquipmentVisual visual = body.GetComponent<RemoteEquipmentVisual>();
+
+        if (visual == null)
+            visual = body.gameObject.AddComponent<RemoteEquipmentVisual>();
+
+        visual.SetLook(look);
+    }
+
     // 화면에서 이 캐릭터가 차지하는 범위 (픽셀). 우클릭으로 고를 때 쓴다: 몸과 머리 위 이름까지, 누르기 쉽게 조금 넉넉하게
     public Rect ScreenRect(Camera camera, float padding)
     {

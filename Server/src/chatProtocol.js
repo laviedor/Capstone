@@ -11,6 +11,8 @@ const { MAX_NAME_LENGTH, MAX_CHAT_LENGTH, MAX_CELL, MAX_TOKEN_LENGTH, MAX_ZONE_L
 //                                                  w, zn 은 보낼 때 있던 월드와 구역 (지금 있는 곳과 다르면 버린다),
 //                                                  n 은 보낸 순서 (받는 쪽이 늦게 온 예전 좌표를 버리는 데 쓴다)
 //                 { t: 'ping' }                    연결 확인 (v2, 5초마다). 서버는 pong 으로 답한다
+//                 { t: 'look', hat, top, bottom, tool }  내 겉모습 (v2): 부위마다 착용한 장비 id (EquipmentItemData.itemID, 없으면 '')
+//                                                  접속할 때와 장비를 바꿀 때 보낸다. 서버는 기억해 두고 같은 곳의 사람들에게 전한다
 //                 { t: 'enter', world }            월드 이동 (0: 광장, 내 유저 id: 내 마을, 친구 유저 id: 친구 마을)
 //                 { t: 'chat', text }              광장 채팅
 //                 { t: 'build', id, type, x, y }    지금 있는 월드에 건물 건설 (id 는 지은 클라이언트가 만듦, x, y 는 기준 칸)
@@ -35,10 +37,11 @@ const { MAX_NAME_LENGTH, MAX_CHAT_LENGTH, MAX_CELL, MAX_TOKEN_LENGTH, MAX_ZONE_L
 //                 { t: 'build', id, type, x, y, owner }, { t: 'demolish', id }, { t: 'move', id, x, y }
 //                                                  같은 월드의 다른 사람이 바꾼 건물 (바꾼 사람에게는 보내지 않음)
 //                 { t: 'left', name }              같이 보이던 사람이 다른 월드나 구역으로 가거나 접속을 끊음
-//                 { t: 'players', list: [{ name, id, x, y, z, n }] }  (v2) 지금 같은 월드, 같은 구역에 있는 사람들과 그 위치.
+//                 { t: 'players', list: [{ name, id, x, y, z, n, look }] }  (v2) 지금 같은 월드, 같은 구역에 있는 사람들과 그 위치, 겉모습.
 //                                                  들어갈 때마다 (입장, 월드 이동, 구역 이동) 보낸다. id 는 유저 id (없으면 0)
 //                 { t: 'pos', name, id, x, y, z, n }  (v2) 같이 있는 사람의 위치 (새로 온 사람도 이것으로 나타난다)
 //                 { t: 'pong' }                    (v2) ping 의 답
+//                 { t: 'look', name, look: { hat, top, bottom, tool } }  (v2) 같이 있는 사람의 겉모습 (장비를 바꿨거나 그 사람이 이곳에 왔을 때)
 //                 { t: 'res', items: [{ id, n }] }  내 재화 전부 (id: wood, stone, gold ...). 바뀔 때마다 보낸다
 //                 { t: 'harvest', all, list: [{ id, remaining }] }  내 건물의 수확 타이머: remaining 초 뒤에 수확할 수 있음
 //                                                  (0 이면 지금). all 이 true 면 지금 있는 월드의 내 건물 전부이고
@@ -60,6 +63,7 @@ const isWorld = v => Number.isSafeInteger(v) && v >= 0;
 const isZone = v => typeof v === 'string' && v.length <= MAX_ZONE_LENGTH && /^[A-Za-z0-9_-]*$/.test(v);
 const isName = (v, max) => typeof v === 'string' && v.length > 0 && v.length <= max;
 const isCoord = v => Number.isFinite(v) && Math.abs(v) <= MAX_COORD;
+const LOOK_SLOTS = ['hat', 'top', 'bottom', 'tool']; // 겉모습 부위 (클라이언트 EquipmentSlot)
 
 // 잘못된 메시지면 null
 function parse(line) {
@@ -80,6 +84,15 @@ function parse(line) {
     return { t: 'pos', world: m.w, zone: m.zn, x: m.x, y: m.y, z: m.z, n: Number.isSafeInteger(m.n) && m.n > 0 ? m.n : 0 };
   }
   if (m.t === 'ping') return { t: 'ping' };
+  if (m.t === 'look') {
+    const look = {};
+    for (const slot of LOOK_SLOTS) {
+      const v = m[slot] ?? '';
+      if (v !== '' && !isId(v)) return null;
+      look[slot] = v;
+    }
+    return { t: 'look', look };
+  }
   if (m.t === 'enter' && isWorld(m.world)) return { t: 'enter', world: m.world };
   if (m.t === 'chat' && typeof m.text === 'string') {
     const text = m.text.trim();
@@ -119,6 +132,7 @@ const notice = text => toLine({ t: 'notice', text });
 const dm = senderId => toLine({ t: 'dm', sender: senderId });
 const friends = () => toLine({ t: 'friends' });
 const players = list => toLine({ t: 'players', list });
+const look = (name, value) => toLine({ t: 'look', name, look: value });
 const position = p => toLine({ t: 'pos', name: p.name, id: p.id, x: p.x, y: p.y, z: p.z, n: p.n });
 const pong = () => toLine({ t: 'pong' });
 const tileList = list => toLine({ t: 'tiles', list });
@@ -126,5 +140,5 @@ const tile = (x, y, type) => toLine({ t: 'tile', x, y, tile: type });
 
 module.exports = {
   parse, chat, kick, world, buildingList, build, demolish, move, left, resources, harvest, expedition, notice, dm, friends,
-  players, position, pong, tileList, tile,
+  players, position, pong, tileList, tile, look,
 };

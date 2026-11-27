@@ -53,6 +53,7 @@ async function enter(client, world) {
   client.socket.write(chatProtocol.harvest(timers, true)); // 건물 목록 다음에 보낸다 (목록에 있는 건물의 타이머)
   client.socket.write(chatProtocol.tileList(tileList));     // 삽으로 바꾼 바닥 칸
   positions.snapshot(client); // 월드 정보 다음에 보낸다 (클라이언트는 월드가 바뀌면 보이던 사람들을 지우고 이 목록으로 다시 채운다)
+  positions.announceLook(client); // 이곳 사람들에게 내 겉모습 (내 위치가 오면 그 모습으로 나타난다)
   return true;
 }
 
@@ -69,6 +70,7 @@ function setZone(client, zone) {
   client.zone = zone;
   positions.forget(client);
   positions.snapshot(client);
+  positions.announceLook(client);
 }
 
 // 중복 로그인: 같은 계정(사용자명)이 다른 곳에서 로그인하거나 접속했을 때 먼저 있던 접속을 끊는다

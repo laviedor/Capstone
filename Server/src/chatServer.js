@@ -121,7 +121,7 @@ function startChatServer(port) {
   }
 
   const server = net.createServer(socket => {
-    // 입장하면 { socket, name, userId, world, zone, v, pos, posAt, heard }
+    // 입장하면 { socket, name, userId, world, zone, v, pos, posAt, heard, look }
     //   v: 클라이언트가 아는 메시지 버전, pos / posAt: 채팅 연결로 알고 있는 위치와 받은 시각 (positions.js),
     //   heard: 이 연결에서 마지막으로 무언가 받은 시각
     let client = null;
@@ -176,7 +176,7 @@ function startChatServer(port) {
           console.log(`[채팅] ${name} 중복 접속 - 기존 접속 종료`);
         }
         client = {
-          socket, name, userId: user ? user.id : null, world: null, zone: '', v: msg.v, pos: null, posAt: 0, heard: Date.now(),
+          socket, name, userId: user ? user.id : null, world: null, zone: '', v: msg.v, pos: null, posAt: 0, heard: Date.now(), look: null,
         };
         presence.add(client);
         console.log(`[채팅] ${name} 입장`);
@@ -195,6 +195,8 @@ function startChatServer(port) {
       if (msg.t === 'pos') {
         // 채팅 연결로 온 내 위치: 지금 있는 곳(월드, 구역)의 것만 받는다 (옮기는 중에 보낸 예전 곳의 좌표는 버린다)
         if (msg.world === client.world && msg.zone === client.zone) positions.update(client, msg);
+      } else if (msg.t === 'look') {
+        positions.setLook(client, msg.look); // 착용한 장비가 바뀜: 같은 곳의 사람들 화면에서도 옷이 바뀐다
       } else if (msg.t === 'ping') {
         if (canWrite(client)) socket.write(chatProtocol.pong());
       } else if (msg.t === 'chat') {

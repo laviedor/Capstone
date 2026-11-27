@@ -27,7 +27,7 @@ public static class CozyTabMenuBuilder
     private const float EquipW = 260f;
     private const float SlotSize = 52f;
 
-    private const string EquipmentFolder = "Assets/Data/Equipment";
+    private const string EquipmentFolder = "Assets/Resources/Equipment"; // 다른 플레이어의 옷을 이름으로 찾도록 Resources 아래에 둔다 (EquipmentCatalog)
 
     // 한글이 들어 있는 D2Coding SDF 폰트 에셋 (원본 폰트 파일을 가져오는 데 쓴다)
     private const string KoreanFontGuid = "025fa76581d74654482409fa39906ca3";

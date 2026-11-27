@@ -49,6 +49,7 @@ public class ChatMessage
     public const string Players = "players";
     public const string Ping = "ping";
     public const string Pong = "pong";
+    public const string Look = "look";     // 겉모습 (착용한 장비): 보낼 때 내 것, 받을 때 같이 있는 사람의 것
     public const string Craft = "craft";   // 대장간에서 도구 만들기
     public const string Tile = "tile";     // 바닥 한 칸 바꾸기 (보낼 때), 다른 사람이 바꾼 한 칸 (받을 때)
     public const string Tiles = "tiles";   // 지금 월드의 바뀐 바닥 칸 전부
@@ -106,6 +107,70 @@ public class PlayerInfo
     public float y;
     public float z;
     public int n;
+    public LookInfo look; // 겉모습 (보낸 적이 없는 사람이면 비어 있음)
+}
+
+// 겉모습: 부위마다 착용한 장비 id (EquipmentItemData.itemID, 없으면 "")
+[Serializable]
+public class LookInfo
+{
+    public string hat = "";
+    public string top = "";
+    public string bottom = "";
+    public string tool = "";
+
+    public string Get(EquipmentSlot slot)
+    {
+        switch (slot)
+        {
+            case EquipmentSlot.Hat: return hat;
+            case EquipmentSlot.Top: return top;
+            case EquipmentSlot.Bottom: return bottom;
+            default: return tool;
+        }
+    }
+
+    public bool SameAs(LookInfo other)
+    {
+        return other != null && hat == other.hat && top == other.top && bottom == other.bottom && tool == other.tool;
+    }
+
+    // 지금 착용한 장비로 만든다
+    public static LookInfo From(PlayerEquipment equipment)
+    {
+        LookInfo look = new LookInfo();
+
+        if (equipment == null)
+            return look;
+
+        look.hat = IdOf(equipment.GetEquipped(EquipmentSlot.Hat));
+        look.top = IdOf(equipment.GetEquipped(EquipmentSlot.Top));
+        look.bottom = IdOf(equipment.GetEquipped(EquipmentSlot.Bottom));
+        look.tool = IdOf(equipment.GetEquipped(EquipmentSlot.Tool));
+        return look;
+    }
+
+    private static string IdOf(EquipmentItemData item) => item != null && !string.IsNullOrEmpty(item.itemID) ? item.itemID : "";
+}
+
+// 내 겉모습 보내기 (클라 -> 서버)
+[Serializable]
+public class LookSendMessage
+{
+    public string t = ChatMessage.Look;
+    public string hat = "";
+    public string top = "";
+    public string bottom = "";
+    public string tool = "";
+}
+
+// 같이 있는 사람의 겉모습 (서버 -> 클라)
+[Serializable]
+public class LookMessage
+{
+    public string t;
+    public string name;
+    public LookInfo look;
 }
 
 // 월드 이동 요청

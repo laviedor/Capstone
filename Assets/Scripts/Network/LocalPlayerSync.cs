@@ -3,6 +3,7 @@ using UnityEngine;
 
 // 내 캐릭터 좌표를 서버로 전송. 서버가 같은 월드, 같은 구역에 있는 사람에게만 전달한다
 //   UDP (NetworkClient): 움직이면 바로, 가만히 있어도 주기적으로. 자주 보내서 움직임이 부드럽다
+//   겉모습(착용한 장비)은 채팅 연결로 접속할 때와 바꿀 때 보낸다 (다른 사람 화면에서도 옷이 보이게)
 //   채팅 연결 (ChatClient, TCP): 같은 좌표를 드문드문. UDP 는 닿지 않아도 알 수 없어서, 그럴 때도 서로 보이도록 같이 보낸다
 //     (다른 곳에 들어간 직후, 움직이는 동안, 멈춘 자리, 그리고 가만히 있어도 가끔)
 public class LocalPlayerSync : MonoBehaviour
@@ -21,6 +22,7 @@ public class LocalPlayerSync : MonoBehaviour
     private bool reliableNow;     // 다음 Update 에서 채팅 연결로 바로 보낸다 (서버가 그곳 사람들의 목록을 막 보내 준 뒤)
     private bool connectedBefore; // 채팅 연결이 한 번이라도 붙었는지 (다시 붙은 것인지 구별)
     private bool kicked;
+    private LookInfo sentLook;    // 채팅 연결로 마지막에 보낸 겉모습 (다시 붙으면 null 로 돌려 다시 보낸다)
 
     void Start()
     {
@@ -66,6 +68,7 @@ public class LocalPlayerSync : MonoBehaviour
         bool enteredWorld = currentWorld != msg.w || currentZone != msg.zn;
 
         SendReliable(p, currentWorld, currentZone, enteredWorld);
+        SendLook();
 
         bool moved = (p - lastSent).sqrMagnitude > 0.0001f;
         if (!enteredWorld && sinceSent < (moved ? sendInterval : heartbeatInterval)) return;
@@ -97,6 +100,16 @@ public class LocalPlayerSync : MonoBehaviour
         lastReliable = p;
     }
 
+    // 내 겉모습(착용한 장비)이 바뀌었거나 아직 보내지 않았으면 채팅 연결로 보낸다 (서버가 같은 곳의 사람들에게 전한다)
+    void SendLook()
+    {
+        if (chatClient == null) return;
+
+        LookInfo look = LookInfo.From(PlayerEquipment.Instance);
+        if (look.SameAs(sentLook)) return;
+        if (chatClient.SendLook(look)) sentLook = look;
+    }
+
     // 서버가 지금 있는 곳의 사람들 목록을 보냈다 = 내가 그곳에 들어간 것을 서버가 처리했다: 그 뒤에 내 위치를 바로 알린다
     //   (그 전에 보낸 위치는 서버가 예전 곳의 것으로 보고 버렸을 수 있다)
     void OnPlayersReceived(PlayersMessage m)
@@ -109,6 +122,7 @@ public class LocalPlayerSync : MonoBehaviour
     {
         if (connectedBefore && NetworkClient.Instance != null) NetworkClient.Instance.Reopen();
         connectedBefore = true;
+        sentLook = null; // 새 접속에서는 서버가 내 겉모습을 모르므로 다시 보낸다
         sinceSent = float.MaxValue; // 다음 Update 에서 UDP 로도 바로 보낸다
     }
 

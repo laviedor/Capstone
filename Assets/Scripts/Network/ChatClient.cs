@@ -31,6 +31,7 @@ public class ChatClient : MonoBehaviour
     public event Action<ExpeditionMessage> ExpeditionReceived; // 내 채집 타이머 (GatherSync 가 처리)
     public event Action<PlayersMessage> PlayersReceived;    // 지금 같은 월드, 같은 구역에 있는 사람들 (들어갈 때마다 옴)
     public event Action<PosMessage> PositionReceived;       // 같이 있는 사람의 위치 (이 연결로 온 것)
+    public event Action<LookMessage> LookReceived;          // 같이 있는 사람의 겉모습 (착용한 장비)
     public event Action<TileListMessage> TilesReceived;        // 지금 월드의 바뀐 바닥 칸 전부 (GroundTileLayer 가 처리)
     public event Action<TileMessage> TileReceived;             // 다른 사람이 바꾼 바닥 한 칸 (GroundTileLayer 가 처리)
 
@@ -94,6 +95,12 @@ public class ChatClient : MonoBehaviour
     public bool SendDiscard(string item) => TryWrite(new DiscardMessage { item = item });
 
     // 내 위치 (world, zone: 지금 있는 곳, sequence: 보낸 순서). 서버가 같은 곳에 있는 사람들에게 전한다
+    // 내 겉모습(착용한 장비) 보내기. 서버가 기억해 두고 같은 곳의 사람들에게 전한다
+    public bool SendLook(LookInfo look) => look != null && TryWrite(new LookSendMessage
+    {
+        hat = look.hat ?? "", top = look.top ?? "", bottom = look.bottom ?? "", tool = look.tool ?? ""
+    });
+
     public bool SendPosition(Vector3 p, long world, string zone, int sequence)
     {
         position.w = world;
@@ -226,6 +233,10 @@ public class ChatClient : MonoBehaviour
         else if (msg.t == ChatMessage.Players)
         {
             PlayersReceived?.Invoke(JsonUtility.FromJson<PlayersMessage>(line));
+        }
+        else if (msg.t == ChatMessage.Look)
+        {
+            LookReceived?.Invoke(JsonUtility.FromJson<LookMessage>(line));
         }
         else if (msg.t == ChatMessage.Chat)
         {

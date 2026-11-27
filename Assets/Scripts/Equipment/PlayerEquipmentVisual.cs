@@ -88,7 +88,7 @@ public class PlayerEquipmentVisual : MonoBehaviour
     // 장비 그림을 캐릭터 그림과 같은 그림 좌표에 맞추는 위치.
     //   캐릭터 스프라이트는 64 x 64 그림의 일부(예: 가운데 32 x 51)만 쓰고 장비 그림은 64 x 64 전체라서,
     //   둘의 기준점(pivot)이 그림 안에서 서로 다른 곳에 있다. 그 차이만큼 장비를 옮겨 도트가 정확히 겹치게 한다.
-    private static Vector3 AlignOffset(Sprite bodySprite, Sprite wearSprite, bool flipX, bool flipY)
+    public static Vector3 AlignOffset(Sprite bodySprite, Sprite wearSprite, bool flipX, bool flipY)
     {
         if (bodySprite == null || wearSprite == null)
             return Vector3.zero;
